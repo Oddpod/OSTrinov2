@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_addOst"
+            android:icon="@drawable/ic_menu_camera"
+            android:title="Add Ost" />
+        <item
+            android:id="@+id/nav_importOst"
+            android:icon="@drawable/ic_menu_gallery"
+            android:title="Import Osts" />
+        <item
+            android:id="@+id/nav_exportOsts"
+            android:icon="@drawable/ic_menu_slideshow"
+            android:title="Export Osts" />
+        <item
+            android:id="@+id/nav_randomOst"
+            android:icon="@drawable/ic_menu_manage"
+            android:title="RandomOst" />
+    </group>
+
+    <item android:title="Communicate">
+        <menu>
+            <item
+                android:id="@+id/nav_testConnection"
+                android:icon="@drawable/ic_menu_share"
+                android:title="Test Connection" />
+            <item
+                android:id="@+id/nav_testFloater"
+                android:icon="@drawable/ic_menu_send"
+                android:title="test Floater" />
+        </menu>
+    </item>
+
+</menu>

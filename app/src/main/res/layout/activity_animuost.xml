@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/activity_activity_animuost"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.example.odd.ostrino.AnimuOst">
+
+    <Button
+        android:text="View OST list"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="15dp"
+        android:id="@+id/btnViewOstList" />
+
+    <Button
+        android:text="Add OST"
+        android:layout_centerInParent="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btnViewOstList"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="15dp"
+        android:id="@+id/btnAddOst" />
+
+    <Button
+        android:text="Add Osts from .txt file"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:id="@+id/btnBatchAdd"
+        android:layout_below="@+id/btnAddOst"
+        android:layout_centerHorizontal="true" />
+
+    <Button
+        android:text=" Exports Osts to .txt File"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btnExport"
+        android:layout_marginTop="15dp"
+        android:layout_below="@id/btnBatchAdd"
+        android:layout_centerHorizontal="true" />
+
+    <Button
+        android:text="Random Ost"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:id="@+id/btnRandomOst"
+        android:layout_below="@+id/btnExport"
+        android:layout_centerHorizontal="true" />
+
+    <Button
+        android:id="@+id/btnTestConnection"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="13dp"
+        android:text="Update Ostdatabase"
+        android:layout_below="@+id/btnRandomOst"
+        android:layout_centerHorizontal="true" />
+
+    <Button
+        android:id="@+id/btnTestFloater"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:text="Test Floater"
+        android:layout_below="@+id/btnTestConnection"
+        android:layout_alignRight="@+id/btnRandomOst"
+        android:layout_alignEnd="@+id/btnRandomOst" />
+
+</RelativeLayout>
