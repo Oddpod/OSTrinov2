@@ -37,7 +37,7 @@ public class ListFragment extends Fragment implements AddScreen.AddScreenListene
     private String filterText;
     private TextWatcher textWatcher;
     private TableRow tR;
-    private FrameLayout flOntop, flLandscape, flNether;
+    private FrameLayout flOnTop, flLandscape, flNether;
     public YoutubeFragment youtubeFragment = null;
     Button btnDelHeader, btnPlayAll, btnplaySelected, btnStopPlayer;
     boolean youtubeFragLaunched;
@@ -78,7 +78,7 @@ public class ListFragment extends Fragment implements AddScreen.AddScreenListene
         btnplaySelected = (Button) rootView.findViewById(R.id.btnPlaySelected);
         btnStopPlayer = (Button) rootView.findViewById(R.id.btnStopPlayer);
         tableLayout = (TableLayout) rootView.findViewById(R.id.tlOstTable);
-        flOntop = (FrameLayout) rootView.findViewById(R.id.flOntop);
+        flOnTop = (FrameLayout) rootView.findViewById(R.id.flOntop);
         flLandscape = (FrameLayout) rootView.findViewById(R.id.flLandscape);
         flNether = (FrameLayout) rootView.findViewById(R.id.flNether);
 
@@ -263,13 +263,7 @@ public class ListFragment extends Fragment implements AddScreen.AddScreenListene
 
                     i++;
                 }
-                tR.removeAllViews();
-                cleanTable(tableLayout);
-                allOsts = dbHandler.getAllOsts();
-                checkBoxes.clear(); //clear list of Checkboxes
-                for (Ost ost : allOsts) {
-                    addRow(ost);
-                }
+                refreshList();
                 break;
             }
             case R.id.btnStopPlayer: {
@@ -290,15 +284,15 @@ public class ListFragment extends Fragment implements AddScreen.AddScreenListene
 
     public void launchYoutubeFrag(){
         youtubeFragLaunched = true;
-        btnStopPlayer.setVisibility(View.VISIBLE);
         FragmentManager manager = getFragmentManager();
         manager.beginTransaction()
                 .add(R.id.flOntop, youtubeFragment)
                 .commit();
+        btnStopPlayer.setVisibility(View.VISIBLE);
         int orientation = getActivity().getResources().getConfiguration().orientation;
         if( orientation == Configuration.ORIENTATION_LANDSCAPE){
-            flNether.removeView(flOntop);
-            flLandscape.addView(flOntop);
+            flNether.removeView(flOnTop);
+            flLandscape.addView(flOnTop);
         }
     }
 
@@ -318,16 +312,16 @@ public class ListFragment extends Fragment implements AddScreen.AddScreenListene
 
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             if(youtubeFragment != null){
-                flNether.removeView(flOntop);
-                flLandscape.addView(flOntop);
+                flNether.removeView(flOnTop);
+                flLandscape.addView(flOnTop);
                 Toast.makeText(getActivity(), "landscape", Toast.LENGTH_SHORT).show();
             }
 
 
         } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
             if(youtubeFragment != null){
-                flLandscape.removeView(flOntop);
-                flNether.addView(flOntop);
+                flLandscape.removeView(flOnTop);
+                flNether.addView(flOnTop);
                 Toast.makeText(getActivity(), "portrait", Toast.LENGTH_SHORT).show();
             }
         }
@@ -337,5 +331,16 @@ public class ListFragment extends Fragment implements AddScreen.AddScreenListene
         initYoutubeFrag();
         youtubeFragment.setVideoId(url);
         updateYoutubeFrag();
+    }
+
+    public void refreshList(){
+        tR.removeAllViews();
+        cleanTable(tableLayout);
+        allOsts = dbHandler.getAllOsts();
+        checkBoxes.clear(); //clear list of Checkboxes
+        for (Ost ost : allOsts) {
+            addRow(ost);
+        }
+
     }
 }

@@ -3,7 +3,8 @@
     android:layout_width="200dp"
     android:layout_height="wrap_content"
     android:layout_marginBottom="1dp"
-    android:keepScreenOn="true">
+    android:keepScreenOn="true"
+    android:layout_gravity="bottom|end">
 
     <FrameLayout
         android:id="@+id/youtube_layout"

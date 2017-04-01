@@ -4,19 +4,19 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_addOst"
-            android:icon="@drawable/ic_menu_camera"
+            android:icon="@drawable/ic_menu_send"
             android:title="@string/menu_add_ost" />
         <item
             android:id="@+id/nav_importOst"
-            android:icon="@drawable/ic_menu_gallery"
-            android:title="@string/menu_import" />
+            android:title="@string/menu_import"
+            android:icon="@drawable/ic_menu_send" />
         <item
             android:id="@+id/nav_exportOsts"
-            android:icon="@drawable/ic_menu_slideshow"
+            android:icon="@drawable/ic_menu_send"
             android:title="@string/menu_export" />
         <item
             android:id="@+id/nav_randomOst"
-            android:icon="@drawable/ic_menu_manage"
+            android:icon="@drawable/ic_menu_send"
             android:title="@string/menu_random_ost" />
     </group>
 
@@ -24,7 +24,7 @@
         <menu>
             <item
                 android:id="@+id/nav_testConnection"
-                android:icon="@drawable/ic_menu_share"
+                android:icon="@drawable/ic_menu_send"
                 android:title="@string/menu_test_connection" />
             <item
                 android:id="@+id/nav_testFloater"

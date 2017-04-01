@@ -6,7 +6,7 @@ public class Ost {
 
     private int id;
 
-    public Ost(){};
+    public Ost(){}
 
     public Ost(String title, String show, String tags, String url) {
         this.title = title;
@@ -17,12 +17,8 @@ public class Ost {
 
     @Override
     public String toString() {
-        return "Ost{" +
-                "id=" + id + '\'' +
-                "title='" + title + '\'' +
+        return "Ost{title='" + title + '\'' +
                 ", show='" + show + '\'' +
-                ", tags=" + tags + '\'' +
-                ", url=" + url +
                 '}';
     }
 

@@ -189,6 +189,7 @@ public class MainActivity extends AppCompatActivity
             Toast.makeText(this, lastAddedOst.getTitle() + " From " + lastAddedOst.getShow() + " has already been added", Toast.LENGTH_SHORT).show();
             lastAddedOst = null;
         }
+        listFragment.refreshList();
     }
 
     private void chooseFile() {
@@ -200,8 +201,8 @@ public class MainActivity extends AppCompatActivity
             startActivityForResult(intent, 1);
 
         } else {
-            intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-            intent.setType("*/*");
+            intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("text/plain");
             intent.addCategory(Intent.CATEGORY_OPENABLE);
             System.out.println("File Chooser launched");
 
@@ -235,6 +236,7 @@ public class MainActivity extends AppCompatActivity
         if (requestCode == 1 && resultCode == RESULT_OK) {
             Uri currFileURI = data.getData();
             readFromFile(currFileURI);
+            listFragment.refreshList();
         }
         if (requestCode == 2 && resultCode == RESULT_OK) {
             Uri currFileURI = data.getData();
@@ -257,6 +259,9 @@ public class MainActivity extends AppCompatActivity
                 Ost ost = new Ost();
                 System.out.println(line);
                 String[] lineArray = line.split("; ");
+                if(lineArray.length < 4){
+                    return;
+                }
                 ost.setTitle(lineArray[0]);
                 ost.setShow(lineArray[1]);
                 ost.setTags(lineArray[2]);
@@ -268,6 +273,7 @@ public class MainActivity extends AppCompatActivity
                 }
             }catch(IOException e){
                 System.out.println("File not found");
+                e.printStackTrace();
             }
         }
 
