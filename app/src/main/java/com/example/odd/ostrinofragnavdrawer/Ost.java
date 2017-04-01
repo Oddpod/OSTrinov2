@@ -1,10 +1,6 @@
 package com.example.odd.ostrinofragnavdrawer;
 
 
-/**
- * Created by Odd on 12.02.2017.
- */
-
 public class Ost {
     private String title, show, tags, url;
 

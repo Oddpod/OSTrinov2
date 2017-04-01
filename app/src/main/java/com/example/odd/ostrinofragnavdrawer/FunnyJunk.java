@@ -9,10 +9,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 
-/**
- * Created by Odd on 24.02.2017.
- */
-
 public class FunnyJunk extends DialogFragment{
 
         AlertDialog.Builder builder;

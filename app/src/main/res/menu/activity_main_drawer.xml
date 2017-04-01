@@ -5,31 +5,31 @@
         <item
             android:id="@+id/nav_addOst"
             android:icon="@drawable/ic_menu_camera"
-            android:title="Add Ost" />
+            android:title="@string/menu_add_ost" />
         <item
             android:id="@+id/nav_importOst"
             android:icon="@drawable/ic_menu_gallery"
-            android:title="Import Osts" />
+            android:title="@string/menu_import" />
         <item
             android:id="@+id/nav_exportOsts"
             android:icon="@drawable/ic_menu_slideshow"
-            android:title="Export Osts" />
+            android:title="@string/menu_export" />
         <item
             android:id="@+id/nav_randomOst"
             android:icon="@drawable/ic_menu_manage"
-            android:title="RandomOst" />
+            android:title="@string/menu_random_ost" />
     </group>
 
-    <item android:title="Communicate">
+    <item android:title="@string/menu_under_development">
         <menu>
             <item
                 android:id="@+id/nav_testConnection"
                 android:icon="@drawable/ic_menu_share"
-                android:title="Test Connection" />
+                android:title="@string/menu_test_connection" />
             <item
                 android:id="@+id/nav_testFloater"
                 android:icon="@drawable/ic_menu_send"
-                android:title="test Floater" />
+                android:title="@string/menu_test_floater" />
         </menu>
     </item>
 

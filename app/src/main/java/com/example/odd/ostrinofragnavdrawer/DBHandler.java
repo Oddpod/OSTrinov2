@@ -9,10 +9,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Odd on 15.02.2017.
- */
-
 public class DBHandler extends SQLiteOpenHelper {
 
     private static final int DATABASE_VERSION = 1;
@@ -20,12 +16,12 @@ public class DBHandler extends SQLiteOpenHelper {
 
     private static final String KEY_ID = "ostid", KEY_TITLE = "title", KEY_SHOW = "show", KEY_TAGS = "tags", KEY_URL = "url";
 
-    public DBHandler(Context context){
+    DBHandler(Context context){
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         ostList = new ArrayList<>();
     }
 
-    List<Ost> ostList;
+    private List<Ost> ostList;
 
     //creating Tables
     @Override
@@ -66,14 +62,14 @@ public class DBHandler extends SQLiteOpenHelper {
 
     }
 
-    public boolean deleteOst(int delID){
+    boolean deleteOst(int delID){
 
         SQLiteDatabase db = this.getWritableDatabase();
 
         return db.delete(OST_TABLE, KEY_ID + "=" + delID, null) > 0;
     }
 
-    public List<Ost> getAllOsts(){
+    List<Ost> getAllOsts(){
 
         List<Ost> ostList = new ArrayList<>();
 
@@ -95,11 +91,11 @@ public class DBHandler extends SQLiteOpenHelper {
 
             }while(cursor.moveToNext());
         }
-
+        cursor.close();
         return ostList;
     }
 
-    public Ost getOst(int id){
+    Ost getOst(int id){
 
         Ost ost = new Ost();
         String selectQuery = "SELECT " + KEY_ID + "," + KEY_TITLE + "," + KEY_SHOW + "," + KEY_TAGS + "," + KEY_URL
@@ -117,10 +113,11 @@ public class DBHandler extends SQLiteOpenHelper {
                 ost.setUrl(cursor.getString(4));
             }while(cursor.moveToNext());
         }
+        cursor.close();
         return ost;
     }
 
-    public void updateOst(Ost ost){
+    void updateOst(Ost ost){
 
         ContentValues values = new ContentValues();
 
@@ -135,7 +132,7 @@ public class DBHandler extends SQLiteOpenHelper {
         db.replace(OST_TABLE, null, values);
     }
 
-    public boolean checkiIfInDB(Ost ost) {
+    boolean checkiIfInDB(Ost ost) {
         ostList = getAllOsts();
         String ostString = ost.toString().toLowerCase();
         for (Ost ostFromDB : ostList){

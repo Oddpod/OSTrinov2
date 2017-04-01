@@ -1,6 +1,5 @@
 package com.example.odd.ostrinofragnavdrawer;
 
-import android.graphics.drawable.GradientDrawable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.content.res.Configuration;
@@ -24,10 +23,6 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Odd on 12.02.2017.
- */
-
 public class ListFragment extends Fragment implements AddScreen.AddScreenListener, FunnyJunk.YareYareListener, View.OnClickListener{
 
     private int ostReplaceId;
@@ -45,7 +40,6 @@ public class ListFragment extends Fragment implements AddScreen.AddScreenListene
     private FrameLayout flOntop, flLandscape, flNether;
     public YoutubeFragment youtubeFragment = null;
     Button btnDelHeader, btnPlayAll, btnplaySelected, btnStopPlayer;
-    private TextView title_header, show_header, tags_header;
     boolean youtubeFragLaunched;
     private View rootView;
 
@@ -101,17 +95,7 @@ public class ListFragment extends Fragment implements AddScreen.AddScreenListene
     public void createList() {
         checkBoxes = new ArrayList<>();
 
-        //Creating Title column header
-        title_header = (TextView) rootView.findViewById(R.id.titleHeader);
-        show_header = (TextView) rootView.findViewById(R.id.showHeader);
-        tags_header = (TextView) rootView.findViewById(R.id.tagsHeader);
         btnDelHeader = (Button) rootView.findViewById(R.id.btnDelHeader);
-        System.out.println(btnDelHeader.getId()+ ", " + btnStopPlayer.getId() + ", " + btnplaySelected + ", " + btnPlayAll);
-
-        title_header.setText("Title");
-        show_header.setText("Show");
-        tags_header.setText("Tags");
-        btnDelHeader.setText("Delete");
 
         btnDelHeader.setOnClickListener(this);
 

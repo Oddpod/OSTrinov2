@@ -20,6 +20,7 @@
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
             android:layout_alignTop="@+id/edtFilter"
+            android:layout_toEndOf="@+id/edtFilter"
             android:layout_toRightOf="@+id/edtFilter"
             android:visibility="visible">
 
@@ -30,7 +31,7 @@
             android:layout_width="383dp"
             android:layout_height="wrap_content"
             android:ems="10"
-            android:hint="Filter"
+            android:hint="@string/label_filter"
             android:inputType="textPersonName"
             android:textColor="#f100"
             android:textCursorDrawable="@drawable/black" />
@@ -49,13 +50,13 @@
                 android:id="@+id/btnPlayAll"
                 android:layout_width="192dp"
                 android:layout_height="wrap_content"
-                android:text="Play all" />
+                android:text="@string/label_play_all" />
 
             <Button
                 android:id="@+id/btnPlaySelected"
                 android:layout_width="191dp"
                 android:layout_height="wrap_content"
-                android:text="Play Selected" />
+                android:text="@string/label_play_selected" />
 
         </TableRow>
     </RelativeLayout>
@@ -70,7 +71,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="0dp"
-            android:layout_weight="1"
             android:scrollbarStyle="insideOverlay">
 
             <TableLayout
@@ -88,30 +88,29 @@
                     <TextView
                         android:id="@+id/titleHeader"
                         android:padding="5dp"
-                        android:text="Title"
+                        android:text="@string/label_title"
                         android:textColor="#f100"
-                        android:textSize="18sp"></TextView>
+                        android:textSize="18sp" />
 
                     <TextView
                         android:id="@+id/showHeader"
                         android:padding="5dp"
-                        android:text="Title"
+                        android:text="@string/label_show"
                         android:textColor="#f100"
-                        android:textSize="18sp"></TextView>
+                        android:textSize="18sp"/>
 
                     <TextView
                         android:id="@+id/tagsHeader"
                         android:padding="5dp"
-                        android:text="Title"
+                        android:text="@string/label_tags"
                         android:textColor="#f100"
-                        android:textSize="18sp"></TextView>
+                        android:textSize="18sp"/>
 
                     <Button
                         android:id="@+id/btnDelHeader"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:onClick="onClick"
-                        android:text="Delete" />
+                        android:text="@string/label_delete" />
 
                 </TableRow>
             </TableLayout>
@@ -127,8 +126,6 @@
                 android:id="@+id/btnStopPlayer"
                 android:layout_width="28dp"
                 android:layout_height="21dp"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
                 android:background="@drawable/close"
                 android:visibility="gone" />
         </FrameLayout>

@@ -16,7 +16,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -33,9 +32,6 @@ import java.util.Random;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, AddScreen.AddScreenListener, FunnyJunk.YareYareListener{
 
-
-    private Button btnAdd, btnViewList, btnAddOsts, btnExportOsts, btnRandomOst, btnTestConnection, btnTestFloater;
-    private SQLiteDatabase dtb;
     private String TAG = "OstInfo";
     private DBHandler db;
     private Ost lastAddedOst;
@@ -67,7 +63,7 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
+        //drawer.setDrawerListener(toggle);
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -196,18 +192,27 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void chooseFile() {
-        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-        intent.setType("*/*");
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        System.out.println("File Chooser launched");
+        Intent intent;
+        if (Build.VERSION.SDK_INT < 19) {
+            intent = new Intent();
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+            intent.setType("text/plain");
+            startActivityForResult(intent, 1);
 
-        try {
-            startActivityForResult(
-                    Intent.createChooser(intent, "Select a File to Upload"),
-                    1);
-        } catch (android.content.ActivityNotFoundException ex) {
-            // Potentially direct the user to the Market with a Dialog
-            Toast.makeText(getApplicationContext(), "Please install a File Manager.", Toast.LENGTH_SHORT).show();
+        } else {
+            intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+            intent.setType("*/*");
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            System.out.println("File Chooser launched");
+
+            try {
+                startActivityForResult(
+                        Intent.createChooser(intent, "Select a File to Upload"),
+                        1);
+            } catch (android.content.ActivityNotFoundException ex) {
+                // Potentially direct the user to the Market with a Dialog
+                Toast.makeText(getApplicationContext(), "Please install a File Manager.", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -244,11 +249,11 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void readFromFile(Uri uri){
-        try {
+        try{
             InputStream is = getContentResolver().openInputStream(uri);
             BufferedReader reader = new BufferedReader(new InputStreamReader(is));
             String line;
-            while((line = reader.readLine()) != null) {
+            while ((line = reader.readLine()) != null) {
                 Ost ost = new Ost();
                 System.out.println(line);
                 String[] lineArray = line.split("; ");
@@ -257,14 +262,14 @@ public class MainActivity extends AppCompatActivity
                 ost.setTags(lineArray[2]);
                 ost.setUrl(lineArray[3]);
                 boolean alreadyInDB = db.checkiIfInDB(ost);
-                if (!alreadyInDB){
+                if (!alreadyInDB) {
                     db.addNewOst(ost);
+                    }
                 }
+            }catch(IOException e){
+                System.out.println("File not found");
             }
-        }catch (IOException e){
-            System.out.println("File not found");
         }
-    }
 
     public void writeToFile(Uri uri) throws IOException{
         ostList= db.getAllOsts();

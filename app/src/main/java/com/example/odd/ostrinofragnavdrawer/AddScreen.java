@@ -10,10 +10,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 
-/**
- * Created by Odd on 12.02.2017.
- */
-
 public class AddScreen extends DialogFragment{
 
     AlertDialog.Builder builder;

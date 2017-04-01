@@ -16,18 +16,10 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
-
-/**
- * Created by Odd on 29.03.2017.
- */
-
 public class FloatingWindow extends Service {
 
     private WindowManager wm;
     public RelativeLayout rl;
-    private Button btnStop;
-    private ImageView iw;
-    private String VIDEO_ID;
     private WindowManager.LayoutParams params;
 
     @Nullable
@@ -41,12 +33,11 @@ public class FloatingWindow extends Service {
         super.onCreate();
         wm = (WindowManager) getSystemService(WINDOW_SERVICE);
         rl = new RelativeLayout(this);
-        btnStop = new Button(this);
-        iw = new ImageView(this);
-        VIDEO_ID = "kjGPE_XLmwg";
+        Button btnStop = new Button(this);
+        ImageView iw = new ImageView(this);
 
         ViewGroup.LayoutParams btnParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        btnStop.setText("Stop");
+        btnStop.setText(R.string.label_stop);
         btnStop.setLayoutParams(btnParams);
 
         ViewGroup.LayoutParams imageParams = new ViewGroup.LayoutParams(400, 280);

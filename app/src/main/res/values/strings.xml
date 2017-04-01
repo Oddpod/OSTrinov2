@@ -5,4 +5,28 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="action_settings">Settings</string>
+
+    <string name="label_title">Title</string>
+    <string name="label_show">Show</string>
+    <string name="label_tags">Tags</string>
+    <string name="label_delete">Delete</string>
+
+    <string name="label_play_all">Play all</string>
+    <string name="label_play_selected">Play Selected</string>
+    <string name="label_filter">Filter</string>
+
+    <string name="label_stop">Stop</string>
+
+    <string name="menu_add_ost">Add OST</string>
+    <string name="menu_import">Import OSTs</string>
+    <string name="menu_export">Exports OSTs</string>
+    <string name="menu_random_ost">Random OST</string>
+    <string name="menu_test_connection">Test Connection</string>
+    <string name="menu_test_floater">Test Floater</string>
+
+    <string name="menu_under_development">Under Development</string>
+
+
+
+
 </resources>

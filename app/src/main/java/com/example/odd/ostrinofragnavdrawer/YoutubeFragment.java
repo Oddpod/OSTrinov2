@@ -1,10 +1,5 @@
 package com.example.odd.ostrinofragnavdrawer;
 
-/**
- * Created by Odd on 22.03.2017.
- */
-
-
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -12,7 +7,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.youtube.player.YouTubeInitializationResult;
