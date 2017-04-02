@@ -6,7 +6,9 @@ import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentManager;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,13 +16,13 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 
 public class FloatingWindow extends Service {
 
     private WindowManager wm;
-    public RelativeLayout rl;
+    public LinearLayout ll;
     private WindowManager.LayoutParams params;
+    LayoutInflater inflater;
 
     @Nullable
     @Override
@@ -31,10 +33,11 @@ public class FloatingWindow extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
         wm = (WindowManager) getSystemService(WINDOW_SERVICE);
-        rl = new RelativeLayout(this);
-        Button btnStop = new Button(this);
+        ll = (LinearLayout) inflater.inflate(R.layout.floater_layout, null);
         ImageView iw = new ImageView(this);
+        Button btnStop = new Button(this);
 
         ViewGroup.LayoutParams btnParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         btnStop.setText(R.string.label_stop);
@@ -47,19 +50,21 @@ public class FloatingWindow extends Service {
 
 
         final LinearLayout.LayoutParams llParameters = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
-        rl.setBackgroundColor(Color.argb(66, 255, 0, 0));
-        rl.setLayoutParams(llParameters);
+        ll.setBackgroundColor(Color.argb(66, 255, 0, 0));
+        ll.setLayoutParams(llParameters);
 
-        params = new WindowManager.LayoutParams(400, 400, WindowManager.LayoutParams.TYPE_PHONE, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);
+        params = new WindowManager.LayoutParams(400, 800, WindowManager.LayoutParams.TYPE_PHONE, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);
         params.x = 0;
         params.y = 0;
         params.gravity = Gravity.CENTER;
 
-        rl.addView(btnStop);
-        rl.addView(iw);
-        wm.addView(rl, params);
+        ll.addView(btnStop);
+        ll.addView(iw);
 
-        rl.setOnTouchListener(new View.OnTouchListener() {
+        wm.addView(ll, params);
+
+
+        ll.setOnTouchListener(new View.OnTouchListener() {
 
             private WindowManager.LayoutParams updateParams = params;
             int X, Y;
@@ -83,7 +88,7 @@ public class FloatingWindow extends Service {
                         updateParams.x = (int) (X + (event.getRawX() - touchedX));
                         updateParams.y = (int) (Y + (event.getRawY() - touchedY));
 
-                        wm.updateViewLayout(rl, updateParams);
+                        wm.updateViewLayout(ll, updateParams);
 
                         break;
 
@@ -98,12 +103,14 @@ public class FloatingWindow extends Service {
         btnStop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                wm.removeView(rl);
+                wm.removeView(ll);
                 stopSelf();
             }
         });
     }
+
     public void addView(View view){
-        wm.addView(view, params);
+        ll.addView(view);
+        wm.updateViewLayout(ll, params);
     }
 }

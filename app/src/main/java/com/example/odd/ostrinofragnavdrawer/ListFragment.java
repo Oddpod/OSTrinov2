@@ -1,6 +1,7 @@
 package com.example.odd.ostrinofragnavdrawer;
 
-import android.support.v4.app.DialogFragment;
+import android.database.sqlite.SQLiteDatabase;
+import android.graphics.PixelFormat;
 import android.support.v4.app.Fragment;
 import android.content.res.Configuration;
 import android.graphics.Color;
@@ -8,13 +9,18 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -23,8 +29,12 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListFragment extends Fragment implements AddScreen.AddScreenListener, FunnyJunk.YareYareListener, View.OnClickListener{
+import static android.content.Context.WINDOW_SERVICE;
 
+public class ListFragment extends Fragment implements FunnyJunk.YareYareListener, View.OnClickListener{
+
+    private boolean editedOst;
+    private PopupWindow popupWindow;
     private int ostReplaceId;
     private List<Ost> allOsts, currDispOstList;
     private List<CheckBox> checkBoxes;
@@ -37,14 +47,20 @@ public class ListFragment extends Fragment implements AddScreen.AddScreenListene
     private String filterText;
     private TextWatcher textWatcher;
     private TableRow tR;
-    private FrameLayout flOnTop, flLandscape, flNether;
+    public FrameLayout flOnTop, flLandscape, flNether;
     public YoutubeFragment youtubeFragment = null;
     Button btnDelHeader, btnPlayAll, btnplaySelected, btnStopPlayer;
     boolean youtubeFragLaunched;
     private View rootView;
+    private LayoutInflater inflater;
+    ViewGroup container;
+    boolean floaterLaunched;
+    AddScreen dialog;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        this.inflater = inflater;
+        this.container = container;
         rootView = inflater.inflate(R.layout.activity_listscreen, container, false);
         dbHandler = new DBHandler(getActivity());
 
@@ -98,6 +114,31 @@ public class ListFragment extends Fragment implements AddScreen.AddScreenListene
         btnDelHeader = (Button) rootView.findViewById(R.id.btnDelHeader);
 
         btnDelHeader.setOnClickListener(this);
+        btnDelHeader.setOnLongClickListener(new View.OnLongClickListener(){
+            @Override
+            public boolean onLongClick(View v) {
+                ViewGroup ctainer = (ViewGroup) inflater.inflate(R.layout.delete_dialog, null);
+                popupWindow = new PopupWindow(ctainer, 600, 400, true);
+                popupWindow.showAtLocation(rootView, 1, 0, 0);
+                Button btnNo = (Button) ctainer.findViewById(R.id.btnNo);
+                Button btnYes = (Button) ctainer.findViewById(R.id.btnYes);
+
+                btnNo.setOnClickListener(new View.OnClickListener(){
+                    @Override
+                    public void onClick(View v) {
+                        popupWindow.dismiss();
+                    }
+                });
+                btnYes.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Toast.makeText(getActivity(), "I think you mean no :)", Toast.LENGTH_LONG).show();
+                        popupWindow.dismiss();
+                    }
+                });
+                return false;
+            }
+        });
 
         allOsts = dbHandler.getAllOsts();
 
@@ -163,10 +204,12 @@ public class ListFragment extends Fragment implements AddScreen.AddScreenListene
             @Override
             public boolean onLongClick(View v) {
                 System.out.println(ost.toString());
-                AddScreen dialog = new AddScreen();
+                dialog = new AddScreen();
                 dialog.show(getFragmentManager(), TAG);
                 ostReplaceId = ost.getId();
                 dialog.setText(ost);
+                dialog.setButtonText("Save");
+                editedOst = true;
 
                 //Toast.makeText(getApplicationContext(), " Editing Ost ", Toast.LENGTH_LONG).show();
                 return false;
@@ -181,28 +224,6 @@ public class ListFragment extends Fragment implements AddScreen.AddScreenListene
             currDispOstList.add(ost);
         }
         tableLayout.addView(tR, new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.MATCH_PARENT));
-    }
-
-    @Override
-    public void onSaveButtonClick(DialogFragment dialog) {
-        EditText entTitle = (EditText) dialog.getDialog().findViewById(R.id.edtTitle);
-        String title = entTitle.getText().toString();
-        EditText entShow = (EditText) dialog.getDialog().findViewById(R.id.edtShow);
-        String show = entShow.getText().toString();
-        EditText entTags = (EditText) dialog.getDialog().findViewById(R.id.edtTags);
-        String tags = entTags.getText().toString();
-        EditText entUrl = (EditText) dialog.getDialog().findViewById(R.id.edtUrl);
-        String url = entUrl.getText().toString();
-        Ost ost = new Ost(title, show, tags, url);
-        ost.setId(ostReplaceId);
-
-        dbHandler.updateOst(ost);
-        cleanTable(tableLayout);
-        allOsts = dbHandler.getAllOsts();
-        for (Ost ost2 : allOsts) {
-            addRow(ost2);
-        }
-        Toast.makeText(getActivity(), "updated ost: " + ost.getTitle(), Toast.LENGTH_LONG).show();
     }
 
     private void cleanTable(TableLayout table) {
@@ -311,7 +332,7 @@ public class ListFragment extends Fragment implements AddScreen.AddScreenListene
         // Checks the orientation of the screen
 
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            if(youtubeFragment != null){
+            if(youtubeFragment != null && !floaterLaunched){
                 flNether.removeView(flOnTop);
                 flLandscape.addView(flOnTop);
                 Toast.makeText(getActivity(), "landscape", Toast.LENGTH_SHORT).show();
@@ -319,7 +340,7 @@ public class ListFragment extends Fragment implements AddScreen.AddScreenListene
 
 
         } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
-            if(youtubeFragment != null){
+            if(youtubeFragment != null && !floaterLaunched){
                 flLandscape.removeView(flOnTop);
                 flNether.addView(flOnTop);
                 Toast.makeText(getActivity(), "portrait", Toast.LENGTH_SHORT).show();
@@ -341,6 +362,80 @@ public class ListFragment extends Fragment implements AddScreen.AddScreenListene
         for (Ost ost : allOsts) {
             addRow(ost);
         }
+    }
 
+    public void launchFloater() {
+        floaterLaunched = true;
+        final WindowManager wm = (WindowManager) getActivity().getSystemService(WINDOW_SERVICE);
+        final LinearLayout ll = (LinearLayout) inflater.inflate(R.layout.floater_layout_nobuttons, container, false);
+
+        final WindowManager.LayoutParams params = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.TYPE_PHONE, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);
+        params.x = 0;
+        params.y = 0;
+        params.gravity = Gravity.CENTER;
+
+        ll.setBackgroundColor(Color.argb(66, 255, 0, 0));
+
+
+        flNether.removeView(flOnTop);
+        ll.addView(flOnTop);
+
+        wm.addView(ll, params);
+
+        ll.setOnTouchListener(new View.OnTouchListener() {
+
+            private WindowManager.LayoutParams updateParams = params;
+            int X, Y;
+            float touchedX, touchedY;
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        X = updateParams.x;
+                        Y = updateParams.y;
+
+                        touchedX = event.getRawX();
+                        touchedY = event.getRawY();
+
+                        System.out.println(X + ", " + Y);
+
+                        break;
+                    case MotionEvent.ACTION_MOVE:
+
+                        updateParams.x = (int) (X + (event.getRawX() - touchedX));
+                        updateParams.y = (int) (Y + (event.getRawY() - touchedY));
+
+                        wm.updateViewLayout(ll, updateParams);
+
+                        break;
+
+                    default:
+                        break;
+                }
+
+                return false;
+            }
+        });
+
+        btnStopPlayer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ll.removeView(flOnTop);
+                wm.removeView(ll);
+            }
+        });
+    }
+
+    public int getOstReplaceId(){
+        return ostReplaceId;
+    }
+
+    public boolean isEditedOst(){
+        return editedOst;
+    }
+
+    public void isNotEdited(){
+        editedOst = false;
     }
 }

@@ -59,7 +59,12 @@ public class DBHandler extends SQLiteOpenHelper {
         db.close();
         System.out.println("row inserted");
 
+    }
 
+    public void dropOstTable(){
+        SQLiteDatabase db = this.getWritableDatabase();
+        String DROP_TABLE = "DROP TABLE " + OST_TABLE + "";
+        db.execSQL(DROP_TABLE);
     }
 
     boolean deleteOst(int delID){

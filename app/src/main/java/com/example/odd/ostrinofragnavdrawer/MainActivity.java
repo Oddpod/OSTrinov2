@@ -1,11 +1,9 @@
 package com.example.odd.ostrinofragnavdrawer;
 
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.design.widget.NavigationView;
@@ -119,48 +117,73 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_addOst) {
-            AddScreen dialog = new AddScreen();
-            dialog.show(getSupportFragmentManager(), TAG);
-        } else if (id == R.id.nav_importOst) {
-            chooseFile();
-        } else if (id == R.id.nav_exportOsts) {
-            chooseFileDir();
-
-        } else if (id == R.id.nav_randomOst) {
-            ostList = db.getAllOsts();
-            if(ostList.size()> 0){
-                int rndId = rnd.nextInt(ostList.size());
-                Ost ost = db.getOst(rndId);
-                String url = ost.getUrl();
-                listFragment.startOst(url);
-            }
-            else{
-                Toast.makeText(getApplicationContext(), "Ost list is empty", Toast.LENGTH_SHORT).show();
+        switch(id){
+            case R.id.nav_addOst:{
+                AddScreen dialog = new AddScreen();
+                dialog.show(getSupportFragmentManager(), TAG);
+                dialog.setButtonText("Add");
+                listFragment.isNotEdited();
+                break;
             }
 
-        } else if (id == R.id.nav_testConnection) {
+            case R.id.nav_importOst:{
+                chooseFileImport();
+                break;
+            }
 
-        } else if (id == R.id.nav_testFloater) {
-            if(Build.VERSION.SDK_INT >= 23) {
-                if (!Settings.canDrawOverlays(this)) {
-                    Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                            Uri.parse("package:" + getPackageName()));
-                    startActivityForResult(intent, 1234);
+            case R.id.nav_exportOsts:{
+                chooseFileExport();
+                break;
+            }
+
+            case R.id.nav_randomOst:{
+                ostList = db.getAllOsts();
+                if(ostList.size()> 0){
+                    int rndId = rnd.nextInt(ostList.size());
+                    Ost ost = db.getOst(rndId);
+                    String url = ost.getUrl();
+                    listFragment.startOst(url);
                 }
                 else{
+                    Toast.makeText(getApplicationContext(), "Ost list is empty", Toast.LENGTH_SHORT).show();
+                }
+                break;
+            }
+
+            case R.id.nav_testConnection:{
+                Toast.makeText(getApplicationContext(), "Not Implemented", Toast.LENGTH_SHORT).show();
+                break;
+            }
+
+            case R.id.nav_testFloater:{
+                if(!listFragment.youtubeFragLaunched){
+                    Toast.makeText(this, "You must play something first bruh! :)", Toast.LENGTH_SHORT).show();
+                }else {
+                    listFragment.launchFloater();
+                /*if(Build.VERSION.SDK_INT >= 23) {
+                    if (!Settings.canDrawOverlays(this)) {
+                        Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                Uri.parse("package:" + getPackageName()));
+                        startActivityForResult(intent, 1234);
+                    }
+                    else{
+                        Intent intent = new Intent(this, FloatingWindow.class);
+                        startService(intent);
+
+                    }
+                }
+                else
+                {
                     Intent intent = new Intent(this, FloatingWindow.class);
+                    FloatingWindow fw = new FloatingWindow();
+                    listFragment.flNether.removeView(listFragment.flOnTop);
+                    fw.addView(listFragment.flOnTop);
                     startService(intent);
 
+                }*/
                 }
+                break;
             }
-            else
-            {
-                Intent intent = new Intent(this, FloatingWindow.class);
-                startService(intent);
-            }
-
-
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -179,9 +202,14 @@ public class MainActivity extends AppCompatActivity
         EditText entUrl = (EditText) dialog.getDialog().findViewById(R.id.edtUrl);
         String url = entUrl.getText().toString();
         lastAddedOst = new Ost(title, show, tags, url);
+        lastAddedOst.setId(listFragment.getOstReplaceId());
         boolean alreadyAdded = db.checkiIfInDB(lastAddedOst);
 
-        if(!alreadyAdded){
+        if(listFragment.isEditedOst()){
+            db.updateOst(lastAddedOst);
+        }
+
+        else if(!alreadyAdded){
             db.addNewOst(lastAddedOst);
             Toast.makeText(getApplicationContext(), lastAddedOst.getTitle() + " added", Toast.LENGTH_SHORT).show();
         }
@@ -192,7 +220,7 @@ public class MainActivity extends AppCompatActivity
         listFragment.refreshList();
     }
 
-    private void chooseFile() {
+    private void chooseFileImport() {
         Intent intent;
         if (Build.VERSION.SDK_INT < 19) {
             intent = new Intent();
@@ -217,7 +245,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void chooseFileDir(){
+    private void chooseFileExport(){
         Intent intent;
         if (Build.VERSION.SDK_INT < 19) {
             intent = new Intent();
@@ -225,7 +253,8 @@ public class MainActivity extends AppCompatActivity
             intent.setType("text/plain");
             startActivityForResult(intent, 2);
         } else {
-            intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+            intent = new Intent();
+            intent.setAction(Intent.ACTION_CREATE_DOCUMENT);
             intent.setType("text/plain");
             startActivityForResult(intent, 2);
         }

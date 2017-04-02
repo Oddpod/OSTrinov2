@@ -15,7 +15,8 @@ public class AddScreen extends DialogFragment{
     AlertDialog.Builder builder;
     LayoutInflater inflater;
     View dialogView;
-    String title, show, tags, url;
+    boolean isEdited;
+    String title, show, tags, url, buttonText;
 
     EditText edTitle, edShow, edTags, edUrl;
 
@@ -48,7 +49,7 @@ public class AddScreen extends DialogFragment{
 
         builder.setView(dialogView)
 
-                .setPositiveButton("ADD", new DialogInterface.OnClickListener() {
+                .setPositiveButton(buttonText, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         addScreenListener.onSaveButtonClick(AddScreen.this);
@@ -78,5 +79,17 @@ public class AddScreen extends DialogFragment{
         show = ost.getShow();
         tags = ost.getTags();
         url = ost.getUrl();
+    }
+
+    public void setButtonText(String text){
+        buttonText = text;
+    }
+
+    public void isEdited(){
+        isEdited = true;
+    }
+
+    public boolean getIsEdited(){
+        return isEdited;
     }
 }

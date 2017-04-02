@@ -29,7 +29,7 @@
             <item
                 android:id="@+id/nav_testFloater"
                 android:icon="@drawable/ic_menu_send"
-                android:title="@string/menu_test_floater" />
+                android:title="@string/menu_launch_floater" />
         </menu>
     </item>
 

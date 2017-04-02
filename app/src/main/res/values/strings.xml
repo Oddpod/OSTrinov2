@@ -17,12 +17,18 @@
 
     <string name="label_stop">Stop</string>
 
+    <string name="label_no">No</string>
+    <string name="label_yes">Yes</string>
+    <string name="label_delete_all_osts">Delete all Osts?</string>
+    <string name="label_drag">Drag this</string>
+
+
     <string name="menu_add_ost">Add OST</string>
     <string name="menu_import">Import OSTs</string>
     <string name="menu_export">Exports OSTs</string>
     <string name="menu_random_ost">Random OST</string>
     <string name="menu_test_connection">Test Connection</string>
-    <string name="menu_test_floater">Test Floater</string>
+    <string name="menu_launch_floater">Floating Player</string>
 
     <string name="menu_under_development">Under Development</string>
 
