@@ -36,7 +36,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
     private boolean editedOst;
     private PopupWindow popupWindow;
     private int ostReplaceId;
-    private List<Ost> allOsts, currDispOstList;
+    private List<Ost> allOsts;
     private List<CheckBox> checkBoxes;
     private TableLayout tableLayout;
     private float rowTextSize = 11;
@@ -65,6 +65,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         dbHandler = new DBHandler(getActivity());
 
         filter = (EditText) rootView.findViewById(R.id.edtFilter);
+        filterText = "";
         textWatcher = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -102,7 +103,6 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         btnplaySelected.setOnClickListener(this);
         btnStopPlayer.setOnClickListener(this);
 
-        currDispOstList = new ArrayList<>(); //Contains all ost in the shown list even when filtered
         createList();
 
         return rootView;
@@ -215,13 +215,9 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
                 return false;
             }
         });
-        if (filterText != null && !ostInfoString.contains(filterText)) {
+        if (!filterText.equals("") && !ostInfoString.contains(filterText)) {
             //System.out.println(filterText + ostInfoString);
-            currDispOstList.remove(ost);
             tR.removeAllViews();
-        }
-        else{
-            currDispOstList.add(ost);
         }
         tableLayout.addView(tR, new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.MATCH_PARENT));
     }
@@ -242,14 +238,20 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         switch (v.getId()) {
             case R.id.btnPlayAll: {
                 List<String> urlList = new ArrayList<>();
-                for (Ost ost : currDispOstList) {
-                    urlList.add(ost.getUrl());
+                List<Ost> currDispOstList = getCurrDispOstList();
+                if(currDispOstList.size() > 0){
+                    for (Ost ost : currDispOstList) {
+                        urlList.add(ost.getUrl());
+                    }
+                    //System.out.println("urlList: " + urlList);
+                    initYoutubeFrag();
+                    youtubeFragment.setVideoIds(urlList);
+                    youtubeFragment.playAll(true);
+                    updateYoutubeFrag();
                 }
-                //System.out.println("urlList: " + urlList);
-                initYoutubeFrag();
-                youtubeFragment.setVideoIds(urlList);
-                youtubeFragment.playAll(true);
-                updateYoutubeFrag();
+                else{
+                    Toast.makeText(getActivity(), "No Osts for this filter", Toast.LENGTH_LONG).show();
+                }
                 break;
             }
             case R.id.btnPlaySelected:{
@@ -376,7 +378,6 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
 
         ll.setBackgroundColor(Color.argb(66, 255, 0, 0));
 
-
         flNether.removeView(flOnTop);
         ll.addView(flOnTop);
 
@@ -437,5 +438,21 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
 
     public void isNotEdited(){
         editedOst = false;
+    }
+
+    public List<Ost> getCurrDispOstList(){
+        if(filterText.equals("")){
+            return allOsts;
+        }
+        List<Ost> currOsts = new ArrayList<>();
+        for( Ost ost : allOsts){
+            String ostString = ost.getTitle() + ", " + ost.getShow() + ", " + ost.getTags();
+            ostString = ostString.toLowerCase();
+            if(ostString.contains(filterText)){
+                //System.out.println("added");
+                currOsts.add(ost);
+            }
+        }
+        return currOsts;
     }
 }

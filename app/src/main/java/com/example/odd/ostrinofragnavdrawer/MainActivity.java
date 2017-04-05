@@ -140,7 +140,7 @@ public class MainActivity extends AppCompatActivity
                 ostList = db.getAllOsts();
                 if(ostList.size()> 0){
                     int rndId = rnd.nextInt(ostList.size());
-                    Ost ost = db.getOst(rndId);
+                    Ost ost = ostList.get(rndId);
                     String url = ost.getUrl();
                     listFragment.startOst(url);
                 }

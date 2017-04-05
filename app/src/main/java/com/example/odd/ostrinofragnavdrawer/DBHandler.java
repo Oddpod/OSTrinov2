@@ -61,10 +61,11 @@ public class DBHandler extends SQLiteOpenHelper {
 
     }
 
-    public void dropOstTable(){
+    public void emptyTable(){
+        //Truncate does not work in sqllite
         SQLiteDatabase db = this.getWritableDatabase();
-        String DROP_TABLE = "DROP TABLE " + OST_TABLE + "";
-        db.execSQL(DROP_TABLE);
+        String TRUNCATE_TABLE = "TRUNCATE TABLE " + OST_TABLE + "";
+        db.execSQL(TRUNCATE_TABLE);
     }
 
     boolean deleteOst(int delID){
