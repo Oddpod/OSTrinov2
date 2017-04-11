@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.design.widget.NavigationView;
@@ -160,7 +161,10 @@ public class MainActivity extends AppCompatActivity
                     Toast.makeText(this, "You must play something first bruh! :)", Toast.LENGTH_SHORT).show();
                 }else {
                     listFragment.launchFloater();
-                /*if(Build.VERSION.SDK_INT >= 23) {
+                }
+                break;
+            }case R.id.nav_testFloater2:{
+                 if(Build.VERSION.SDK_INT >= 23) {
                     if (!Settings.canDrawOverlays(this)) {
                         Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                                 Uri.parse("package:" + getPackageName()));
@@ -175,14 +179,9 @@ public class MainActivity extends AppCompatActivity
                 else
                 {
                     Intent intent = new Intent(this, FloatingWindow.class);
-                    FloatingWindow fw = new FloatingWindow();
-                    listFragment.flNether.removeView(listFragment.flOnTop);
-                    fw.addView(listFragment.flOnTop);
                     startService(intent);
 
-                }*/
                 }
-                break;
             }
         }
 

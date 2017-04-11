@@ -48,12 +48,15 @@
 
             <Button
                 android:id="@+id/btnPlayAll"
+                style="@style/Widget.AppCompat.Button.Small"
                 android:layout_width="192dp"
                 android:layout_height="wrap_content"
-                android:text="@string/label_play_all" />
+                android:text="@string/label_play_all"
+                android:textAppearance="@android:style/TextAppearance.DeviceDefault.Widget.Button" />
 
             <Button
                 android:id="@+id/btnPlaySelected"
+                style="@style/Widget.AppCompat.Button.Small"
                 android:layout_width="191dp"
                 android:layout_height="wrap_content"
                 android:text="@string/label_play_selected" />
@@ -108,9 +111,11 @@
 
                     <Button
                         android:id="@+id/btnDelHeader"
+                        style="@style/Widget.AppCompat.Button.Small"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/label_delete" />
+                        android:text="@string/label_delete"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 
                 </TableRow>
             </TableLayout>

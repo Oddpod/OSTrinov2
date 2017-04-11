@@ -4,9 +4,9 @@ import android.app.Service;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
+import android.net.Uri;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -14,16 +14,27 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.MediaController;
+import android.widget.RelativeLayout;
+import android.widget.VideoView;
 
-public class FloatingWindow extends Service {
+import java.util.List;
+
+public class FloatingWindow extends Service implements View.OnClickListener{
 
     private WindowManager wm;
-    public LinearLayout ll;
+    public RelativeLayout rl;
     private WindowManager.LayoutParams params;
     LayoutInflater inflater;
+    String videoID;
+    Button btnStop, btnPrevious, btnPause, btnNext, btnMinimize;
+    List<String> videoIDs;
 
     @Nullable
     @Override
@@ -36,36 +47,48 @@ public class FloatingWindow extends Service {
         super.onCreate();
         inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
         wm = (WindowManager) getSystemService(WINDOW_SERVICE);
-        ll = (LinearLayout) inflater.inflate(R.layout.floater_layout, null);
-        ImageView iw = new ImageView(this);
-        Button btnStop = new Button(this);
+        rl = (RelativeLayout) inflater.inflate(R.layout.floater_layout, null);
+        videoID = "0W8pOI-l4C4";
 
-        ViewGroup.LayoutParams btnParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        btnStop.setText(R.string.label_stop);
-        btnStop.setLayoutParams(btnParams);
+        btnStop = (Button) rl.findViewById(R.id.btnCloseFloater);
+        btnPrevious = (Button) rl.findViewById(R.id.btnFloatPrevious);
+        btnPause = (Button) rl.findViewById(R.id.btnFloatPause);
+        btnNext = (Button) rl.findViewById(R.id.btnFloatNext);
+        btnMinimize = (Button) rl.findViewById(R.id.btnMinimize);
+
+        btnPrevious.setOnClickListener(this);
+        btnPause.setOnClickListener(this);
+        btnNext.setOnClickListener(this);
+        btnMinimize.setOnClickListener(this);
+
+        String frameVideo = "<html><body><br><iframe width=\"120\" height=\"75\" src=\"https://www.youtube.com/embed/" + videoID + "\" frameborder=\"0\"></iframe></body></html>";
+
+        WebView myWebView = (WebView) rl.findViewById(R.id.wvvideoPlayer);
+
+        WebSettings webSettings = myWebView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        myWebView.loadData(frameVideo, "text/html", "utf-8");
+
+        ImageView iw = new ImageView(this);
 
         ViewGroup.LayoutParams imageParams = new ViewGroup.LayoutParams(400, 280);
         iw.setImageResource(R.drawable.tranquility);
         iw.setLayoutParams(imageParams);
         iw.setY(120);
 
+        rl.setBackgroundColor(Color.argb(66, 255, 0, 0));
 
-        final LinearLayout.LayoutParams llParameters = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
-        ll.setBackgroundColor(Color.argb(66, 255, 0, 0));
-        ll.setLayoutParams(llParameters);
-
-        params = new WindowManager.LayoutParams(400, 800, WindowManager.LayoutParams.TYPE_PHONE, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);
+        params = new WindowManager.LayoutParams(420, 800, WindowManager.LayoutParams.TYPE_PHONE, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);
         params.x = 0;
         params.y = 0;
         params.gravity = Gravity.CENTER;
 
-        ll.addView(btnStop);
-        ll.addView(iw);
+        //ll.addView(iw);
 
-        wm.addView(ll, params);
+        wm.addView(rl, params);
 
 
-        ll.setOnTouchListener(new View.OnTouchListener() {
+        rl.setOnTouchListener(new View.OnTouchListener() {
 
             private WindowManager.LayoutParams updateParams = params;
             int X, Y;
@@ -89,9 +112,13 @@ public class FloatingWindow extends Service {
                         updateParams.x = (int) (X + (event.getRawX() - touchedX));
                         updateParams.y = (int) (Y + (event.getRawY() - touchedY));
 
-                        wm.updateViewLayout(ll, updateParams);
+                        wm.updateViewLayout(rl, updateParams);
 
                         break;
+
+                    case MotionEvent.ACTION_MASK:{
+
+                    }
 
                     default:
                         break;
@@ -104,7 +131,7 @@ public class FloatingWindow extends Service {
         btnStop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                wm.removeView(ll);
+                wm.removeView(rl);
                 stopSelf();
             }
         });
@@ -116,8 +143,23 @@ public class FloatingWindow extends Service {
         return START_NOT_STICKY;
     }
 
-    public void addView(View view){
-        ll.addView(view);
-        wm.updateViewLayout(ll, params);
+    @Override
+    public void onClick(View v) {
+        int id = v.getId();
+
+        switch (id){
+            case R.id.btnFloatPrevious:{
+                break;
+            }
+            case R.id.btnFloatPause:{
+                break;
+            }
+            case R.id.btnFloatNext:{
+                break;
+            }
+            case R.id.btnMinimize:{
+                break;
+            }
+        }
     }
 }
