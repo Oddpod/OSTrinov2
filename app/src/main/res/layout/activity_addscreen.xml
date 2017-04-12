@@ -7,10 +7,10 @@
     tools:context="com.example.odd.ostrinofragnavdrawer.AddScreen">
 
     <TextView
-        android:text="Title"
+        android:id="@+id/Title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/Title" />
+        android:text="@string/label_title" />
 
     <EditText
         android:layout_width="match_parent"
@@ -20,36 +20,32 @@
         android:id="@+id/edtTitle" />
 
     <TextView
-        android:text="Show"
+        android:id="@+id/Show"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/Show" />
+        android:text="@string/label_show" />
 
-    <EditText
+    <AutoCompleteTextView
+        android:id="@+id/actvShow"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inputType="textPersonName"
-        android:ems="10"
-        android:id="@+id/edtShow" />
+        android:layout_height="wrap_content" />
 
     <TextView
-        android:text="Tags"
+        android:id="@+id/tvTags"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/textView3" />
+        android:text="@string/label_tags" />
 
-    <EditText
+    <MultiAutoCompleteTextView
+        android:id="@+id/mactvTags"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inputType="textPersonName"
-        android:ems="10"
-        android:id="@+id/edtTags" />
+        android:layout_height="wrap_content" />
 
     <TextView
-        android:text="Link"
+        android:id="@+id/tvLink"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/tvLink" />
+        android:text="@string/label_link" />
 
     <EditText
         android:layout_width="match_parent"

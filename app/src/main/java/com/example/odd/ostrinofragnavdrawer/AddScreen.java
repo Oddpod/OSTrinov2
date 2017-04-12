@@ -6,19 +6,29 @@ import android.support.v4.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
+import android.text.method.MultiTapKeyListener;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
+import android.widget.MultiAutoCompleteTextView;
+
+import java.util.List;
 
 public class AddScreen extends DialogFragment{
 
     AlertDialog.Builder builder;
     LayoutInflater inflater;
     View dialogView;
-    boolean isEdited;
     String title, show, tags, url, buttonText;
 
     EditText edTitle, edShow, edTags, edUrl;
+    AutoCompleteTextView actvShow;
+    MultiAutoCompleteTextView mactvTags;
+
+    private List<String> showList, tagList;
+
 
     interface AddScreenListener {
 
@@ -41,6 +51,11 @@ public class AddScreen extends DialogFragment{
     }
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState){
+        DBHandler dbHandler = new DBHandler(getActivity());
+        showList = dbHandler.getAllShows();
+        tagList = dbHandler.getAllTags();
+        System.out.println("ShowList: " + showList.toString());
+        System.out.println("tagList: " + tagList.toString());
 
         builder = new AlertDialog.Builder(getActivity());
 
@@ -57,14 +72,26 @@ public class AddScreen extends DialogFragment{
                     }
         });
 
+        ArrayAdapter<String> tagsAdapter = new ArrayAdapter<>(getActivity(),
+                android.R.layout.simple_dropdown_item_1line, tagList);
+
+        ArrayAdapter<String> showAdapter = new ArrayAdapter<>(getActivity(),
+                android.R.layout.simple_spinner_dropdown_item, showList);
+
         edTitle = (EditText) dialogView.findViewById(R.id.edtTitle);
-        edTitle.setText(title);
-        edShow = (EditText) dialogView.findViewById(R.id.edtShow);
-        edShow.setText(show);
-        edTags = (EditText) dialogView.findViewById(R.id.edtTags);
-        edTags.setText(tags);
+        actvShow = (AutoCompleteTextView) dialogView.findViewById(R.id.actvShow);
+        mactvTags = (MultiAutoCompleteTextView) dialogView.findViewById(R.id.mactvTags);
         edUrl = (EditText) dialogView.findViewById(R.id.edtUrl);
+
+        edTitle.setText(title);
+        actvShow.setText(show);
+        mactvTags.setText(tags);
         edUrl.setText(url);
+
+        actvShow.setAdapter(showAdapter);
+        mactvTags.setAdapter(tagsAdapter);
+        mactvTags.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
+
 
         return builder.create();
     }
@@ -83,13 +110,5 @@ public class AddScreen extends DialogFragment{
 
     public void setButtonText(String text){
         buttonText = text;
-    }
-
-    public void isEdited(){
-        isEdited = true;
-    }
-
-    public boolean getIsEdited(){
-        return isEdited;
     }
 }

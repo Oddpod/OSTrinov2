@@ -1,6 +1,7 @@
 package com.example.odd.ostrinofragnavdrawer;
 
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -15,7 +16,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
+import android.widget.MultiAutoCompleteTextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
@@ -40,7 +43,6 @@ public class MainActivity extends AppCompatActivity
     private ListFragment listFragment;
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,16 +50,12 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         db = new DBHandler(this);
-        rnd = new Random();
 
-        /*FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });*/
+        //For reseting database
+        /*SQLiteDatabase dtb = db.getWritableDatabase();
+        db.emptyTable();
+        db.onCreate(dtb);*/
+        rnd = new Random();
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -192,17 +190,19 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onSaveButtonClick(DialogFragment dialog) {
+        MultiAutoCompleteTextView entTags = (MultiAutoCompleteTextView) dialog.getDialog().findViewById(R.id.mactvTags);
+        AutoCompleteTextView entShow = (AutoCompleteTextView) dialog.getDialog().findViewById(R.id.actvShow);
         EditText entTitle = (EditText) dialog.getDialog().findViewById(R.id.edtTitle);
-        String title = entTitle.getText().toString();
-        EditText entShow = (EditText) dialog.getDialog().findViewById(R.id.edtShow);
-        String show = entShow.getText().toString();
-        EditText entTags = (EditText) dialog.getDialog().findViewById(R.id.edtTags);
-        String tags = entTags.getText().toString();
         EditText entUrl = (EditText) dialog.getDialog().findViewById(R.id.edtUrl);
+
+        String title = entTitle.getText().toString();
+        String show = entShow.getText().toString();
+        String tags = entTags.getText().toString();
         String url = entUrl.getText().toString();
+
         lastAddedOst = new Ost(title, show, tags, url);
         lastAddedOst.setId(listFragment.getOstReplaceId());
-        boolean alreadyAdded = db.checkiIfInDB(lastAddedOst);
+        boolean alreadyAdded = db.checkiIfOstInDB(lastAddedOst);
 
         if(listFragment.isEditedOst()){
             db.updateOst(lastAddedOst);
@@ -294,7 +294,7 @@ public class MainActivity extends AppCompatActivity
                 ost.setShow(lineArray[1]);
                 ost.setTags(lineArray[2]);
                 ost.setUrl(lineArray[3]);
-                boolean alreadyInDB = db.checkiIfInDB(ost);
+                boolean alreadyInDB = db.checkiIfOstInDB(ost);
                 if (!alreadyInDB) {
                     db.addNewOst(ost);
                     }

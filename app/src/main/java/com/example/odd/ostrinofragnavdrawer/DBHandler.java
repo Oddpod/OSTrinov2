@@ -8,20 +8,24 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 
 public class DBHandler extends SQLiteOpenHelper {
 
     private static final int DATABASE_VERSION = 1;
-    private static final String DATABASE_NAME = "ostdb", OST_TABLE = "ostTable";
+    private static final String DATABASE_NAME = "ostdb", OST_TABLE = "ostTable", SHOW_TABLE = "showTable", TAGS_TABLE = "tagsTable";
 
-    private static final String KEY_ID = "ostid", KEY_TITLE = "title", KEY_SHOW = "show", KEY_TAGS = "tags", KEY_URL = "url";
+    private static final String KEY_ID = "ostid", KEY_TITLE = "title", KEY_SHOW = "show", KEY_TAGS = "tags", KEY_URL = "url", KEY_TAG = "tag";
 
     DBHandler(Context context){
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         ostList = new ArrayList<>();
+        showList = new ArrayList<>();
+        tagsList = new ArrayList<>();
     }
 
     private List<Ost> ostList;
+    private List<String> showList, tagsList;
 
     //creating Tables
     @Override
@@ -34,6 +38,17 @@ public class DBHandler extends SQLiteOpenHelper {
                 + KEY_TAGS + " TEXT, "
                 + KEY_URL + " Text " + ")";
         db.execSQL(CREATE_OST_TABLE);
+
+        String CREATE_SHOW_TABLE = "CREATE TABLE " + SHOW_TABLE + "("
+               + "showid" + " INTEGER PRIMARY KEY,"
+               + KEY_SHOW + " TEXT " + ")";
+        db.execSQL(CREATE_SHOW_TABLE);
+
+        String CREATE_TAGS_TABLE = "CREATE TABLE " + TAGS_TABLE + "("
+                + "tagid" + " INTEGER PRIMARY KEY,"
+                + KEY_TAG + " TEXT " + ")";
+        db.execSQL(CREATE_TAGS_TABLE);
+        System.out.println("Created tables");
     }
 
     @Override
@@ -49,10 +64,23 @@ public class DBHandler extends SQLiteOpenHelper {
 
         ContentValues values = new ContentValues();
 
+        String show = newOst.getShow();
+
         values.put(KEY_TITLE, newOst.getTitle());
-        values.put(KEY_SHOW, newOst.getShow());
+        values.put(KEY_SHOW, show);
         values.put(KEY_TAGS, newOst.getTags());
         values.put(KEY_URL, newOst.getUrl());
+
+        if(!checkIfShowInDB(show)){
+            addNewShow(show);
+        }
+
+        String [] tags = newOst.getTags().split(", ");
+        for(String tag : tags) {
+            if (!checkIfTagInDB(tag)) {
+                addNewTag(tag);
+            }
+        }
 
         //inserting Row
         db.insert(OST_TABLE, null, values);
@@ -61,10 +89,31 @@ public class DBHandler extends SQLiteOpenHelper {
 
     }
 
+    public void addNewShow(String newShow){
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+
+        values.put(KEY_SHOW, newShow);
+        db.insert(SHOW_TABLE, null, values);
+        System.out.println("added new show");
+
+    }
+
+    public void addNewTag(String newTag){
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+
+        values.put(KEY_TAG, newTag);
+        db.insert(TAGS_TABLE, null, values);
+        System.out.println("added new tag");
+    }
+
     public void emptyTable(){
         //Truncate does not work in sqllite
         SQLiteDatabase db = this.getWritableDatabase();
-        String TRUNCATE_TABLE = "TRUNCATE TABLE " + OST_TABLE + "";
+        String TRUNCATE_TABLE = "DROP TABLE " + OST_TABLE + "";
         db.execSQL(TRUNCATE_TABLE);
     }
 
@@ -138,7 +187,7 @@ public class DBHandler extends SQLiteOpenHelper {
         db.replace(OST_TABLE, null, values);
     }
 
-    boolean checkiIfInDB(Ost ost) {
+    boolean checkiIfOstInDB(Ost ost) {
         ostList = getAllOsts();
         String ostString = ost.toString().toLowerCase();
         for (Ost ostFromDB : ostList){
@@ -147,5 +196,66 @@ public class DBHandler extends SQLiteOpenHelper {
             }
         }
         return false;
+    }
+
+
+    public boolean checkIfShowInDB(String show){
+        showList = getAllShows();
+        String showString = show.toLowerCase();
+        for (String showFromDB : showList){
+            if(showFromDB.toLowerCase().equals(showString)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean checkIfTagInDB(String tag){
+        tagsList = getAllTags();
+        String tagString = tag.toLowerCase();
+        for (String tagFromDB : tagsList){
+            if(tagFromDB.toLowerCase().equals(tagString)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    public List<String> getAllShows(){
+
+        List<String> showList = new ArrayList<>();
+
+        String selectQuery = "SELECT * FROM " + SHOW_TABLE;
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        if(cursor.moveToFirst()){
+            do{
+
+                showList.add(cursor.getString(1));
+
+            }while(cursor.moveToNext());
+        }
+        cursor.close();
+        return showList;
+    }
+
+    public List<String> getAllTags(){
+        List<String> tagsTable = new ArrayList<>();
+
+        String selectQuery = "SELECT * FROM " + TAGS_TABLE;
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        if(cursor.moveToFirst()){
+            do{
+
+                tagsTable.add(cursor.getString(1));
+
+            }while(cursor.moveToNext());
+        }
+        cursor.close();
+        return tagsTable;
     }
 }
