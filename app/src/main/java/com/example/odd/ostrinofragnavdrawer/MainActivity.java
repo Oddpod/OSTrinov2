@@ -158,7 +158,9 @@ public class MainActivity extends AppCompatActivity
                 if(!listFragment.youtubeFragLaunched){
                     Toast.makeText(this, "You must play something first bruh! :)", Toast.LENGTH_SHORT).show();
                 }else {
-                    listFragment.launchFloater();
+                    if(!listFragment.floaterLaunched) {
+                        listFragment.launchFloater();
+                    }
                 }
                 break;
             }case R.id.nav_testFloater2:{

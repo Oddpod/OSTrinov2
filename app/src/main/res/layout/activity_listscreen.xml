@@ -1,79 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/activity_listScreen"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:paddingBottom="1dp"
-    android:paddingLeft="1dp"
-    android:paddingRight="1dp"
-    android:paddingTop="1dp">
+    android:orientation="vertical">
 
-    <RelativeLayout
+    <EditText
+        android:id="@+id/edtFilter"
+        android:layout_width="383dp"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="@string/label_filter"
+        android:inputType="textPersonName"
+        android:textColor="#f100"
+        android:textCursorDrawable="@drawable/black" />
+
+    <TableRow
+        android:id="@+id/tableRow"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/edtFilter">
 
-        <FrameLayout
-            android:id="@+id/flLandscape"
-            android:layout_width="200dp"
-            android:layout_height="110dp"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignTop="@+id/edtFilter"
-            android:layout_toEndOf="@+id/edtFilter"
-            android:layout_toRightOf="@+id/edtFilter"
-            android:visibility="visible">
-
-        </FrameLayout>
-
-        <EditText
-            android:id="@+id/edtFilter"
-            android:layout_width="383dp"
+        <Button
+            android:id="@+id/btnShuffle"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:ems="10"
-            android:hint="@string/label_filter"
-            android:inputType="textPersonName"
-            android:textColor="#f100"
-            android:textCursorDrawable="@drawable/black" />
+            android:background="@drawable/shuffle" />
 
-        <TableRow
-            android:id="@+id/tableRow"
-            android:layout_width="match_parent"
+        <Button
+            android:id="@+id/btnPlayAll"
+            style="@style/Widget.AppCompat.Button.Small"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_below="@+id/edtFilter"
-            android:layout_toLeftOf="@+id/flLandscape"
-            android:layout_toStartOf="@+id/flLandscape">
+            android:text="@string/label_play_all"
+            android:textAppearance="@android:style/TextAppearance.DeviceDefault.Widget.Button" />
 
-            <Button
-                android:id="@+id/btnPlayAll"
-                style="@style/Widget.AppCompat.Button.Small"
-                android:layout_width="192dp"
-                android:layout_height="wrap_content"
-                android:text="@string/label_play_all"
-                android:textAppearance="@android:style/TextAppearance.DeviceDefault.Widget.Button" />
+        <Button
+            android:id="@+id/btnPlaySelected"
+            style="@style/Widget.AppCompat.Button.Small"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_play_selected" />
 
-            <Button
-                android:id="@+id/btnPlaySelected"
-                style="@style/Widget.AppCompat.Button.Small"
-                android:layout_width="191dp"
-                android:layout_height="wrap_content"
-                android:text="@string/label_play_selected" />
-
-        </TableRow>
-    </RelativeLayout>
-
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:id="@+id/flNether"
-        android:layout_height="match_parent">
+    </TableRow>
 
         <ScrollView
             android:id="@+id/scrollView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="0dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/tableRow"
             android:scrollbarStyle="insideOverlay">
 
             <TableLayout
@@ -100,14 +78,14 @@
                         android:padding="5dp"
                         android:text="@string/label_show"
                         android:textColor="#f100"
-                        android:textSize="18sp"/>
+                        android:textSize="18sp" />
 
                     <TextView
                         android:id="@+id/tagsHeader"
                         android:padding="5dp"
                         android:text="@string/label_tags"
                         android:textColor="#f100"
-                        android:textSize="18sp"/>
+                        android:textSize="18sp" />
 
                     <Button
                         android:id="@+id/btnDelHeader"
@@ -120,21 +98,22 @@
                 </TableRow>
             </TableLayout>
         </ScrollView>
+    <FrameLayout
+        android:id="@+id/flOntop"
+        android:layout_width="wrap_content"
+        android:layout_height="110dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true">
 
-        <FrameLayout
-            android:id="@+id/flOntop"
-            android:layout_width="wrap_content"
-            android:layout_height="110dp"
-            android:layout_gravity="bottom|end">
+        <Button
+            android:id="@+id/btnStopPlayer"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="top|start"
+            android:background="@drawable/close"
+            android:visibility="gone" />
 
-            <Button
-                android:id="@+id/btnStopPlayer"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_gravity="top|start"
-                android:background="@drawable/close"
-                android:visibility="gone" />
-        </FrameLayout>
     </FrameLayout>
 
-</LinearLayout>
+</RelativeLayout>
