@@ -71,16 +71,7 @@ public class DBHandler extends SQLiteOpenHelper {
         values.put(KEY_TAGS, newOst.getTags());
         values.put(KEY_URL, newOst.getUrl());
 
-        if(!checkIfShowInDB(show)){
-            addNewShow(show);
-        }
-
-        String [] tags = newOst.getTags().split(", ");
-        for(String tag : tags) {
-            if (!checkIfTagInDB(tag)) {
-                addNewTag(tag);
-            }
-        }
+        addNewTagsandShows(show, newOst.getTags());
 
         //inserting Row
         db.insert(OST_TABLE, null, values);
@@ -182,6 +173,8 @@ public class DBHandler extends SQLiteOpenHelper {
         values.put(KEY_TAGS, ost.getTags());
         values.put(KEY_URL, ost.getUrl());
 
+        addNewTagsandShows(ost.getShow(), ost.getTags());
+
         //replacing row
         SQLiteDatabase db = this.getWritableDatabase();
         db.replace(OST_TABLE, null, values);
@@ -257,5 +250,18 @@ public class DBHandler extends SQLiteOpenHelper {
         }
         cursor.close();
         return tagsTable;
+    }
+
+    public void addNewTagsandShows(String show, String tagString){
+        if(!checkIfShowInDB(show)){
+            addNewShow(show);
+        }
+
+        String [] tags = tagString.split(", ");
+        for(String tag : tags) {
+            if (!checkIfTagInDB(tag)) {
+                addNewTag(tag);
+            }
+        }
     }
 }

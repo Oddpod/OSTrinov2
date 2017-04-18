@@ -66,6 +66,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         this.inflater = inflater;
         this.container = container;
+        shuffleActivated = false;
         rootView = inflater.inflate(R.layout.activity_listscreen, container, false);
         dbHandler = new DBHandler(getActivity());
 
@@ -271,7 +272,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
                     }
                     //System.out.println("urlList: " + urlList);
                     if(shuffleActivated){
-                        Collections.shuffle(currDispOstList);
+                        Collections.shuffle(urlList);
                     }
                     initYoutubeFrag();
                     youtubeFragment.setVideoIds(urlList);
