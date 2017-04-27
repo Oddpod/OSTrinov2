@@ -23,7 +23,7 @@ public class AddScreen extends DialogFragment{
     View dialogView;
     String title, show, tags, url, buttonText;
 
-    EditText edTitle, edShow, edTags, edUrl;
+    EditText edTitle, edUrl;
     AutoCompleteTextView actvShow;
     MultiAutoCompleteTextView mactvTags;
 

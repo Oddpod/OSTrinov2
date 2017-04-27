@@ -1,14 +1,14 @@
 package com.example.odd.ostrinofragnavdrawer;
 
 
-public class Ost {
+class Ost {
     private String title, show, tags, url;
 
     private int id;
 
-    public Ost(){}
+    Ost(){}
 
-    public Ost(String title, String show, String tags, String url) {
+    Ost(String title, String show, String tags, String url) {
         this.title = title;
         this.show = show;
         this.tags = tags;
@@ -22,11 +22,11 @@ public class Ost {
                 '}';
     }
 
-    public String getTags() {
+    String getTags() {
         return tags;
     }
 
-    public void setTags(String tags) {
+    void setTags(String tags) {
         this.tags = tags;
     }
 
@@ -53,10 +53,10 @@ public class Ost {
         this.id = id;
     }
 
-    public String getUrl() {
+    String getUrl() {
         return url;
     }
-    public void setUrl(String url){
+    void setUrl(String url){
         this.url = url;
     }
 }

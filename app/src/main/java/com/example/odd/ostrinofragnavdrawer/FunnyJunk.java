@@ -47,8 +47,4 @@ public class FunnyJunk extends DialogFragment{
             jojo = (ImageView) dialogView.findViewById(R.id.jojo);
             return builder.create();
         }
-
-        public View getDialogView(){
-            return dialogView;
-        }
     }

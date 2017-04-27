@@ -11,6 +11,7 @@
     <string name="label_tags">Tags</string>
     <string name="label_link">Link</string>
     <string name="label_delete">Delete</string>
+    <string name="label_queue">Queue</string>
 
     <string name="label_play_all">Play all</string>
     <string name="label_play_selected">Play Selected</string>

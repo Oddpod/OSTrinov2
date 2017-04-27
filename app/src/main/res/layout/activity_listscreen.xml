@@ -32,7 +32,7 @@
             android:id="@+id/btnPlayAll"
             style="@style/Widget.AppCompat.Button.Small"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:text="@string/label_play_all"
             android:textAppearance="@android:style/TextAppearance.DeviceDefault.Widget.Button" />
 
@@ -40,8 +40,15 @@
             android:id="@+id/btnPlaySelected"
             style="@style/Widget.AppCompat.Button.Small"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:text="@string/label_play_selected" />
+
+        <Button
+            android:id="@+id/btnQueue"
+            style="@style/Widget.AppCompat.Button.Small"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="@string/label_queue" />
 
     </TableRow>
 

@@ -78,15 +78,25 @@ public class YoutubeFragment extends Fragment implements OnInitializedListener{
         mPlayer.setShowFullscreenButton(false);
     }
 
+    public void cueVideos(List<String> urls){
+        List<String> ids = new ArrayList<>();
+        ids.add(videoId);
+        for (String url: urls){
+            ids.add(Util.urlToId(url));
+        }
+        mPlayer.cueVideos(ids);
+        mPlayer.play();
+    }
+
     public void setVideoId(String url){
-        videoId = urlToId(url);
+        videoId = Util.urlToId(url);
         System.out.println(videoId);
     }
 
     public void setVideoIds(List<String> urls){
         videoIds = new ArrayList<>();
         for(String url : urls){
-            String id = urlToId(url);
+            String id = Util.urlToId(url);
             videoIds.add(id);
         }
         System.out.println("videoIDs: " + videoIds.toString());
@@ -94,19 +104,6 @@ public class YoutubeFragment extends Fragment implements OnInitializedListener{
 
     public void playAll(boolean playlist){
         this.playQueue = playlist;
-    }
-
-    public String urlToId(String url){
-        String [] lineArray;
-        if(url.contains("&")){
-            lineArray = url.split("&");
-            lineArray = lineArray[0].split("=");
-        } else if(url.contains("be/")){
-            lineArray = url.split("be/");
-        }else{
-            lineArray = url.split("=");
-        }
-        return videoId = lineArray[1];
     }
 
 }

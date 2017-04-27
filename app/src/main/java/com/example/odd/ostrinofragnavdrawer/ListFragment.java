@@ -28,10 +28,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 import static android.content.Context.WINDOW_SERVICE;
 
@@ -53,7 +51,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
     private TableRow tR;
     public FrameLayout flOnTop;
     public YoutubeFragment youtubeFragment = null;
-    Button btnDelHeader, btnPlayAll, btnplaySelected, btnStopPlayer, btnShuffle;
+    private Button btnDelHeader, btnPlayAll, btnplaySelected, btnStopPlayer, btnShuffle, btnQueue;
     boolean youtubeFragLaunched;
     private View rootView;
     private LayoutInflater inflater;
@@ -108,6 +106,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         btnplaySelected = (Button) rootView.findViewById(R.id.btnPlaySelected);
         btnStopPlayer = (Button) rootView.findViewById(R.id.btnStopPlayer);
         btnShuffle = (Button) rootView.findViewById(R.id.btnShuffle);
+        btnQueue = (Button) rootView.findViewById(R.id.btnQueue);
         tableLayout = (TableLayout) rootView.findViewById(R.id.tlOstTable);
         flOnTop = (FrameLayout) rootView.findViewById(R.id.flOntop);
 
@@ -116,6 +115,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         btnplaySelected.setOnClickListener(this);
         btnStopPlayer.setOnClickListener(this);
         btnShuffle.setOnClickListener(this);
+        btnQueue.setOnClickListener(this);
 
         createList();
 
@@ -308,6 +308,22 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
                 }
                 break;
 
+            }
+            case R.id.btnQueue:{
+                if(youtubeFragment != null) {
+                int i = 0;
+                List<String> playList = new ArrayList<>();
+                for (CheckBox box : checkBoxes){
+                    if(box.isChecked()){
+                        String url = allOsts.get(i).getUrl();
+                        playList.add(url);
+                        box.setChecked(false);
+                    }
+                    i++;
+                }
+                    youtubeFragment.cueVideos(playList);
+                }
+                break;
             }
             case R.id.btnDelHeader: {
                 int i = 0;
