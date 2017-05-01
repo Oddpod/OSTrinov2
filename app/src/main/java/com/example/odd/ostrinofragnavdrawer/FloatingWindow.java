@@ -1,5 +1,6 @@
 package com.example.odd.ostrinofragnavdrawer;
 
+import android.app.Fragment;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.Color;
@@ -7,6 +8,8 @@ import android.graphics.PixelFormat;
 import android.net.Uri;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -18,6 +21,7 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.MediaController;
@@ -33,6 +37,7 @@ public class FloatingWindow extends Service implements View.OnClickListener{
     private WindowManager.LayoutParams params;
     LayoutInflater inflater;
     String videoID;
+    YoutubeFragment youtubeFragment;
     Button btnStop, btnPrevious, btnPause, btnNext, btnMinimize;
     List<String> videoIDs;
 
@@ -45,13 +50,14 @@ public class FloatingWindow extends Service implements View.OnClickListener{
     @Override
     public void onCreate() {
         super.onCreate();
+
         inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
         wm = (WindowManager) getSystemService(WINDOW_SERVICE);
-        rl = (RelativeLayout) inflater.inflate(R.layout.floater_layout, null);
-        videoID = "0W8pOI-l4C4";
+        rl = (RelativeLayout) inflater.inflate(R.layout.youtube_api, null);
+        youtubeFragment = new YoutubeFragment();
 
-        btnStop = (Button) rl.findViewById(R.id.btnCloseFloater);
-        btnPrevious = (Button) rl.findViewById(R.id.btnFloatPrevious);
+        btnStop = (Button) rl.findViewById(R.id.btnClosePlayer);
+        /*btnPrevious = (Button) rl.findViewById(R.id.btnFloatPrevious);
         btnPause = (Button) rl.findViewById(R.id.btnFloatPause);
         btnNext = (Button) rl.findViewById(R.id.btnFloatNext);
         btnMinimize = (Button) rl.findViewById(R.id.btnMinimize);
@@ -59,31 +65,14 @@ public class FloatingWindow extends Service implements View.OnClickListener{
         btnPrevious.setOnClickListener(this);
         btnPause.setOnClickListener(this);
         btnNext.setOnClickListener(this);
-        btnMinimize.setOnClickListener(this);
-
-        String frameVideo = "<html><body><br><iframe width=\"120\" height=\"75\" src=\"https://www.youtube.com/embed/" + videoID + "\" frameborder=\"0\"></iframe></body></html>";
-
-        WebView myWebView = (WebView) rl.findViewById(R.id.wvvideoPlayer);
-
-        WebSettings webSettings = myWebView.getSettings();
-        webSettings.setJavaScriptEnabled(true);
-        myWebView.loadData(frameVideo, "text/html", "utf-8");
-
-        ImageView iw = new ImageView(this);
-
-        ViewGroup.LayoutParams imageParams = new ViewGroup.LayoutParams(400, 280);
-        iw.setImageResource(R.drawable.tranquility);
-        iw.setLayoutParams(imageParams);
-        iw.setY(120);
+        btnMinimize.setOnClickListener(this);*/
 
         rl.setBackgroundColor(Color.argb(66, 255, 0, 0));
 
-        params = new WindowManager.LayoutParams(420, 800, WindowManager.LayoutParams.TYPE_PHONE, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);
+        params = new WindowManager.LayoutParams(420, WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.TYPE_PHONE, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);
         params.x = 0;
         params.y = 0;
         params.gravity = Gravity.CENTER;
-
-        //ll.addView(iw);
 
         wm.addView(rl, params);
 

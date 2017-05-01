@@ -4,10 +4,12 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
@@ -36,42 +38,43 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener, O
     // YouTubeのビデオID
     private String currentlyPlaying;
     private List<String> videoIds;
-    private boolean playQueue = false, minimized = false;
+    private boolean playQueue = false, minimized = false, youtubeFragLaunched, playing;
     public YouTubePlayer mPlayer = null;
     private Stack<String> queue, played;
     private FragmentTransaction transaction;
     private YouTubePlayerSupportFragment youTubePlayerFragment;
     private RelativeLayout layoutView;
     private FrameLayout playerLayout;
-    private Button btnClosePlayer, btnPrevious, btnPause, btnNext, btnMinimize;
+    public Button btnPrevious, btnPause, btnNext, btnMinimize;
+    private View rootView;
 
     public YoutubeFragment(){}
 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.youtube_api, container, false);
+        rootView = inflater.inflate(R.layout.youtube_api, container, false);
         layoutView = (RelativeLayout) rootView;
         playerLayout = (FrameLayout) rootView.findViewById(R.id.youtube_layout);
         // YouTubeフラグメントインスタンスを取得
-        btnClosePlayer = (Button) rootView.findViewById(R.id.btnClosePlayer);
+
         btnPrevious = (Button) rootView.findViewById(R.id.btnPrevious);
         btnPause = (Button) rootView.findViewById(R.id.btnPause);
         btnNext = (Button) rootView.findViewById(R.id.btnNext);
         btnMinimize = (Button) rootView.findViewById(R.id.btnMinimize);
 
-        btnClosePlayer.setOnClickListener(this);
         btnPrevious.setOnClickListener(this);
         btnPause.setOnClickListener(this);
         btnNext.setOnClickListener(this);
         btnMinimize.setOnClickListener(this);
-
 
         youTubePlayerFragment = YouTubePlayerSupportFragment.newInstance();
 
         // レイアウトにYouTubeフラグメントを追加
         transaction = getChildFragmentManager().beginTransaction();
         transaction.add(R.id.youtube_layout, youTubePlayerFragment).commit();
+
+        youtubeFragLaunched = true;
 
         // YouTubeフラグメントのプレーヤーを初期化する
         youTubePlayerFragment.initialize(API_KEY, this);
@@ -108,6 +111,7 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener, O
             mPlayer.loadVideo(currentlyPlaying);
         }
         mPlayer.play();
+        playing = true;
         mPlayer.setShowFullscreenButton(false);
     }
 
@@ -202,17 +206,17 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener, O
 
     @Override
     public void onPlaying() {
-
+        playing = true;
     }
 
     @Override
     public void onPaused() {
-
+        playing = false;
     }
 
     @Override
     public void onStopped() {
-
+        playing = false;
     }
 
     @Override
@@ -229,13 +233,6 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener, O
     public void onClick(View v) {
         switch (v.getId()){
 
-            case R.id.btnClosePlayer:{
-                Toast.makeText(getActivity(), "closeFloater pressed ", Toast.LENGTH_SHORT).show();
-                FragmentManager fm = getActivity().getSupportFragmentManager();
-                fm.beginTransaction().remove(this).commit();
-                break;
-            }
-
             case R.id.btnPrevious:{
                 previous();
                 System.out.println("btnprevious pressed");
@@ -243,12 +240,15 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener, O
             }
 
             case R.id.btnPause:{
+                System.out.println(playing);
                 if(mPlayer.isPlaying()){
                     mPlayer.pause();
                     btnPause.setBackgroundResource(ic_media_play);
+                    playing = false;
                 }else{
                     btnPause.setBackgroundResource(ic_media_pause);
                     mPlayer.play();
+                    playing = true;
                 }
                 System.out.println("btnpause pressed");
                 break;
@@ -259,6 +259,7 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener, O
                 break;
             }
 
+            //Not allowed :C
             case R.id.btnMinimize:{
                 if(minimized){
                     layoutView.addView(playerLayout);
@@ -274,6 +275,9 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener, O
                 break;
             }
         }
+    }
 
+    public boolean getYoutubeFragLaunched(){
+        return youtubeFragLaunched;
     }
 }

@@ -42,7 +42,6 @@ public class MainActivity extends AppCompatActivity
     int backPress;
     private ListFragment listFragment;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -155,7 +154,7 @@ public class MainActivity extends AppCompatActivity
             }
 
             case R.id.nav_testFloater:{
-                if(!listFragment.youtubeFragLaunched){
+                if(!listFragment.youtubeFragment.getYoutubeFragLaunched()){
                     Toast.makeText(this, "You must play something first bruh! :)", Toast.LENGTH_SHORT).show();
                 }else {
                     if(!listFragment.floaterLaunched) {

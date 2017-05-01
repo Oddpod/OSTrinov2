@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static android.R.drawable.button_onoff_indicator_off;
 import static android.R.drawable.ic_media_pause;
 import static android.R.drawable.ic_media_play;
 import static android.content.Context.WINDOW_SERVICE;
@@ -60,6 +61,8 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
     ViewGroup container;
     boolean floaterLaunched, shuffleActivated, playerPaused;
     AddScreen dialog;
+    RelativeLayout parentLayout;
+    WindowManager wm;
     RelativeLayout.LayoutParams landParams, portParams;
 
     @Override
@@ -68,6 +71,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         this.container = container;
         shuffleActivated = false;
         rootView = inflater.inflate(R.layout.activity_listscreen, container, false);
+        parentLayout = (RelativeLayout) rootView;
         dbHandler = new DBHandler(getActivity());
 
         //Landscape and Portrait parameters for the view containing the YoutubeFragment
@@ -106,7 +110,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         filter.addTextChangedListener(textWatcher);
         btnPlayAll = (Button) rootView.findViewById(R.id.btnPlayAll);
         btnplaySelected = (Button) rootView.findViewById(R.id.btnPlaySelected);
-        //btnStopPlayer = (Button) rootView.findViewById(R.id.btnStopPlayer);
+        btnStopPlayer = (Button) rootView.findViewById(R.id.btnStopPlayer);
         btnShuffle = (Button) rootView.findViewById(R.id.btnShuffle);
         btnQueue = (Button) rootView.findViewById(R.id.btnQueue);
         tableLayout = (TableLayout) rootView.findViewById(R.id.tlOstTable);
@@ -115,7 +119,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         btnPlayAll.setOnClickListener(this);
         btnPlayAll.setOnClickListener(this);
         btnplaySelected.setOnClickListener(this);
-        //btnStopPlayer.setOnClickListener(this);
+        btnStopPlayer.setOnClickListener(this);
         btnShuffle.setOnClickListener(this);
         btnQueue.setOnClickListener(this);
 
@@ -342,13 +346,13 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
                 refreshList();
                 break;
             }
-            /*case R.id.btnStopPlayer: {
-                FragmentManager fm = getActivity().getSupportFragmentManager();
-                fm.beginTransaction().remove(youtubeFragment).commit();
-                youtubeFragLaunched = false;
-                btnStopPlayer.setVisibility(View.GONE);
+            case R.id.btnStopPlayer: {
+                if(!floaterLaunched) {
+                    youtubeFragment.pausePlayer();
+                    flOnTop.setVisibility(View.GONE);
+                }
                 break;
-            }*/
+            }
         }
     }
 
@@ -359,20 +363,21 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
     }
 
     public void launchYoutubeFrag(){
-        youtubeFragLaunched = true;
         FragmentManager manager = getFragmentManager();
         manager.beginTransaction()
                 .add(R.id.flOntop, youtubeFragment)
                 .commit();
-        //btnStopPlayer.setVisibility(View.VISIBLE);
+        btnStopPlayer.setVisibility(View.VISIBLE);
     }
 
     public void updateYoutubeFrag(){
         if(youtubeFragLaunched){
+            flOnTop.setVisibility(View.VISIBLE);
             youtubeFragment.initPlayer();
         }
         else{
             launchYoutubeFrag();
+            youtubeFragLaunched = true;
         }
     }
 
@@ -409,29 +414,25 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
     }
 
     public void launchFloater() {
-        final WindowManager wm = (WindowManager) getActivity().getSystemService(WINDOW_SERVICE);
-        final RelativeLayout ll = (RelativeLayout) inflater.inflate(R.layout.floater_layout, container, false);
-        final RelativeLayout parentLayout = (RelativeLayout) rootView.findViewById(R.id.activity_listScreen);
-        Button btnCloseFloater = (Button) ll.findViewById(R.id.btnCloseFloater);
-        Button btnPrevious = (Button) ll.findViewById(R.id.btnFloatPrevious);
-        final Button btnPause = (Button) ll.findViewById(R.id.btnFloatPause);
-        Button btnNext = (Button) ll.findViewById(R.id.btnFloatNext);
+        wm = (WindowManager) getActivity().getSystemService(WINDOW_SERVICE);
+        final RelativeLayout rl = (RelativeLayout) inflater.inflate(R.layout.floater_layout_nobuttons, container, false);
+        final Button btnCloseFloater = (Button) rl.findViewById(R.id.btnCloseFloater);
+        final FrameLayout flYoutubePlayer = (FrameLayout) rl.findViewById(R.id.flYoutubePlayer);
+        btnStopPlayer.setVisibility(View.GONE);
 
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(600, WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.TYPE_PHONE, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);
         params.x = 0;
         params.y = 0;
         params.gravity = Gravity.CENTER;
 
-        ll.setBackgroundColor(Color.argb(66, 255, 0, 0));
+        rl.setBackgroundColor(Color.argb(66, 255, 0, 0));
 
         parentLayout.removeView(flOnTop);
-        final FrameLayout frameLayout = (FrameLayout) ll.findViewById(R.id.flYoutubePlayer);
-        //btnStopPlayer.setVisibility(View.GONE);
-        //frameLayout.addView(flOnTop);
+        flYoutubePlayer.addView(flOnTop);
 
-        wm.addView(flOnTop, params);
+        wm.addView(rl, params);
 
-        ll.setOnTouchListener(new View.OnTouchListener() {
+        rl.setOnTouchListener(new View.OnTouchListener() {
 
             private WindowManager.LayoutParams updateParams = params;
             int X, Y;
@@ -455,7 +456,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
                         updateParams.x = (int) (X + (event.getRawX() - touchedX));
                         updateParams.y = (int) (Y + (event.getRawY() - touchedY));
 
-                        wm.updateViewLayout(ll, updateParams);
+                        wm.updateViewLayout(rl, updateParams);
 
                         break;
 
@@ -467,50 +468,23 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
             }
         });
 
-        btnPrevious.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                youtubeFragment.previous();
-            }
-        });
-        playerPaused = false;
-        btnPause.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(youtubeFragment.mPlayer.isPlaying()){
-                    btnPause.setBackgroundResource(ic_media_play);
-                    youtubeFragment.pausePlayer();
-                    playerPaused = true;
-                }else {
-                    btnPause.setBackgroundResource(ic_media_pause);
-                    youtubeFragment.unPausePlayer();
-                    playerPaused = false;
-                }
-            }
-        });
-        btnNext.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                youtubeFragment.next();
-            }
-        });
+        floaterLaunched = true;
         btnCloseFloater.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                frameLayout.removeView(flOnTop);
-                wm.removeView(ll);
                 floaterLaunched = false;
                 int orientation = getActivity().getResources().getConfiguration().orientation;
+                flYoutubePlayer.removeView(flOnTop);
                 if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
                     flOnTop.setLayoutParams(landParams);
-                } else if (orientation == Configuration.ORIENTATION_PORTRAIT){
+                } else if (orientation == Configuration.ORIENTATION_PORTRAIT) {
                     flOnTop.setLayoutParams(portParams);
                 }
-                //btnStopPlayer.setVisibility(View.VISIBLE);
+                wm.removeView(rl);
+                btnStopPlayer.setVisibility(View.VISIBLE);
                 parentLayout.addView(flOnTop);
             }
         });
-        floaterLaunched = true;
     }
 
     public int getOstReplaceId(){

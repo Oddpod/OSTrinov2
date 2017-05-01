@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="200dp"
-    android:layout_height="match_parent"
+    android:layout_height="150dp"
     android:orientation="vertical">
 
 
@@ -18,26 +18,17 @@
 
     <Button
         android:id="@+id/btnCloseFloater"
-        android:layout_width="25dp"
-        android:layout_height="27dp"
-        android:layout_above="@+id/wvvideoPlayer"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
         android:layout_alignParentTop="true"
         android:background="@drawable/close"
         android:visibility="visible" />
 
 
-    <WebView
-        android:id="@+id/wvvideoPlayer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/textView" />
-
     <FrameLayout
         android:id="@+id/flYoutubePlayer"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="130dp"
         android:layout_below="@id/wvvideoPlayer">
 
     </FrameLayout>
