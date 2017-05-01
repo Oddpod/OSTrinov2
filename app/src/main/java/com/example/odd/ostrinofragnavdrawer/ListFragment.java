@@ -31,6 +31,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static android.R.drawable.ic_media_pause;
+import static android.R.drawable.ic_media_play;
 import static android.content.Context.WINDOW_SERVICE;
 
 public class ListFragment extends Fragment implements FunnyJunk.YareYareListener, View.OnClickListener{
@@ -56,7 +58,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
     private View rootView;
     private LayoutInflater inflater;
     ViewGroup container;
-    boolean floaterLaunched, shuffleActivated;
+    boolean floaterLaunched, shuffleActivated, playerPaused;
     AddScreen dialog;
     RelativeLayout.LayoutParams landParams, portParams;
 
@@ -104,7 +106,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         filter.addTextChangedListener(textWatcher);
         btnPlayAll = (Button) rootView.findViewById(R.id.btnPlayAll);
         btnplaySelected = (Button) rootView.findViewById(R.id.btnPlaySelected);
-        btnStopPlayer = (Button) rootView.findViewById(R.id.btnStopPlayer);
+        //btnStopPlayer = (Button) rootView.findViewById(R.id.btnStopPlayer);
         btnShuffle = (Button) rootView.findViewById(R.id.btnShuffle);
         btnQueue = (Button) rootView.findViewById(R.id.btnQueue);
         tableLayout = (TableLayout) rootView.findViewById(R.id.tlOstTable);
@@ -113,7 +115,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         btnPlayAll.setOnClickListener(this);
         btnPlayAll.setOnClickListener(this);
         btnplaySelected.setOnClickListener(this);
-        btnStopPlayer.setOnClickListener(this);
+        //btnStopPlayer.setOnClickListener(this);
         btnShuffle.setOnClickListener(this);
         btnQueue.setOnClickListener(this);
 
@@ -321,7 +323,9 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
                     }
                     i++;
                 }
-                    youtubeFragment.cueVideos(playList);
+                    //youtubeFragment.queueVideos(playList);
+                    youtubeFragment.addToQueue(playList);
+                    Toast.makeText(getActivity(), "Songs queued", Toast.LENGTH_SHORT).show();
                 }
                 break;
             }
@@ -338,13 +342,13 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
                 refreshList();
                 break;
             }
-            case R.id.btnStopPlayer: {
+            /*case R.id.btnStopPlayer: {
                 FragmentManager fm = getActivity().getSupportFragmentManager();
                 fm.beginTransaction().remove(youtubeFragment).commit();
                 youtubeFragLaunched = false;
                 btnStopPlayer.setVisibility(View.GONE);
                 break;
-            }
+            }*/
         }
     }
 
@@ -360,7 +364,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         manager.beginTransaction()
                 .add(R.id.flOntop, youtubeFragment)
                 .commit();
-        btnStopPlayer.setVisibility(View.VISIBLE);
+        //btnStopPlayer.setVisibility(View.VISIBLE);
     }
 
     public void updateYoutubeFrag(){
@@ -406,9 +410,12 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
 
     public void launchFloater() {
         final WindowManager wm = (WindowManager) getActivity().getSystemService(WINDOW_SERVICE);
-        final RelativeLayout ll = (RelativeLayout) inflater.inflate(R.layout.floater_layout_nobuttons, container, false);
+        final RelativeLayout ll = (RelativeLayout) inflater.inflate(R.layout.floater_layout, container, false);
         final RelativeLayout parentLayout = (RelativeLayout) rootView.findViewById(R.id.activity_listScreen);
         Button btnCloseFloater = (Button) ll.findViewById(R.id.btnCloseFloater);
+        Button btnPrevious = (Button) ll.findViewById(R.id.btnFloatPrevious);
+        final Button btnPause = (Button) ll.findViewById(R.id.btnFloatPause);
+        Button btnNext = (Button) ll.findViewById(R.id.btnFloatNext);
 
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(600, WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.TYPE_PHONE, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);
         params.x = 0;
@@ -419,10 +426,10 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
 
         parentLayout.removeView(flOnTop);
         final FrameLayout frameLayout = (FrameLayout) ll.findViewById(R.id.flYoutubePlayer);
-        btnStopPlayer.setVisibility(View.GONE);
-        frameLayout.addView(flOnTop);
+        //btnStopPlayer.setVisibility(View.GONE);
+        //frameLayout.addView(flOnTop);
 
-        wm.addView(ll, params);
+        wm.addView(flOnTop, params);
 
         ll.setOnTouchListener(new View.OnTouchListener() {
 
@@ -460,6 +467,33 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
             }
         });
 
+        btnPrevious.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                youtubeFragment.previous();
+            }
+        });
+        playerPaused = false;
+        btnPause.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(youtubeFragment.mPlayer.isPlaying()){
+                    btnPause.setBackgroundResource(ic_media_play);
+                    youtubeFragment.pausePlayer();
+                    playerPaused = true;
+                }else {
+                    btnPause.setBackgroundResource(ic_media_pause);
+                    youtubeFragment.unPausePlayer();
+                    playerPaused = false;
+                }
+            }
+        });
+        btnNext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                youtubeFragment.next();
+            }
+        });
         btnCloseFloater.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -472,7 +506,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
                 } else if (orientation == Configuration.ORIENTATION_PORTRAIT){
                     flOnTop.setLayoutParams(portParams);
                 }
-                btnStopPlayer.setVisibility(View.VISIBLE);
+                //btnStopPlayer.setVisibility(View.VISIBLE);
                 parentLayout.addView(flOnTop);
             }
         });
