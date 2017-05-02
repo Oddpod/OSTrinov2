@@ -1,5 +1,6 @@
 package com.example.odd.ostrinofragnavdrawer;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -9,7 +10,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
@@ -29,16 +29,21 @@ import static android.R.drawable.arrow_down_float;
 import static android.R.drawable.arrow_up_float;
 import static android.R.drawable.ic_media_pause;
 import static android.R.drawable.ic_media_play;
+import static android.R.drawable.ic_partial_secure;
 
 
-public class YoutubeFragment extends Fragment implements View.OnClickListener, OnInitializedListener, YouTubePlayer.PlayerStateChangeListener, YouTubePlayer.PlaybackEventListener{
+public class YoutubeFragment extends Fragment implements View.OnClickListener,
+        OnInitializedListener,
+        YouTubePlayer.PlayerStateChangeListener,
+        YouTubePlayer.PlaybackEventListener{
+
     // API キー
     public static final String API_KEY = "AIzaSyDSMKvbGUJxKhPz5t4PMFEByD5qFy1sjEA";
 
     // YouTubeのビデオID
     private String currentlyPlaying;
     private List<String> videoIds;
-    private boolean playQueue = false, minimized = false, youtubeFragLaunched, playing;
+    private boolean playQueue = false, minimized = false, youtubeFragLaunched, playing, playerStopped;
     public YouTubePlayer mPlayer = null;
     private Stack<String> queue, played;
     private FragmentTransaction transaction;
@@ -47,6 +52,7 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener, O
     private FrameLayout playerLayout;
     public Button btnPrevious, btnPause, btnNext, btnMinimize;
     private View rootView;
+    private int playbackPosMilliSec;
 
     public YoutubeFragment(){}
 
@@ -88,7 +94,6 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener, O
         this.mPlayer = player;
         queue = new Stack<>();
         played = new Stack<>();
-        mPlayer.setPlayerStateChangeListener(this);
         initPlayer();
         //player.setOnFullscreenListener(fullScreenListener);
     }
@@ -112,10 +117,14 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener, O
         }
         mPlayer.play();
         playing = true;
+        playerStopped = false;
         mPlayer.setShowFullscreenButton(false);
+        mPlayer.setPlayerStateChangeListener(this);
+        mPlayer.setPlaybackEventListener(this);
     }
 
     public void addToQueue(List<String> urls){
+        btnNext.setVisibility(View.VISIBLE);
         for (String url: urls){
             queue.add(Util.urlToId(url));
         }
@@ -185,7 +194,15 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener, O
 
     @Override
     public void onVideoStarted() {
-
+        if(played.isEmpty()){
+            btnPrevious.setVisibility(View.INVISIBLE);
+        }
+        if(queue.isEmpty()){
+            btnNext.setVisibility(View.INVISIBLE);
+        }
+        else if(!played.isEmpty()){
+            btnPrevious.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
@@ -197,6 +214,10 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener, O
             mPlayer.loadVideo(currentVidId);
             mPlayer.play();
         }
+        btnPrevious.setVisibility(View.VISIBLE);
+        if(queue.isEmpty()){
+            btnNext.setVisibility(View.INVISIBLE);
+        }
     }
 
     @Override
@@ -207,16 +228,23 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener, O
     @Override
     public void onPlaying() {
         playing = true;
+        btnPause.setBackgroundResource(ic_media_pause);
+        playerStopped = false;
     }
 
     @Override
     public void onPaused() {
         playing = false;
+        btnPause.setBackgroundResource(ic_media_play);
+
     }
 
     @Override
     public void onStopped() {
         playing = false;
+        playerStopped = true;
+        playbackPosMilliSec = mPlayer.getCurrentTimeMillis();
+        btnPause.setBackgroundResource(ic_media_play);
     }
 
     @Override
@@ -235,13 +263,16 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener, O
 
             case R.id.btnPrevious:{
                 previous();
-                System.out.println("btnprevious pressed");
                 break;
             }
 
             case R.id.btnPause:{
                 System.out.println(playing);
-                if(mPlayer.isPlaying()){
+                if(playerStopped){
+                    System.out.println("You are here");
+                    mPlayer.loadVideo(currentlyPlaying, playbackPosMilliSec);
+                }
+                else if(playing){
                     mPlayer.pause();
                     btnPause.setBackgroundResource(ic_media_play);
                     playing = false;
@@ -259,7 +290,7 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener, O
                 break;
             }
 
-            //Not allowed :C
+            //Not allowed according to API license I think:C
             case R.id.btnMinimize:{
                 if(minimized){
                     layoutView.addView(playerLayout);
