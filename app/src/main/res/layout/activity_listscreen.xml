@@ -113,7 +113,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:visibility="visible">
+        android:visibility="gone">
 
         <Button
             android:id="@+id/btnStopPlayer"
@@ -121,7 +121,15 @@
             android:layout_height="20dp"
             android:layout_gravity="top|start"
             android:background="@drawable/close"
-            android:visibility="gone" />
+            android:visibility="visible" />
+
+        <Button
+            android:id="@+id/btnMovePlayer"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="top|end"
+            android:background="@android:drawable/ic_lock_lock"
+            android:visibility="visible" />
     </FrameLayout>
 
 </RelativeLayout>

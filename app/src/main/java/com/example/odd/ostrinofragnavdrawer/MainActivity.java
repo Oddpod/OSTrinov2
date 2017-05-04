@@ -106,6 +106,8 @@ public class MainActivity extends AppCompatActivity
             return true;
         }
 
+
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -154,7 +156,7 @@ public class MainActivity extends AppCompatActivity
             }
 
             case R.id.nav_testFloater:{
-                if(!listFragment.youtubeFragment.getYoutubeFragLaunched()){
+                if(listFragment.youtubeFragLaunched){
                     Toast.makeText(this, "You must play something first bruh! :)", Toast.LENGTH_SHORT).show();
                 }else {
                     if(!listFragment.floaterLaunched) {
