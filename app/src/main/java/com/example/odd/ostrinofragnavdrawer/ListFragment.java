@@ -15,10 +15,12 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.TableLayout;
@@ -37,7 +39,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
     private boolean editedOst;
     private PopupWindow popupWindow;
     private int ostReplaceId, orientation;
-    private List<Ost> allOsts;
+    private List<Ost> allOsts, currOstList;
     private List<CheckBox> checkBoxes;
     private TableLayout tableLayout;
     private float rowTextSize = 11;
@@ -50,11 +52,13 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
     private TableRow tR;
     public FrameLayout flOnTop;
     public YoutubeFragment youtubeFragment = null;
-    private Button btnDelHeader, btnPlayAll, btnplaySelected, btnStopPlayer, btnShuffle, btnQueue, btnMovePlayer;
+    private Button btnDelHeader, btnPlayAll, btnplaySelected, btnStopPlayer, btnShuffle, btnQueue, btnMovePlayer, btnOptions;
     boolean youtubeFragLaunched;
     private View rootView;
     private LayoutInflater inflater;
+    private CustomAdapter customAdapter;
     private float flPosX, flPosY;
+    private ListView lvOst;
     ViewGroup container;
     boolean floaterLaunched, shuffleActivated, playerDocked;
     AddScreen dialog;
@@ -71,6 +75,44 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         rootView = inflater.inflate(R.layout.activity_listscreen, container, false);
         parentLayout = (RelativeLayout) rootView;
         dbHandler = new DBHandler(getActivity());
+
+        lvOst = (ListView) rootView.findViewById(R.id.lvOstList);
+        lvOst.findViewById(R.id.btnOptions);
+        lvOst.setOnClickListener(this);
+
+        allOsts = dbHandler.getAllOsts();
+
+        customAdapter = new CustomAdapter(getContext(), allOsts);
+        lvOst.setAdapter(customAdapter);
+
+        lvOst.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                Toast.makeText(getActivity(), "Clicked on item " + position, Toast.LENGTH_SHORT).show();
+                currOstList = getCurrDispOstList();
+                String url = currOstList.get(position).getUrl();
+                initYoutubeFrag();
+                youtubeFragment.setVideoId(url);
+                updateYoutubeFrag();
+
+            }
+        });
+
+        lvOst.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                currOstList = getCurrDispOstList();
+                Ost ost = getCurrDispOstList().get(position);
+                dialog = new AddScreen();
+                dialog.show(getFragmentManager(), TAG);
+                ostReplaceId = ost.getId();
+                dialog.setText(ost);
+                dialog.setButtonText("Save");
+                editedOst = true;
+                return true;
+            }
+        });
 
         //Landscape and Portrait parameters for the view containing the YoutubeFragment
         landParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
@@ -99,11 +141,12 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
                     FunnyJunk dialog = new FunnyJunk();
                     dialog.show(getActivity().getFragmentManager(), TAG2);
                 }
-                cleanTable(tableLayout);
+                customAdapter = new CustomAdapter(getContext(), getCurrDispOstList());
+                lvOst.setAdapter(customAdapter);
+                /*cleanTable(tableLayout);
                 for (Ost ost : allOsts) {
                     addRow(ost);
-                }
-
+                }*/
             }
         };
         filter.addTextChangedListener(textWatcher);
@@ -113,7 +156,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         btnShuffle = (Button) rootView.findViewById(R.id.btnShuffle);
         btnQueue = (Button) rootView.findViewById(R.id.btnQueue);
         btnMovePlayer = (Button) rootView.findViewById(R.id.btnMovePlayer);
-        tableLayout = (TableLayout) rootView.findViewById(R.id.tlOstTable);
+        //tableLayout = (TableLayout) rootView.findViewById(R.id.tlOstTable);
         flOnTop = (FrameLayout) rootView.findViewById(R.id.flOntop);
 
         btnPlayAll.setOnClickListener(this);
@@ -171,8 +214,8 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
                 }
         });
 
-        createList();
 
+        //createList();
         return rootView;
     }
 
@@ -304,6 +347,16 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+
+            case R.id.btnOptions:{
+                if(youtubeFragment != null) {
+                    int ostPos = customAdapter.getClickedPos();
+                    //youtubeFragment.queueVideos(playList);
+                    youtubeFragment.addToQueue(getCurrDispOstList().get(ostPos).getUrl());
+                    Toast.makeText(getActivity(), "Songs queued", Toast.LENGTH_SHORT).show();
+                }
+                break;
+            }
 
             case R.id.btnShuffle:{
                 if(shuffleActivated){

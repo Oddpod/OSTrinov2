@@ -122,6 +122,10 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener,
             queue.add(Util.urlToId(url));
         }
     }
+    public void addToQueue(String url){
+        btnNext.setVisibility(View.VISIBLE);
+        queue.add(Util.urlToId(url));
+    }
 
 
     public void previous() {
