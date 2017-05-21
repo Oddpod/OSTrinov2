@@ -219,7 +219,7 @@ public class MainActivity extends AppCompatActivity
             Toast.makeText(this, lastAddedOst.getTitle() + " From " + lastAddedOst.getShow() + " has already been added", Toast.LENGTH_SHORT).show();
             lastAddedOst = null;
         }
-        listFragment.refreshList();
+        //listFragment.refreshList();
     }
 
     private void chooseFileImport() {
@@ -267,7 +267,7 @@ public class MainActivity extends AppCompatActivity
         if (requestCode == 1 && resultCode == RESULT_OK) {
             Uri currFileURI = data.getData();
             readFromFile(currFileURI);
-            listFragment.refreshList();
+            //listFragment.refreshList();
         }
         if (requestCode == 2 && resultCode == RESULT_OK) {
             Uri currFileURI = data.getData();

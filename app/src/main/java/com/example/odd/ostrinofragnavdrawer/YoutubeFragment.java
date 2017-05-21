@@ -42,7 +42,7 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener,
     private List<String> videoIds;
     private boolean playQueue = false, minimized = false, playing, playerStopped;
     public YouTubePlayer mPlayer = null;
-    private Stack<String> queue, played, unshuffledQueue;
+    private Stack<String> preQueue, played, queue, unshuffledQueue;
     private RelativeLayout layoutView;
     private FrameLayout playerLayout;
     public Button btnPrevious, btnPause, btnNext, btnMinimize;
@@ -109,35 +109,36 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener,
         playing = true;
         playerStopped = false;
         unshuffledQueue = new Stack<>();
-        queue = new Stack<>();
         played = new Stack<>();
+        queue = new Stack<>();
+
         mPlayer.setShowFullscreenButton(false);
         mPlayer.setPlayerStateChangeListener(this);
         mPlayer.setPlaybackEventListener(this);
     }
 
-    public void addToQueue(List<String> urls){
-        btnNext.setVisibility(View.VISIBLE);
-        for (String url: urls){
-            queue.add(Util.urlToId(url));
+    public void initiateQueue(List<String> urls){
+        //btnNext.setVisibility(View.VISIBLE);
+        preQueue = new Stack<>();
+        for (String url : urls) {
+            preQueue.add(0, Util.urlToId(url));
         }
     }
     public void addToQueue(String url){
         btnNext.setVisibility(View.VISIBLE);
-        queue.add(Util.urlToId(url));
+        queue.add(0, Util.urlToId(url));
     }
-
 
     public void previous() {
         if (!played.isEmpty()) {
-            queue.push(currentlyPlaying);
+            preQueue.push(currentlyPlaying);
             currentlyPlaying = played.pop();
             mPlayer.loadVideo(currentlyPlaying);
         }
         if(played.isEmpty()){
             btnPrevious.setVisibility(View.INVISIBLE);
         }
-        System.out.println("queue: " + queue.toString());
+        System.out.println("preQueue: " + preQueue.toString());
         System.out.println("played: " + played.toString());
     }
 
@@ -156,10 +157,15 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener,
             currentlyPlaying = queue.pop();
             mPlayer.loadVideo(currentlyPlaying);
         }
-        if(queue.isEmpty()){
+        else if(!preQueue.isEmpty()){
+            played.push(currentlyPlaying);
+            currentlyPlaying = preQueue.pop();
+            mPlayer.loadVideo(currentlyPlaying);
+        }
+        if(preQueue.isEmpty()){
             btnNext.setVisibility(View.INVISIBLE);
         }
-        System.out.println("queue: " + queue.toString());
+        System.out.println("preQueue: " + preQueue.toString());
         System.out.println("played: " + played.toString());
         btnPrevious.setVisibility(View.VISIBLE);
     }
@@ -301,9 +307,9 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener,
             }else if (played.isEmpty()){
                 btnPrevious.setVisibility(View.INVISIBLE);
             }
-            if(!queue.isEmpty()){
+            if(!preQueue.isEmpty()){
                 btnNext.setVisibility(View.VISIBLE);
-            }else if(queue.isEmpty()){
+            }else if(preQueue.isEmpty()){
                 btnNext.setVisibility(View.INVISIBLE);
             }
     }
@@ -311,6 +317,6 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener,
 
     public void shuffle(){
         List<String> unshuffledQueue = new Stack<>();
-        Collections.shuffle(queue);
+        Collections.shuffle(preQueue);
     }
 }

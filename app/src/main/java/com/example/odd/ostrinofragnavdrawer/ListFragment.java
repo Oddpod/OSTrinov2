@@ -34,11 +34,11 @@ import java.util.List;
 
 import static android.content.Context.WINDOW_SERVICE;
 
-public class ListFragment extends Fragment implements FunnyJunk.YareYareListener, View.OnClickListener{
+public class ListFragment extends Fragment implements FunnyJunk.YareYareListener, View.OnClickListener, QueueListener{
 
     private boolean editedOst;
     private PopupWindow popupWindow;
-    private int ostReplaceId, orientation;
+    private int ostReplaceId, orientation, clickedPos;
     private List<Ost> allOsts, currOstList;
     private List<CheckBox> checkBoxes;
     private TableLayout tableLayout;
@@ -78,11 +78,10 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
 
         lvOst = (ListView) rootView.findViewById(R.id.lvOstList);
         lvOst.findViewById(R.id.btnOptions);
-        lvOst.setOnClickListener(this);
 
         allOsts = dbHandler.getAllOsts();
 
-        customAdapter = new CustomAdapter(getContext(), allOsts);
+        customAdapter = new CustomAdapter(getContext(), allOsts, this);
         lvOst.setAdapter(customAdapter);
 
         lvOst.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -95,7 +94,15 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
                 initYoutubeFrag();
                 youtubeFragment.setVideoId(url);
                 updateYoutubeFrag();
-
+                List<String> queueList = new ArrayList<>();
+                int i = 0;
+                for (Ost ost : currOstList){
+                    if(i > position){
+                        queueList.add(ost.getUrl());
+                    }
+                    i++;
+                }
+                youtubeFragment.initiateQueue(queueList);
             }
         });
 
@@ -141,7 +148,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
                     FunnyJunk dialog = new FunnyJunk();
                     dialog.show(getActivity().getFragmentManager(), TAG2);
                 }
-                customAdapter = new CustomAdapter(getContext(), getCurrDispOstList());
+                customAdapter = new CustomAdapter(getContext(), getCurrDispOstList(), ListFragment.this);
                 lvOst.setAdapter(customAdapter);
                 /*cleanTable(tableLayout);
                 for (Ost ost : allOsts) {
@@ -150,22 +157,11 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
             }
         };
         filter.addTextChangedListener(textWatcher);
-        btnPlayAll = (Button) rootView.findViewById(R.id.btnPlayAll);
-        btnplaySelected = (Button) rootView.findViewById(R.id.btnPlaySelected);
         btnStopPlayer = (Button) rootView.findViewById(R.id.btnStopPlayer);
-        btnShuffle = (Button) rootView.findViewById(R.id.btnShuffle);
-        btnQueue = (Button) rootView.findViewById(R.id.btnQueue);
         btnMovePlayer = (Button) rootView.findViewById(R.id.btnMovePlayer);
-        //tableLayout = (TableLayout) rootView.findViewById(R.id.tlOstTable);
         flOnTop = (FrameLayout) rootView.findViewById(R.id.flOntop);
 
-        btnPlayAll.setOnClickListener(this);
-        btnPlayAll.setOnClickListener(this);
-        btnplaySelected.setOnClickListener(this);
         btnStopPlayer.setOnClickListener(this);
-        btnShuffle.setOnClickListener(this);
-        btnQueue.setOnClickListener(this);
-
         btnMovePlayer.setOnTouchListener(new View.OnTouchListener() {
                 float dx, dy;
                 RelativeLayout.LayoutParams lParams = (RelativeLayout.LayoutParams) rootView.getLayoutParams();
@@ -214,151 +210,14 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
                 }
         });
 
-
-        //createList();
         return rootView;
-    }
-
-    public void createList() {
-        checkBoxes = new ArrayList<>();
-
-        btnDelHeader = (Button) rootView.findViewById(R.id.btnDelHeader);
-
-        btnDelHeader.setOnClickListener(this);
-        btnDelHeader.setOnLongClickListener(new View.OnLongClickListener(){
-            @Override
-            public boolean onLongClick(View v) {
-                ViewGroup ctainer = (ViewGroup) inflater.inflate(R.layout.delete_dialog, null);
-                popupWindow = new PopupWindow(ctainer, 600, 400, true);
-                popupWindow.showAtLocation(rootView, 1, 0, 0);
-                Button btnNo = (Button) ctainer.findViewById(R.id.btnNo);
-                Button btnYes = (Button) ctainer.findViewById(R.id.btnYes);
-
-                btnNo.setOnClickListener(new View.OnClickListener(){
-                    @Override
-                    public void onClick(View v) {
-                        popupWindow.dismiss();
-                    }
-                });
-                btnYes.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Toast.makeText(getActivity(), "I think you mean no :)", Toast.LENGTH_LONG).show();
-                        popupWindow.dismiss();
-                    }
-                });
-                return false;
-            }
-        });
-
-        allOsts = dbHandler.getAllOsts();
-
-        for (Ost ost : allOsts) {
-            addRow(ost);
-        }
-    }
-
-    public void addRow(final Ost ost) {
-        //final int id = ost.getId();
-        String ostInfoString = ost.getTitle() + " " + ost.getShow() + " " + ost.getTags();
-        ostInfoString = ostInfoString.toLowerCase();
-        final String title = ost.getTitle();
-        String show = ost.getShow();
-        String tags = ost.getTags();
-        tR = new TableRow(getActivity());
-        tR.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
-        final String url = ost.getUrl();
-
-        TextView label_title = new TextView(getActivity());
-        label_title.setText(title);
-        label_title.setTextColor(Color.BLACK);
-        label_title.setTextSize(rowTextSize);
-        label_title.setPadding(5, 5, 5, 5);
-        tR.addView(label_title);
-
-        TextView label_show = new TextView(getActivity());
-        label_show.setText(show);
-        label_show.setTextColor(Color.BLACK);
-        label_show.setTextSize(rowTextSize);
-        label_show.setPadding(5, 5, 5, 5);
-        tR.addView(label_show);
-
-        TextView label_tags = new TextView(getActivity());
-        label_tags.setText(tags);
-        label_tags.setTextColor(Color.BLACK);
-        label_tags.setTextSize(rowTextSize);
-        label_tags.setPadding(5, 5, 5, 5);
-        tR.addView(label_tags);
-
-        //Launches url when you click the title
-        label_title.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                System.out.println(url);
-                //startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
-                initYoutubeFrag();
-                youtubeFragment.setVideoId(url);
-                updateYoutubeFrag();
-            }
-
-        });
-
-        CheckBox checkBox = new CheckBox(getActivity());
-        checkBox.setPadding(5, 5, 0, 5);
-        checkBox.setTextSize(rowTextSize);
-        checkBox.setChecked(false);
-        checkBoxes.add(checkBox);
-
-        tR.addView(checkBox);
-        //Long press to edit Ost
-        tR.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                System.out.println(ost.toString());
-                dialog = new AddScreen();
-                dialog.show(getFragmentManager(), TAG);
-                ostReplaceId = ost.getId();
-                dialog.setText(ost);
-                dialog.setButtonText("Save");
-                editedOst = true;
-
-                //Toast.makeText(getApplicationContext(), " Editing Ost ", Toast.LENGTH_LONG).show();
-                return false;
-            }
-        });
-        if (!filterText.equals("") && !ostInfoString.contains(filterText)) {
-            //System.out.println(filterText + ostInfoString);
-            tR.removeAllViews();
-        }
-        tableLayout.addView(tR, new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT, TableLayout.LayoutParams.MATCH_PARENT));
-    }
-
-    private void cleanTable(TableLayout table) {
-        checkBoxes.clear();
-
-        int childCount = table.getChildCount();
-
-        // Remove all rows except the first one
-        if (childCount > 1) {
-            table.removeViews(1, childCount - 1);
-        }
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
 
-            case R.id.btnOptions:{
-                if(youtubeFragment != null) {
-                    int ostPos = customAdapter.getClickedPos();
-                    //youtubeFragment.queueVideos(playList);
-                    youtubeFragment.addToQueue(getCurrDispOstList().get(ostPos).getUrl());
-                    Toast.makeText(getActivity(), "Songs queued", Toast.LENGTH_SHORT).show();
-                }
-                break;
-            }
-
-            case R.id.btnShuffle:{
+            /*case R.id.btnShuffle:{
                 if(shuffleActivated){
                     shuffleActivated = false;
                     btnShuffle.setBackgroundResource(R.drawable.shuffle);
@@ -418,7 +277,16 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
 
             }
             case R.id.btnQueue:{
-                if(youtubeFragment != null) {
+                List<String> queueList = new ArrayList<>();
+                int i = 0;
+                for (Ost ost : currOstList){
+                    if(i > clickedPos){
+                        queueList.add(ost.getUrl());
+                    }
+                    i++;
+                }
+                System.out.println(queueList);
+                /*if(youtubeFragment != null) {
                 int i = 0;
                 List<String> playList = new ArrayList<>();
                 for (CheckBox box : checkBoxes){
@@ -448,6 +316,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
                 refreshList();
                 break;
             }
+            */
             case R.id.btnStopPlayer: {
                 if(!floaterLaunched) {
                     youtubeFragment.pausePlayer();
@@ -506,16 +375,6 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         initYoutubeFrag();
         youtubeFragment.setVideoId(url);
         updateYoutubeFrag();
-    }
-
-    public void refreshList(){
-        tR.removeAllViews();
-        cleanTable(tableLayout);
-        allOsts = dbHandler.getAllOsts();
-        checkBoxes.clear(); //clear list of Checkboxes
-        for (Ost ost : allOsts) {
-            addRow(ost);
-        }
     }
 
     public void launchFloater() {
@@ -616,5 +475,11 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
             }
         }
         return currOsts;
+    }
+
+    @Override
+    public void addToQueue(int addId) {
+        Ost ost = getCurrDispOstList().get(addId);
+        youtubeFragment.addToQueue(ost.getUrl());
     }
 }

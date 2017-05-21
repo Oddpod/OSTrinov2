@@ -15,89 +15,9 @@
         android:textColor="#f100"
         android:textCursorDrawable="@drawable/black" />
 
-    <TableRow
-        android:id="@+id/tableRow"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/edtFilter">
-
-        <Button
-            android:id="@+id/btnShuffle"
-            style="@style/Widget.AppCompat.Button.Borderless"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/shuffle" />
-
-        <Button
-            android:id="@+id/btnPlayAll"
-            style="@style/Widget.AppCompat.Button.Small"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="@string/label_play_all"
-            android:textAppearance="@android:style/TextAppearance.DeviceDefault.Widget.Button" />
-
-        <Button
-            android:id="@+id/btnPlaySelected"
-            style="@style/Widget.AppCompat.Button.Small"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="@string/label_play_selected" />
-
-        <Button
-            android:id="@+id/btnQueue"
-            style="@style/Widget.AppCompat.Button.Small"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="@string/label_queue" />
-
-    </TableRow>
-
-    <TableRow
-        android:id="@+id/ostHeaderRow"
-        android:layout_below="@+id/tableRow"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <TextView
-            android:id="@+id/titleHeader"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="5dp"
-            android:text="@string/label_title"
-            android:textColor="#f100"
-            android:textSize="18sp" />
-
-        <TextView
-            android:id="@+id/showHeader"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="5dp"
-            android:text="@string/label_show"
-            android:textColor="#f100"
-            android:textSize="18sp" />
-
-        <TextView
-            android:id="@+id/tagsHeader"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="5dp"
-            android:text="@string/label_tags"
-            android:textColor="#f100"
-            android:textSize="18sp" />
-
-        <Button
-            android:id="@+id/btnDelHeader"
-            style="@style/Widget.AppCompat.Button.Small"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/label_delete"
-            android:textAppearance="@style/TextAppearance.AppCompat.Small" />
-
-    </TableRow>
-
     <ListView
         android:id="@+id/lvOstList"
-        android:layout_below="@id/ostHeaderRow"
+        android:layout_below="@id/edtFilter"
         style="@style/Widget.AppCompat.ListView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

@@ -6,20 +6,20 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.List;
 
-public class CustomAdapter extends BaseAdapter{
+public class CustomAdapter extends BaseAdapter {
 
     private Context mContext;
     private ImageButton btnOptions;
     private List<Ost> ostList;
-    private int clickedPos;
+    private QueueListener queueListener;
 
-    public CustomAdapter(Context context, List<Ost> ostList){
+    public CustomAdapter(Context context, List<Ost> ostList, QueueListener ql) {
         mContext = context;
         this.ostList = ostList;
+        queueListener = ql;
     }
 
     @Override
@@ -49,7 +49,7 @@ public class CustomAdapter extends BaseAdapter{
         btnOptions.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                clickedPos = position;
+                queueListener.addToQueue(position);
                 System.out.println("Duuuuuuuuuuuuuuude");
             }
         });
@@ -60,9 +60,5 @@ public class CustomAdapter extends BaseAdapter{
 
         v.setTag(ost.getId());
         return v;
-    }
-
-    public int getClickedPos() {
-        return clickedPos;
     }
 }
