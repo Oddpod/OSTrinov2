@@ -1,6 +1,7 @@
 package com.example.odd.ostrinofragnavdrawer;
 
 import android.graphics.PixelFormat;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.content.res.Configuration;
 import android.graphics.Color;
@@ -16,33 +17,31 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.AdapterView;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ListView;
+import android.widget.MultiAutoCompleteTextView;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
-import android.widget.TableLayout;
 import android.widget.TableRow;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static android.content.Context.WINDOW_SERVICE;
 
-public class ListFragment extends Fragment implements FunnyJunk.YareYareListener, View.OnClickListener, QueueListener{
+public class ListFragment extends Fragment implements FunnyJunk.YareYareListener,
+        View.OnClickListener, QueueListener, PlayerListener, AddScreen.AddScreenListener{
 
     private boolean editedOst;
     private PopupWindow popupWindow;
-    private int ostReplaceId, orientation, clickedPos;
+    private int ostReplaceId, orientation, previouslyPlayed;
     private List<Ost> allOsts, currOstList;
     private List<CheckBox> checkBoxes;
-    private TableLayout tableLayout;
-    private float rowTextSize = 11;
     private DBHandler dbHandler;
     private EditText filter;
     private String TAG = "OstInfo";
@@ -54,11 +53,11 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
     public YoutubeFragment youtubeFragment = null;
     private Button btnDelHeader, btnPlayAll, btnplaySelected, btnStopPlayer, btnShuffle, btnQueue, btnMovePlayer, btnOptions;
     boolean youtubeFragLaunched;
-    private View rootView;
     private LayoutInflater inflater;
     private CustomAdapter customAdapter;
     private float flPosX, flPosY;
     private ListView lvOst;
+    private View nowPlaying;
     ViewGroup container;
     boolean floaterLaunched, shuffleActivated, playerDocked;
     AddScreen dialog;
@@ -72,12 +71,13 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         this.container = container;
         shuffleActivated = false;
         playerDocked = true;
-        rootView = inflater.inflate(R.layout.activity_listscreen, container, false);
+        final View rootView = inflater.inflate(R.layout.activity_listscreen, container, false);
         parentLayout = (RelativeLayout) rootView;
         dbHandler = new DBHandler(getActivity());
 
         lvOst = (ListView) rootView.findViewById(R.id.lvOstList);
         lvOst.findViewById(R.id.btnOptions);
+        lvOst.setDivider(null);
 
         allOsts = dbHandler.getAllOsts();
 
@@ -90,19 +90,18 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
 
                 Toast.makeText(getActivity(), "Clicked on item " + position, Toast.LENGTH_SHORT).show();
                 currOstList = getCurrDispOstList();
-                String url = currOstList.get(position).getUrl();
                 initYoutubeFrag();
-                youtubeFragment.setVideoId(url);
-                updateYoutubeFrag();
                 List<String> queueList = new ArrayList<>();
-                int i = 0;
                 for (Ost ost : currOstList){
-                    if(i > position){
-                        queueList.add(ost.getUrl());
-                    }
-                    i++;
+                    queueList.add(ost.getUrl());
                 }
-                youtubeFragment.initiateQueue(queueList);
+                youtubeFragment.initiateQueue(queueList, position);
+                updateYoutubeFrag();
+                if(currOstList.contains(allOsts.get(previouslyPlayed))) {
+                    getViewByPosition(previouslyPlayed, lvOst).setBackgroundResource(R.drawable.white);
+                }
+                view.setBackgroundResource(R.drawable.greenrect);
+                previouslyPlayed = position;
             }
         });
 
@@ -138,6 +137,8 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String filterString = s.toString().toLowerCase();
+                customAdapter.filter(filterString);
             }
 
             @Override
@@ -148,8 +149,10 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
                     FunnyJunk dialog = new FunnyJunk();
                     dialog.show(getActivity().getFragmentManager(), TAG2);
                 }
+                customAdapter.filter(s.toString());
+                /*ListFragment.this.customAdapter.getFilter().filter(s);
                 customAdapter = new CustomAdapter(getContext(), getCurrDispOstList(), ListFragment.this);
-                lvOst.setAdapter(customAdapter);
+                lvOst.setAdapter(customAdapter);*/
                 /*cleanTable(tableLayout);
                 for (Ost ost : allOsts) {
                     addRow(ost);
@@ -157,10 +160,12 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
             }
         };
         filter.addTextChangedListener(textWatcher);
+        btnShuffle = (Button)  rootView.findViewById(R.id.btnShuffle);
         btnStopPlayer = (Button) rootView.findViewById(R.id.btnStopPlayer);
         btnMovePlayer = (Button) rootView.findViewById(R.id.btnMovePlayer);
         flOnTop = (FrameLayout) rootView.findViewById(R.id.flOntop);
 
+        btnShuffle.setOnClickListener(this);
         btnStopPlayer.setOnClickListener(this);
         btnMovePlayer.setOnTouchListener(new View.OnTouchListener() {
                 float dx, dy;
@@ -217,19 +222,20 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
     public void onClick(View v) {
         switch (v.getId()) {
 
-            /*case R.id.btnShuffle:{
+            case R.id.btnShuffle:{
                 if(shuffleActivated){
                     shuffleActivated = false;
+                    youtubeFragment.shuffleOff();
                     btnShuffle.setBackgroundResource(R.drawable.shuffle);
                 }
                 else{
                     shuffleActivated = true;
-                    youtubeFragment.shuffle();
+                    youtubeFragment.shuffleOn();
                     btnShuffle.setBackgroundResource(R.drawable.shuffle_activated);
                 }
                 break;
 
-            }
+            }/*
             case R.id.btnPlayAll: {
                 List<String> urlList = new ArrayList<>();
                 List<Ost> currDispOstList = getCurrDispOstList();
@@ -239,7 +245,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
                     }
 
                     if(shuffleActivated){
-                        Collections.shuffle(urlList);
+                        Collections.shuffleOn(urlList);
                     }
                     initYoutubeFrag();
                     youtubeFragment.setVideoIds(urlList);
@@ -266,7 +272,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
                 }
                 if(playList.size()> 0){
                     if(shuffleActivated){
-                        Collections.shuffle(playList);
+                        Collections.shuffleOn(playList);
                     }
                     initYoutubeFrag();
                     youtubeFragment.setVideoIds(playList);
@@ -330,6 +336,10 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
     public void initYoutubeFrag(){
         if(youtubeFragment == null){
             youtubeFragment = new YoutubeFragment();
+            PlayerListener[] playerListeners = new PlayerListener[2];
+            playerListeners[0] = customAdapter;
+            playerListeners[1] = this;
+            youtubeFragment.setPlayerListener(playerListeners);
         }
     }
 
@@ -470,7 +480,6 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
             String ostString = ost.getTitle() + ", " + ost.getShow() + ", " + ost.getTags();
             ostString = ostString.toLowerCase();
             if(ostString.contains(filterText)){
-                //System.out.println("added");
                 currOsts.add(ost);
             }
         }
@@ -481,5 +490,46 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
     public void addToQueue(int addId) {
         Ost ost = getCurrDispOstList().get(addId);
         youtubeFragment.addToQueue(ost.getUrl());
+    }
+
+    public View getViewByPosition(int pos, ListView listView) {
+        final int firstListItemPosition = listView.getFirstVisiblePosition();
+        final int lastListItemPosition = firstListItemPosition + listView.getChildCount() - 1;
+
+        if (pos < firstListItemPosition || pos > lastListItemPosition ) {
+            return listView.getAdapter().getView(pos, null, listView);
+        } else {
+            final int childIndex = pos - firstListItemPosition;
+            return listView.getChildAt(childIndex);
+        }
+    }
+
+    public void updateCurrentlyPlaying(int newId){
+        getViewByPosition(newId, lvOst).setBackgroundResource(R.drawable.greenrect);
+        getViewByPosition(previouslyPlayed, lvOst).setBackgroundResource(R.drawable.white);
+        previouslyPlayed = newId;
+    }
+
+    @Override
+    public void onSaveButtonClick(DialogFragment dialog) {
+        MultiAutoCompleteTextView entTags = (MultiAutoCompleteTextView) dialog.getDialog().findViewById(R.id.mactvTags);
+        AutoCompleteTextView entShow = (AutoCompleteTextView) dialog.getDialog().findViewById(R.id.actvShow);
+        EditText entTitle = (EditText) dialog.getDialog().findViewById(R.id.edtTitle);
+        EditText entUrl = (EditText) dialog.getDialog().findViewById(R.id.edtUrl);
+
+        String title = entTitle.getText().toString();
+        String show = entShow.getText().toString();
+        String tags = entTags.getText().toString();
+        String url = entUrl.getText().toString();
+
+        Ost ost = new Ost(title, show, tags, url);
+        ost.setId(ostReplaceId);
+
+        if(editedOst){
+            dbHandler.updateOst(ost);
+        }
+        else {
+            Toast.makeText(getActivity(), "No changes detected", Toast.LENGTH_SHORT).show();
+        }
     }
 }

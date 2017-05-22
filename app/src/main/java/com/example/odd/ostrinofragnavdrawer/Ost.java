@@ -59,4 +59,8 @@ class Ost {
     void setUrl(String url){
         this.url = url;
     }
+
+    String getSearchString(){
+        return title + show + tags;
+    }
 }

@@ -111,4 +111,6 @@ public class AddScreen extends DialogFragment{
     public void setButtonText(String text){
         buttonText = text;
     }
+
+    public String getButtonText(){return buttonText;}
 }
