@@ -8,11 +8,10 @@
     android:orientation="horizontal">
 
     <ImageView
-        android:id="@+id/imageView2"
+        android:id="@+id/ivThumbnail"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:contentDescription="@android:string/yes"
-        app:srcCompat="@drawable/tranquility" />
+        android:contentDescription="@android:string/yes" />
 
     <TextView
         android:id="@+id/tvTitle"

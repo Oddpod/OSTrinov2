@@ -1,12 +1,18 @@
 package com.example.odd.ostrinofragnavdrawer;
 
 import android.content.Context;
+import android.net.Uri;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -15,7 +21,6 @@ public class CustomAdapter extends BaseAdapter implements PlayerListener{
 
     private List<Ost> filteredOstList;
     private List<Ost> ostList;
-    //private ItemFilter mFilter = new ItemFilter();
     private Context mContext;
 
     private ImageButton btnOptions;
@@ -50,6 +55,13 @@ public class CustomAdapter extends BaseAdapter implements PlayerListener{
     public View getView(final int position, View convertView, ViewGroup parent) {
         Ost ost = ostList.get(position);
         View v = View.inflate(mContext, R.layout.custom_row, null);
+        ImageView thumbnail = (ImageView) v.findViewById(R.id.ivThumbnail);;
+        if(thumbnail.getDrawable() == null){
+            Picasso.with(mContext)
+                    .load("http://img.youtube.com/vi/" + Util.urlToId(ost.getUrl()) + "/2.jpg")
+                    .placeholder(R.drawable.tranquility)
+                    .into(thumbnail);
+        }
         TextView tvTitle = (TextView) v.findViewById(R.id.tvTitle);
         TextView tvShow = (TextView) v.findViewById(R.id.tvShow);
         TextView tvTags = (TextView) v.findViewById(R.id.tvTags);
@@ -63,7 +75,6 @@ public class CustomAdapter extends BaseAdapter implements PlayerListener{
             @Override
             public void onClick(View v) {
                 queueListener.addToQueue(position);
-                System.out.println("Duuuuuuuuuuuuuuude");
             }
         });
 
@@ -95,5 +106,11 @@ public class CustomAdapter extends BaseAdapter implements PlayerListener{
             }
         }
         notifyDataSetChanged();
+    }
+
+    public void updateList(List<Ost> updatedList){
+        ostList = updatedList;
+        notifyDataSetChanged();
+        System.out.println(ostList.toString());
     }
 }

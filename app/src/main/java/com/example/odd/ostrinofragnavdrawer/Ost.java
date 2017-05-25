@@ -19,6 +19,7 @@ class Ost {
     public String toString() {
         return "Ost{title='" + title + '\'' +
                 ", show='" + show + '\'' +
+                ", tags='" + tags + '\'' +
                 '}';
     }
 

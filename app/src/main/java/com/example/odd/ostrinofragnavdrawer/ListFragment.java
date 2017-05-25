@@ -22,6 +22,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.PopupWindow;
@@ -31,11 +32,12 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import static android.content.Context.WINDOW_SERVICE;
 
 public class ListFragment extends Fragment implements FunnyJunk.YareYareListener,
-        View.OnClickListener, QueueListener, PlayerListener, AddScreen.AddScreenListener{
+        View.OnClickListener, QueueListener, PlayerListener {
 
     private boolean editedOst;
     private PopupWindow popupWindow;
@@ -51,19 +53,19 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
     private TableRow tR;
     public FrameLayout flOnTop;
     public YoutubeFragment youtubeFragment = null;
-    private Button btnDelHeader, btnPlayAll, btnplaySelected, btnStopPlayer, btnShuffle, btnQueue, btnMovePlayer, btnOptions;
+    private Button btnDelHeader, btnplaySelected, btnStopPlayer, btnShuffle, btnMovePlayer, btnOptions;
+    private ImageButton btnShufflePlay, btnAdd;
     boolean youtubeFragLaunched;
     private LayoutInflater inflater;
     private CustomAdapter customAdapter;
     private float flPosX, flPosY;
     private ListView lvOst;
-    private View nowPlaying;
-    ViewGroup container;
+    private ViewGroup container;
     boolean floaterLaunched, shuffleActivated, playerDocked;
-    AddScreen dialog;
-    RelativeLayout parentLayout;
-    WindowManager wm;
-    RelativeLayout.LayoutParams landParams, portParams;
+    private AddScreen dialog;
+    private RelativeLayout parentLayout;
+    private WindowManager wm;
+    private RelativeLayout.LayoutParams landParams, portParams;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -115,6 +117,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
                 ostReplaceId = ost.getId();
                 dialog.setText(ost);
                 dialog.setButtonText("Save");
+                dialog.showDeleteButton();
                 editedOst = true;
                 return true;
             }
@@ -161,11 +164,15 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         };
         filter.addTextChangedListener(textWatcher);
         btnShuffle = (Button)  rootView.findViewById(R.id.btnShuffle);
+        btnShufflePlay = (ImageButton) rootView.findViewById(R.id.btnShufflePlay);
+        btnAdd = (ImageButton)  rootView.findViewById(R.id.btnAdd);
         btnStopPlayer = (Button) rootView.findViewById(R.id.btnStopPlayer);
         btnMovePlayer = (Button) rootView.findViewById(R.id.btnMovePlayer);
         flOnTop = (FrameLayout) rootView.findViewById(R.id.flOntop);
 
         btnShuffle.setOnClickListener(this);
+        btnShufflePlay.setOnClickListener(this);
+        btnAdd.setOnClickListener(this);
         btnStopPlayer.setOnClickListener(this);
         btnMovePlayer.setOnTouchListener(new View.OnTouchListener() {
                 float dx, dy;
@@ -223,7 +230,11 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         switch (v.getId()) {
 
             case R.id.btnShuffle:{
-                if(shuffleActivated){
+                if(youtubeFragment == null){
+                    Toast.makeText(getActivity(), "Player is not running", Toast.LENGTH_SHORT).show();
+                    break;
+                }
+                else if(shuffleActivated){
                     shuffleActivated = false;
                     youtubeFragment.shuffleOff();
                     btnShuffle.setBackgroundResource(R.drawable.shuffle);
@@ -235,7 +246,33 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
                 }
                 break;
 
-            }/*
+            }
+            case R.id.btnShufflePlay:{
+                Random rnd = new Random();
+                currOstList = getCurrDispOstList();
+                int rndPos = rnd.nextInt(currOstList.size());
+                initYoutubeFrag();
+                List<String> queueList = new ArrayList<>();
+                for (Ost ost : currOstList){
+                    queueList.add(ost.getUrl());
+                }
+                youtubeFragment.initiateQueue(queueList, rndPos);
+                updateYoutubeFrag();
+                customAdapter.updateCurrentlyPlaying(rndPos);
+                refreshListView();
+                youtubeFragment.shuffleOn();
+                previouslyPlayed = rndPos;
+                break;
+            }
+
+            case R.id.btnAdd:{
+                AddScreen dialog = new AddScreen();
+                dialog.show(getFragmentManager(), TAG);
+                dialog.setButtonText("Add");
+                editedOst = false;
+                break;
+            }
+            /*
             case R.id.btnPlayAll: {
                 List<String> urlList = new ArrayList<>();
                 List<Ost> currDispOstList = getCurrDispOstList();
@@ -376,6 +413,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
             if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
                 flOnTop.setLayoutParams(landParams);
             } else if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+                flOnTop.invalidate();
                 flOnTop.setLayoutParams(portParams);
             }
         }
@@ -510,26 +548,15 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         previouslyPlayed = newId;
     }
 
-    @Override
-    public void onSaveButtonClick(DialogFragment dialog) {
-        MultiAutoCompleteTextView entTags = (MultiAutoCompleteTextView) dialog.getDialog().findViewById(R.id.mactvTags);
-        AutoCompleteTextView entShow = (AutoCompleteTextView) dialog.getDialog().findViewById(R.id.actvShow);
-        EditText entTitle = (EditText) dialog.getDialog().findViewById(R.id.edtTitle);
-        EditText entUrl = (EditText) dialog.getDialog().findViewById(R.id.edtUrl);
+    public void refreshListView(){
+        editedOst = false;
+        allOsts = dbHandler.getAllOsts();
+        currOstList = getCurrDispOstList();
+        customAdapter.updateList(currOstList);
+        System.out.println("heyooooooooo");
+    }
 
-        String title = entTitle.getText().toString();
-        String show = entShow.getText().toString();
-        String tags = entTags.getText().toString();
-        String url = entUrl.getText().toString();
-
-        Ost ost = new Ost(title, show, tags, url);
-        ost.setId(ostReplaceId);
-
-        if(editedOst){
-            dbHandler.updateOst(ost);
-        }
-        else {
-            Toast.makeText(getActivity(), "No changes detected", Toast.LENGTH_SHORT).show();
-        }
+    public AddScreen getDialog(){
+        return dialog;
     }
 }

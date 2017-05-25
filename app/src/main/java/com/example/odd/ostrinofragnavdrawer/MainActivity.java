@@ -1,5 +1,7 @@
 package com.example.odd.ostrinofragnavdrawer;
 
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
@@ -32,15 +34,19 @@ import java.util.Random;
 
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, AddScreen.AddScreenListener, FunnyJunk.YareYareListener{
+        implements NavigationView.OnNavigationItemSelectedListener,
+        AddScreen.AddScreenListener, FunnyJunk.YareYareListener,
+        DialogInterface.OnDismissListener{
 
     private String TAG = "OstInfo";
     private DBHandler db;
-    private Ost lastAddedOst;
+    private Ost lastAddedOst, unAddedOst;
     private List<Ost> ostList;
     private Random rnd;
     int backPress;
     private ListFragment listFragment;
+    private AddScreen addScreenDialog;
+    private boolean added;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +55,7 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         db = new DBHandler(this);
+        unAddedOst = null;
 
         //For reseting database
         /*SQLiteDatabase dtb = db.getWritableDatabase();
@@ -102,9 +109,28 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch(id){
+            case R.id.action_settings:{
+                return true;
+            }
+
+            case R.id.share:{
+                Toast.makeText(this, "Not Implemented", Toast.LENGTH_SHORT).show();
+                break;
+            }
+
+            case R.id.import_osts:{
+                chooseFileImport();
+                break;
+            }
+
+            case R.id.export_osts:{
+                chooseFileExport();
+            }
+            default: return true;
         }
+
+
 
 
 
@@ -119,9 +145,13 @@ public class MainActivity extends AppCompatActivity
 
         switch(id){
             case R.id.nav_addOst:{
-                AddScreen dialog = new AddScreen();
-                dialog.show(getSupportFragmentManager(), TAG);
-                dialog.setButtonText("Add");
+                addScreenDialog = new AddScreen();
+                addScreenDialog.show(getSupportFragmentManager(), TAG);
+                System.out.println(unAddedOst);
+                if(unAddedOst != null){
+                    addScreenDialog.setText(unAddedOst);
+                }
+                addScreenDialog.setButtonText("Add");
                 listFragment.isNotEdited();
                 break;
             }
@@ -191,6 +221,7 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
+
     @Override
     public void onSaveButtonClick(DialogFragment dialog) {
         MultiAutoCompleteTextView entTags = (MultiAutoCompleteTextView) dialog.getDialog().findViewById(R.id.mactvTags);
@@ -209,6 +240,7 @@ public class MainActivity extends AppCompatActivity
 
         if(listFragment.isEditedOst()){
             db.updateOst(lastAddedOst);
+            listFragment.refreshListView();
         }
 
         else if(!alreadyAdded){
@@ -219,7 +251,35 @@ public class MainActivity extends AppCompatActivity
             Toast.makeText(this, lastAddedOst.getTitle() + " From " + lastAddedOst.getShow() + " has already been added", Toast.LENGTH_SHORT).show();
             lastAddedOst = null;
         }
-        //listFragment.refreshList();
+        added = true;
+    }
+
+    @Override
+    public void onDeleteButtonClick(DialogFragment dialog) {
+        db.deleteOst(listFragment.getOstReplaceId());
+        listFragment.refreshListView();
+        Toast.makeText(this, "Deleted " + listFragment.getDialog().getFieldData()[0], Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialogInterface) {
+        if(added){
+            unAddedOst = null;
+            added = false;
+        }
+        else{
+            String[] fieldData = addScreenDialog.getFieldData();
+
+            String title = fieldData[0];
+            String show = fieldData[1];
+            String tags = fieldData[2];
+            String url = fieldData[3];
+
+            System.out.println(title + show + tags + url);
+
+            unAddedOst = new Ost(title, show, tags, url);
+            System.out.println(unAddedOst);
+        }
     }
 
     private void chooseFileImport() {

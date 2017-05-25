@@ -12,6 +12,10 @@
     <string name="label_link">Link</string>
     <string name="label_delete">Delete</string>
     <string name="label_queue">Queue</string>
+    <string name="label_add">Add New OST</string>
+    <string name="label_shuffle_play">Shuffle Play</string>
+    <string name="label_share">Share</string>
+
 
     <string name="label_play_all">Play all</string>
     <string name="label_play_selected">Play Selected</string>

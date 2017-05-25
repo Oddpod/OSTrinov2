@@ -6,41 +6,61 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <TableRow
-        android:id="@+id/trTop"
+    <TableLayout
+        android:id="@+id/tlTop"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true">
+        android:layout_height="wrap_content"
+        android:stretchColumns="0, 1, 2"
+        android:background="@drawable/side_nav_bar">
 
-        <EditText
-            android:id="@+id/edtFilter"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:ems="10"
-            android:hint="@string/label_filter"
-            android:inputType="textPersonName"
-            android:textColor="#f100"
-            android:textCursorDrawable="@drawable/black" />
+        <TableRow
+            android:id="@+id/trTop"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-        <Button
-            android:id="@+id/btnShuffle"
-            style="@style/Widget.AppCompat.Button.Borderless"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:background="@drawable/shuffle" />
+            <EditText
+                android:id="@+id/edtFilter"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:ems="8"
+                android:hint="@string/label_filter"
+                android:inputType="textPersonName"
+                android:textColor="#f100"
+                android:textCursorDrawable="@drawable/black" />
 
-    </TableRow>
+            <Button
+                android:id="@+id/btnShuffle"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/shuffle" />
+
+            <ImageButton
+                android:id="@+id/btnShufflePlay"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:contentDescription="@string/label_shuffle_play"
+                app:srcCompat="@drawable/ic_menu_send" />
+
+            <ImageButton
+                android:id="@+id/btnAdd"
+                android:layout_width="40dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="end"
+                android:contentDescription="@string/label_add"
+                app:srcCompat="@android:drawable/ic_menu_add" />
+        </TableRow>
+
+    </TableLayout>
 
     <ListView
         android:id="@+id/lvOstList"
         style="@style/Widget.AppCompat.ListView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_alignParentBottom="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tlTop"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_below="@id/trTop" />
+        android:layout_alignParentStart="true" />
 
     <FrameLayout
         android:id="@+id/flOntop"
