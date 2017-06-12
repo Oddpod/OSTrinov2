@@ -17,6 +17,7 @@ import com.google.android.youtube.player.YouTubePlayer;
 import com.google.android.youtube.player.YouTubePlayer.OnInitializedListener;
 import com.google.android.youtube.player.YouTubePlayer.Provider;
 import com.google.android.youtube.player.YouTubePlayerSupportFragment;
+import com.google.android.youtube.player.YouTubePlayerView;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,7 +34,8 @@ import static android.R.drawable.ic_media_play;
 public class YoutubeFragment extends Fragment implements View.OnClickListener,
         OnInitializedListener,
         YouTubePlayer.PlayerStateChangeListener,
-        YouTubePlayer.PlaybackEventListener {
+        YouTubePlayer.PlaybackEventListener,
+        YouTubePlayer.OnFullscreenListener {
 
     // API キー
     public static final String API_KEY = "AIzaSyDSMKvbGUJxKhPz5t4PMFEByD5qFy1sjEA";
@@ -152,7 +154,7 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener,
         }
         System.out.println("preQueue: " + preQueue.toString());
         System.out.println("played: " + played.toString());
-        notifyPlayerListeners();
+        notifyPlayerListeners(true);
     }
 
     public void pausePlayer() {
@@ -177,13 +179,8 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener,
         if (preQueue.isEmpty()) {
             btnNext.setVisibility(View.INVISIBLE);
         }
-        System.out.println("preQueue: " + preQueue.toString());
-        System.out.println("played: " + played.toString());
         btnPrevious.setVisibility(View.VISIBLE);
-
-        System.out.println(videoIds.indexOf(currentlyPlaying));
-        System.out.println(currentlyPlaying);
-        notifyPlayerListeners();
+        notifyPlayerListeners(false);
     }
 
     public void setVideoId(String url) {
@@ -285,41 +282,18 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener,
                 break;
             }
 
-            //Not allowed according to API license I think :C
-            case R.id.btnMinimize: {
-                if (minimized) {
-                    layoutView.addView(playerLayout);
-                    btnMinimize.setBackgroundResource(arrow_up_float);
-                    minimized = false;
-
-                } else {
-                    btnMinimize.setBackgroundResource(arrow_down_float);
-                    layoutView.removeView(playerLayout);
-                    minimized = true;
-                }
-
-                break;
+           case R.id.btnMinimize:{
+               mPlayer.setFullscreen(true);
+               break;
             }
         }
     }
 
-    public void updatePlayButtons() {
-        if (!played.isEmpty()) {
-            btnPrevious.setVisibility(View.VISIBLE);
-        } else if (played.isEmpty()) {
-            btnPrevious.setVisibility(View.INVISIBLE);
-        }
-        if (!preQueue.isEmpty()) {
-            btnNext.setVisibility(View.VISIBLE);
-        } else if (preQueue.isEmpty()) {
-            //btnNext.setVisibility(View.INVISIBLE);
-        }
-    }
-
-
     public void shuffleOn() {
-        Random rnd = new Random();
-        Collections.shuffle(preQueue, rnd);
+        long seed = System.nanoTime();
+        Random rnd = new Random(seed);
+        Collections.shuffle(preQueue, new Random(seed));
+        notifyShuffle(seed, rnd);
         shuffle = true;
     }
 
@@ -339,17 +313,31 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener,
 
     }
 
-    public void setPlayerListener(PlayerListener[] playerListeners) {
+    public void setPlayerListeners(PlayerListener[] playerListeners) {
         this.playerListeners = playerListeners;
     }
 
-    public void notifyPlayerListeners() {
+    public void notifyPlayerListeners(boolean previous) {
         for (int i = 0; i < playerListeners.length; i++) {
-            System.out.println(currentlyPlaying);
-            System.out.println(videoIds.toString());
-            System.out.println(playerListeners);
-            System.out.println(i);
             playerListeners[i].updateCurrentlyPlaying(videoIds.indexOf(currentlyPlaying));
+            if(previous){
+                playerListeners[i].previous();
+            }
+            else {
+                playerListeners[i].next();
+            }
+
         }
+    }
+
+    public void notifyShuffle(long seed, Random rnd){
+        for (int i = 0; i <playerListeners.length ; i++) {
+            playerListeners[i].shuffle(seed, rnd);
+        }
+    }
+
+    @Override
+    public void onFullscreen(boolean b) {
+        mPlayer.setShowFullscreenButton(true);
     }
 }

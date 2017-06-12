@@ -32,18 +32,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static com.example.odd.ostrinofragnavdrawer.R.id.btnMovePlayer;
-import static com.example.odd.ostrinofragnavdrawer.R.id.flPlayer;
-import static com.example.odd.ostrinofragnavdrawer.R.id.lvQueue;
-
-
 public class MainActivity extends AppCompatActivity
         implements AddScreen.AddScreenListener, FunnyJunk.YareYareListener,
-        DialogInterface.OnDismissListener, PlayerListener, QueueListener, View.OnClickListener{
+        DialogInterface.OnDismissListener, QueueListener, View.OnClickListener{
 
     private DBHandler db;
     private Ost unAddedOst;
@@ -56,7 +50,7 @@ public class MainActivity extends AppCompatActivity
     private FrameLayout flPlayer;
     private RelativeLayout rlContainer;
     ListView lvQueue;
-    private boolean playerDocked = true, youtubeFragLaunched = false;
+    private boolean youtubeFragLaunched = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,7 +60,6 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
         db = new DBHandler(this);
         unAddedOst = null;
-        playerDocked = true;
 
         //For reseting database
         /*SQLiteDatabase dtb = db.getWritableDatabase();
@@ -96,7 +89,6 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                playerDocked = false;
                 DisplayMetrics displayMetrics = new DisplayMetrics();
                 getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
                 int height = displayMetrics.heightPixels;
@@ -374,6 +366,7 @@ public class MainActivity extends AppCompatActivity
 
     public void addToQueue(Ost ost) {
         youtubeFragment.addToQueue(ost.getUrl());
+        customAdapter.addToQueue(ost);
 
     }
 
@@ -383,7 +376,7 @@ public class MainActivity extends AppCompatActivity
             PlayerListener[] playerListeners = new PlayerListener[2];
             playerListeners[0] = customAdapter;
             playerListeners[1] = listFragment;
-            youtubeFragment.setPlayerListener(playerListeners);
+            youtubeFragment.setPlayerListeners(playerListeners);
         }
     }
 
@@ -406,6 +399,7 @@ public class MainActivity extends AppCompatActivity
         initYoutubeFrag();
         youtubeFragment.initiateQueue(Util.extractUrls(ostList), startid);
         updateYoutubeFrag();
+        youtubeFragment.setMainActivity(this);
     }
 
     public void updateYoutubeFrag(){
@@ -417,10 +411,6 @@ public class MainActivity extends AppCompatActivity
             launchYoutubeFrag();
             youtubeFragLaunched = true;
         }
-    }
-    @Override
-    public void updateCurrentlyPlaying(int newId) {
-
     }
 
     @Override
@@ -453,6 +443,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public boolean youtubeFragNotLaunched(){
-        return youtubeFragment == null;
+        return youtubeFragLaunched;
     }
+
 }

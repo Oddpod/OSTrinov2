@@ -1,80 +1,50 @@
 package com.example.odd.ostrinofragnavdrawer;
 
-import android.graphics.PixelFormat;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
-import android.content.res.Configuration;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v4.app.FragmentManager;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.DisplayMetrics;
-import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.AdapterView;
-import android.widget.AutoCompleteTextView;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ListView;
-import android.widget.MultiAutoCompleteTextView;
-import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
-import android.widget.TableRow;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static android.content.Context.WINDOW_SERVICE;
-
 public class ListFragment extends Fragment implements FunnyJunk.YareYareListener,
         View.OnClickListener, QueueListener, PlayerListener {
 
     private boolean editedOst;
-    private PopupWindow popupWindow;
-    private int ostReplaceId, orientation, previouslyPlayed;
+    private int ostReplaceId, previouslyPlayed;
     private List<Ost> allOsts, currOstList;
-    private List<CheckBox> checkBoxes;
     private DBHandler dbHandler;
     private EditText filter;
     private String TAG = "OstInfo";
     private String TAG2 = "Jojo";
     private String filterText;
     private TextWatcher textWatcher;
-    private TableRow tR;
-    public FrameLayout flOnTop;
-    public YoutubeFragment youtubeFragment = null;
     private ImageButton btnShuffle, btnShufflePlay, btnAdd;
-    private LayoutInflater inflater;
     private CustomAdapter customAdapter;
-    private float flPosX, flPosY;
     private ListView lvOst;
-    private ViewGroup container;
-    boolean youtubeFragLaunched, floaterLaunched, shuffleActivated, playerDocked;
+    boolean shuffleActivated, playerDocked;
     private AddScreen dialog;
-    private RelativeLayout parentLayout;
-    private WindowManager wm;
     private RelativeLayout.LayoutParams landParams, portParams;
     private Ost unAddedOst;
     private MainActivity mainActivity;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        this.inflater = inflater;
-        this.container = container;
         shuffleActivated = false;
         playerDocked = true;
         final View rootView = inflater.inflate(R.layout.activity_listscreen, container, false);
-        parentLayout = (RelativeLayout) rootView;
         dbHandler = new DBHandler(getActivity());
         unAddedOst = null;
 
@@ -90,8 +60,6 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         lvOst.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                Toast.makeText(getActivity(), "Clicked on item " + position, Toast.LENGTH_SHORT).show();
                 currOstList = getCurrDispOstList();
                 mainActivity.initiatePlayer(currOstList, position);
                 if(currOstList.contains(allOsts.get(previouslyPlayed))) {
@@ -154,7 +122,6 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         btnShuffle = (ImageButton)  rootView.findViewById(R.id.btnShuffle);
         btnShufflePlay = (ImageButton) rootView.findViewById(R.id.btnShufflePlay);
         btnAdd = (ImageButton)  rootView.findViewById(R.id.btnAdd);
-        flOnTop = (FrameLayout) rootView.findViewById(R.id.flOntop);
 
         btnShuffle.setOnClickListener(this);
         btnShufflePlay.setOnClickListener(this);
@@ -168,7 +135,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         switch (v.getId()) {
 
             case R.id.btnShuffle:{
-                if(mainActivity.youtubeFragNotLaunched()){
+                if(!mainActivity.youtubeFragNotLaunched()){
                     Toast.makeText(getActivity(), "Player is not running", Toast.LENGTH_SHORT).show();
                     break;
                 }
@@ -285,12 +252,26 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         previouslyPlayed = newId;
     }
 
+    @Override
+    public void next() {
+
+    }
+
+    @Override
+    public void previous() {
+
+    }
+
+    @Override
+    public void shuffle(long seed, Random rnd) {
+
+    }
+
     public void refreshListView(){
         editedOst = false;
         allOsts = dbHandler.getAllOsts();
         currOstList = getCurrDispOstList();
         customAdapter.updateList(currOstList);
-        System.out.println("heyooooooooo");
     }
 
     public AddScreen getDialog(){

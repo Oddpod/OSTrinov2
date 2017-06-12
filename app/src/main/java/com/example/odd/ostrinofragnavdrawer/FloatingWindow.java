@@ -137,7 +137,7 @@ public class FloatingWindow extends Service implements View.OnClickListener{
         int id = v.getId();
 
         switch (id){
-            case R.id.btnFloatPrevious:{
+            /*case R.id.btnFloatPrevious:{
                 break;
             }
             case R.id.btnFloatPause:{
@@ -145,7 +145,7 @@ public class FloatingWindow extends Service implements View.OnClickListener{
             }
             case R.id.btnFloatNext:{
                 break;
-            }
+            }*/
             case R.id.btnMinimize:{
                 break;
             }

@@ -19,11 +19,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+import java.util.Stack;
 
 public class CustomAdapter extends BaseAdapter implements PlayerListener{
 
-    private List<Ost> filteredOstList;
-    private List<Ost> ostList;
+    private List<Ost> filteredOstList, ostList;
+    private Stack<Ost> played;
     private Context mContext;
 
     private ImageButton btnOptions;
@@ -39,6 +40,7 @@ public class CustomAdapter extends BaseAdapter implements PlayerListener{
         filteredOstList.addAll(ostListin);
         queueListener = ql;
         if(queue){
+            played = new Stack<>();
             this.queue = queue;
         }
     }
@@ -78,6 +80,9 @@ public class CustomAdapter extends BaseAdapter implements PlayerListener{
             System.out.println(nowPlaying + ", " + position);
             v.setBackgroundResource(R.drawable.greenrect);
         }
+        if(queue && position == 0){
+            v.setBackgroundResource(R.drawable.greenrect);
+        }
         btnOptions.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -95,8 +100,29 @@ public class CustomAdapter extends BaseAdapter implements PlayerListener{
 
     @Override
     public void updateCurrentlyPlaying(int newId) {
-        nowPlaying = newId;
+        if(!queue){
+            nowPlaying = newId;
+        }
     }
+
+    @Override
+    public void next() {
+        played.add(ostList.remove(0));
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public void previous() {
+        ostList.add(0, played.pop());
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public void shuffle(long seed, Random rnd) {
+        Collections.shuffle(ostList, new Random(seed));
+        notifyDataSetChanged();
+    }
+
     public void filter(String charText) {
         charText = charText.toLowerCase(Locale.getDefault());
         ostList.clear();
@@ -118,5 +144,15 @@ public class CustomAdapter extends BaseAdapter implements PlayerListener{
         ostList = updatedList;
         notifyDataSetChanged();
         System.out.println(ostList.toString());
+    }
+
+    public void removeFromQueue(int id){
+        ostList.remove(id);
+        notifyDataSetChanged();
+    }
+
+    public void addToQueue(Ost ost){
+        ostList.add(1, ost);
+        notifyDataSetChanged();
     }
 }
