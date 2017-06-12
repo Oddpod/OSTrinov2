@@ -14,8 +14,11 @@ import com.squareup.picasso.Picasso;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 
 public class CustomAdapter extends BaseAdapter implements PlayerListener{
 
@@ -26,14 +29,18 @@ public class CustomAdapter extends BaseAdapter implements PlayerListener{
     private ImageButton btnOptions;
     private QueueListener queueListener;
     private int nowPlaying = -1;
+    private boolean queue;
 
-    public CustomAdapter(Context context, List<Ost> ostListin, QueueListener ql) {
+    public CustomAdapter(Context context, List<Ost> ostListin, QueueListener ql, boolean queue) {
         mContext = context;
         ostList = new ArrayList<>();
         ostList.addAll(ostListin);
         filteredOstList = new ArrayList<>();
         filteredOstList.addAll(ostListin);
         queueListener = ql;
+        if(queue){
+            this.queue = queue;
+        }
     }
 
     @Override
@@ -55,7 +62,7 @@ public class CustomAdapter extends BaseAdapter implements PlayerListener{
     public View getView(final int position, View convertView, ViewGroup parent) {
         Ost ost = ostList.get(position);
         View v = View.inflate(mContext, R.layout.custom_row, null);
-        ImageView thumbnail = (ImageView) v.findViewById(R.id.ivThumbnail);;
+        ImageView thumbnail = (ImageView) v.findViewById(R.id.ivThumbnail);
         if(thumbnail.getDrawable() == null){
             Picasso.with(mContext)
                     .load("http://img.youtube.com/vi/" + Util.urlToId(ost.getUrl()) + "/2.jpg")
@@ -77,7 +84,6 @@ public class CustomAdapter extends BaseAdapter implements PlayerListener{
                 queueListener.addToQueue(position);
             }
         });
-
 
         tvTitle.setText(ost.getTitle());
         tvShow.setText((ost.getShow()));

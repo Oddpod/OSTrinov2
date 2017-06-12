@@ -21,6 +21,7 @@ import com.google.android.youtube.player.YouTubePlayerSupportFragment;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.Stack;
 
 import static android.R.drawable.arrow_down_float;
@@ -317,7 +318,8 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener,
 
 
     public void shuffleOn() {
-        Collections.shuffle(preQueue);
+        Random rnd = new Random();
+        Collections.shuffle(preQueue, rnd);
         shuffle = true;
     }
 
@@ -343,6 +345,10 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener,
 
     public void notifyPlayerListeners() {
         for (int i = 0; i < playerListeners.length; i++) {
+            System.out.println(currentlyPlaying);
+            System.out.println(videoIds.toString());
+            System.out.println(playerListeners);
+            System.out.println(i);
             playerListeners[i].updateCurrentlyPlaying(videoIds.indexOf(currentlyPlaying));
         }
     }

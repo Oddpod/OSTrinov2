@@ -2,6 +2,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/add_ost"
+        android:icon="@android:drawable/ic_menu_add"
+        android:orderInCategory="100"
+        android:title="@string/label_add"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/import_osts"
         android:orderInCategory="200"
         android:title="@string/menu_import"/>
@@ -10,7 +16,7 @@
         android:title="@string/label_share"
         android:icon="@drawable/ic_menu_share"
         app:showAsAction="ifRoom"
-        android:orderInCategory="100"/>
+        android:orderInCategory="101"/>
     <item
         android:id="@+id/export_osts"
         android:title="@string/menu_export"

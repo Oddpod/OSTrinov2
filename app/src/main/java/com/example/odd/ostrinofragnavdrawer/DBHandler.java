@@ -264,4 +264,24 @@ public class DBHandler extends SQLiteOpenHelper {
             }
         }
     }
+
+    public String[] getAllTagsArray(){
+
+        String selectQuery = "SELECT * FROM " + TAGS_TABLE;
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        String[] tagsTable = new String[1000];
+        int i = 0;
+        if(cursor.moveToFirst()){
+            do{
+                System.out.println(cursor.getString(1) + i);
+                tagsTable[i] = cursor.getString(1);
+                i++;
+
+            }while(cursor.moveToNext());
+        }
+        cursor.close();
+        return tagsTable;
+    }
 }

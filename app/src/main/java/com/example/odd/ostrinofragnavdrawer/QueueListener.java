@@ -1,5 +1,8 @@
 package com.example.odd.ostrinofragnavdrawer;
 
-public interface QueueListener{
-    public void addToQueue(int addId);
+import java.util.Random;
+
+interface QueueListener{
+    void addToQueue(int addId);
+
 }

@@ -6,7 +6,6 @@ import android.support.v4.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
-import android.text.method.MultiTapKeyListener;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -27,7 +26,6 @@ public class AddScreen extends DialogFragment {
     AutoCompleteTextView actvShow;
     MultiAutoCompleteTextView mactvTags;
 
-    private List<String> showList, tagList;
     private boolean showDeleteButton = false;
 
 
@@ -65,8 +63,9 @@ public class AddScreen extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         DBHandler dbHandler = new DBHandler(getActivity());
-        showList = dbHandler.getAllShows();
-        tagList = dbHandler.getAllTags();
+        List<String> showList = dbHandler.getAllShows();
+        List<String> tagList = dbHandler.getAllTags();
+        String[] tagsArray = dbHandler.getAllTagsArray();
         //System.out.println("ShowList: " + showList.toString());
         //System.out.println("tagList: " + tagList.toString());
 
@@ -93,7 +92,6 @@ public class AddScreen extends DialogFragment {
                 }
             });
         }
-
 
         ArrayAdapter<String> tagsAdapter = new ArrayAdapter<>(getActivity(),
                 android.R.layout.simple_dropdown_item_1line, tagList);

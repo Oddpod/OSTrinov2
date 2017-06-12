@@ -1,5 +1,8 @@
 package com.example.odd.ostrinofragnavdrawer;
 
+import java.util.ArrayList;
+import java.util.List;
+
 class Util {
 
     static String urlToId(String url){
@@ -13,5 +16,13 @@ class Util {
             lineArray = url.split("=");
         }
         return lineArray[1];
+    }
+
+    static List<String> extractUrls(List<Ost> ostList){
+        List<String> queueList = new ArrayList<>();
+        for (Ost ost : ostList){
+            queueList.add(ost.getUrl());
+        }
+        return queueList;
     }
 }
