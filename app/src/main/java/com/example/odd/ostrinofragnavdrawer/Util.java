@@ -1,5 +1,8 @@
 package com.example.odd.ostrinofragnavdrawer;
 
+import android.os.Environment;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,5 +27,11 @@ class Util {
             queueList.add(ost.getUrl());
         }
         return queueList;
+    }
+
+    static boolean doesFileExist(String filePath){
+        File folder1 = new File(filePath);
+        return folder1.exists();
+
     }
 }

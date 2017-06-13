@@ -12,21 +12,20 @@ import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.example.odd.ostrinofragnavdrawer.Listeners.PlayerListener;
 import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubePlayer;
 import com.google.android.youtube.player.YouTubePlayer.OnInitializedListener;
 import com.google.android.youtube.player.YouTubePlayer.Provider;
 import com.google.android.youtube.player.YouTubePlayerSupportFragment;
-import com.google.android.youtube.player.YouTubePlayerView;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.Stack;
 
-import static android.R.drawable.arrow_down_float;
-import static android.R.drawable.arrow_up_float;
 import static android.R.drawable.ic_media_pause;
 import static android.R.drawable.ic_media_play;
 
@@ -34,8 +33,7 @@ import static android.R.drawable.ic_media_play;
 public class YoutubeFragment extends Fragment implements View.OnClickListener,
         OnInitializedListener,
         YouTubePlayer.PlayerStateChangeListener,
-        YouTubePlayer.PlaybackEventListener,
-        YouTubePlayer.OnFullscreenListener {
+        YouTubePlayer.PlaybackEventListener{
 
     // API キー
     public static final String API_KEY = "AIzaSyDSMKvbGUJxKhPz5t4PMFEByD5qFy1sjEA";
@@ -45,6 +43,7 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener,
     private boolean minimized = false, playing, playerStopped, shuffle = false;
     public YouTubePlayer mPlayer = null;
     private Stack<String> preQueue, played, queue;
+    private List<Ost> ostQueue;
     private RelativeLayout layoutView;
     private List<String> videoIds;
     private FrameLayout playerLayout;
@@ -90,7 +89,6 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener,
     public void onInitializationSuccess(Provider provider, YouTubePlayer player, boolean wasRestored) {
         this.mPlayer = player;
         initPlayer();
-        //player.setOnFullscreenListener(fullScreenListener);
     }
 
     // YouTubeプレーヤーの初期化失敗
@@ -115,16 +113,17 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener,
         mPlayer.setPlaybackEventListener(this);
     }
 
-    public void initiateQueue(List<String> urls, int startIndex) {
+    public void initiateQueue(List<Ost> ostList, int startIndex) {
         //btnNext.setVisibility(View.VISIBLE);
+        this.ostQueue = ostList;
         videoIds = new ArrayList<>();
-        for (String url : urls) {
-            videoIds.add(Util.urlToId(url));
+        for (Ost ost : ostList) {
+            videoIds.add(Util.urlToId(ost.getUrl()));
         }
         played = new Stack<>();
         preQueue = new Stack<>();
         currentlyPlaying = videoIds.get(startIndex);
-        for (int i = 0; i < urls.size(); i++) {
+        for (int i = 0; i < ostList.size(); i++) {
             String videoId = videoIds.get(i);
             if (i < startIndex) {
                 played.add(videoId);
@@ -262,7 +261,6 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener,
             case R.id.btnPause: {
                 System.out.println(playing);
                 if (playerStopped) {
-                    System.out.println("You are here");
                     mPlayer.loadVideo(currentlyPlaying, playbackPosMilliSec);
                 } else if (playing) {
                     mPlayer.pause();
@@ -273,7 +271,6 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener,
                     mPlayer.play();
                     playing = true;
                 }
-                System.out.println("btnpause pressed");
                 break;
             }
 
@@ -283,7 +280,7 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener,
             }
 
            case R.id.btnMinimize:{
-               mPlayer.setFullscreen(true);
+               //mPlayer.setFullscreen(true);
                break;
             }
         }
@@ -291,9 +288,10 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener,
 
     public void shuffleOn() {
         long seed = System.nanoTime();
-        Random rnd = new Random(seed);
+        List<Ost> ostQ = ostQueue.subList(currPlayingIndex, ostQueue.size());
         Collections.shuffle(preQueue, new Random(seed));
-        notifyShuffle(seed, rnd);
+        Collections.shuffle(ostQ, new Random(seed));
+        notifyShuffle(ostQ);
         shuffle = true;
     }
 
@@ -330,14 +328,9 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener,
         }
     }
 
-    public void notifyShuffle(long seed, Random rnd){
+    public void notifyShuffle(List<Ost> ostList){
         for (int i = 0; i <playerListeners.length ; i++) {
-            playerListeners[i].shuffle(seed, rnd);
+            playerListeners[i].shuffle(ostList);
         }
-    }
-
-    @Override
-    public void onFullscreen(boolean b) {
-        mPlayer.setShowFullscreenButton(true);
     }
 }

@@ -1,12 +1,20 @@
 package com.example.odd.ostrinofragnavdrawer;
 
+import android.Manifest;
+import android.app.DownloadManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -26,7 +34,11 @@ import android.widget.MultiAutoCompleteTextView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.example.odd.ostrinofragnavdrawer.Listeners.PlayerListener;
+import com.example.odd.ostrinofragnavdrawer.Listeners.QueueListener;
+
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -37,20 +49,20 @@ import java.util.Random;
 
 public class MainActivity extends AppCompatActivity
         implements AddScreen.AddScreenListener, FunnyJunk.YareYareListener,
-        DialogInterface.OnDismissListener, QueueListener, View.OnClickListener{
+        DialogInterface.OnDismissListener, QueueListener, View.OnClickListener {
 
     private DBHandler db;
     private Ost unAddedOst;
     private List<Ost> ostList;
     private Random rnd;
-    int backPress;
+    private int backPress;
     private ListFragment listFragment;
     private CustomAdapter customAdapter;
     private YoutubeFragment youtubeFragment = null;
     private FrameLayout flPlayer;
     private RelativeLayout rlContainer;
-    ListView lvQueue;
     private boolean youtubeFragLaunched = false;
+    private final static int MY_PERMISSIONS_REQUEST_READWRITE_EXTERNAL_STORAGE = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,9 +74,7 @@ public class MainActivity extends AppCompatActivity
         unAddedOst = null;
 
         //For reseting database
-        /*SQLiteDatabase dtb = db.getWritableDatabase();
-        db.emptyTable();
-        db.onCreate(dtb);*/
+        //SQLiteDatabase dtb = db.getWritableDatabase();
         rnd = new Random();
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -77,7 +87,7 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);*/
 
         flPlayer = (FrameLayout) findViewById(R.id.flPlayer);
-        rlContainer =(RelativeLayout) findViewById(R.id.rlContainer);
+        rlContainer = (RelativeLayout) findViewById(R.id.rlContainer);
         Button btnStopPlayer = (Button) flPlayer.findViewById(R.id.btnStopPlayer);
         Button btnMovePlayer = (Button) flPlayer.findViewById(R.id.btnMovePlayer);
 
@@ -104,19 +114,18 @@ public class MainActivity extends AppCompatActivity
                         float setPosY = event.getRawY() - dy;
                         boolean xOutsideScreen = setPosX < 0 || setPosX > width - flPlayer.getWidth();
                         boolean yOutsideScreen = setPosY < toolbar.getHeight() || setPosY > rlContainer.getHeight() - flPlayer.getHeight() - lParams.topMargin;
-                        if( xOutsideScreen && yOutsideScreen){
+                        if (xOutsideScreen && yOutsideScreen) {
                             return false;
                         }
                         if (xOutsideScreen) {
                             flPlayer.setY(setPosY);
-                        }
-                        else if (yOutsideScreen) {
+                        } else if (yOutsideScreen) {
                             flPlayer.setX(setPosX);
                         } else {
                             flPlayer.setX(setPosX);
                             flPlayer.setY(setPosY);
                         }
-                        System.out.println("X: " + flPlayer.getX() + ", Y: " + flPlayer.getY());
+                        //System.out.println("X: " + flPlayer.getX() + ", Y: " + flPlayer.getY());
                         break;
                     }
                     case MotionEvent.ACTION_UP: {
@@ -171,11 +180,6 @@ public class MainActivity extends AppCompatActivity
                 return true;
             }
 
-            case R.id.add_ost: {
-                Toast.makeText(this, "Will be removed", Toast.LENGTH_SHORT).show();
-                break;
-            }
-
             case R.id.share: {
                 Toast.makeText(this, "Not Implemented", Toast.LENGTH_SHORT).show();
                 break;
@@ -189,11 +193,14 @@ public class MainActivity extends AppCompatActivity
             case R.id.export_osts: {
                 chooseFileExport();
             }
+
+            case R.id.delete_allOsts:{
+                db.emptyTable();
+                listFragment.refreshListView();
+            }
             default:
                 return true;
         }
-
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -209,6 +216,7 @@ public class MainActivity extends AppCompatActivity
         String tags = entTags.getText().toString();
         String url = entUrl.getText().toString();
 
+        checkPermission();
         Ost lastAddedOst = new Ost(title, show, tags, url);
         lastAddedOst.setId(listFragment.getOstReplaceId());
         boolean alreadyAdded = db.checkiIfOstInDB(lastAddedOst);
@@ -216,14 +224,15 @@ public class MainActivity extends AppCompatActivity
         if (listFragment.isEditedOst()) {
             db.updateOst(lastAddedOst);
             listFragment.refreshListView();
+            downloadThumbnail(url);
         } else if (!alreadyAdded) {
-            if(!url.contains("https://")){
+            if (!url.contains("https://")) {
                 Toast.makeText(this, "You have to put in a valid youtube link", Toast.LENGTH_SHORT).show();
-            }
-            else{
+            } else {
                 db.addNewOst(lastAddedOst);
                 Toast.makeText(getApplicationContext(), lastAddedOst.getTitle() + " added", Toast.LENGTH_SHORT).show();
                 listFragment.refreshListView();
+                downloadThumbnail(url);
             }
         } else {
             Toast.makeText(this, lastAddedOst.getTitle() + " From " + lastAddedOst.getShow() + " has already been added", Toast.LENGTH_SHORT).show();
@@ -264,8 +273,6 @@ public class MainActivity extends AppCompatActivity
             intent = new Intent(Intent.ACTION_GET_CONTENT);
             intent.setType("text/plain");
             intent.addCategory(Intent.CATEGORY_OPENABLE);
-            System.out.println("File Chooser launched");
-
             try {
                 startActivityForResult(
                         Intent.createChooser(intent, "Select a File to Upload"),
@@ -294,15 +301,17 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        checkPermission();
         if (requestCode == 1 && resultCode == RESULT_OK) {
             Uri currFileURI = data.getData();
             readFromFile(currFileURI);
-            //listFragment.refreshList();
+            listFragment.refreshListView();
         }
         if (requestCode == 2 && resultCode == RESULT_OK) {
             Uri currFileURI = data.getData();
             try {
                 writeToFile(currFileURI);
+                listFragment.refreshListView();
 
             } catch (IOException e) {
                 System.out.println(" caught IOexception");
@@ -318,7 +327,6 @@ public class MainActivity extends AppCompatActivity
             String line;
             while ((line = reader.readLine()) != null) {
                 Ost ost = new Ost();
-                System.out.println(line);
                 String[] lineArray = line.split("; ");
                 if (lineArray.length < 4) {
                     return;
@@ -330,6 +338,7 @@ public class MainActivity extends AppCompatActivity
                 boolean alreadyInDB = db.checkiIfOstInDB(ost);
                 if (!alreadyInDB) {
                     db.addNewOst(ost);
+                    downloadThumbnail(lineArray[3]);
                 }
             }
         } catch (IOException e) {
@@ -351,7 +360,6 @@ public class MainActivity extends AppCompatActivity
                 String tags = ost.getTags();
                 String url = ost.getUrl();
                 line = title + "; " + show + "; " + tags + "; " + url + "; ";
-                System.out.println(line);
                 osw.write(line + "\n");
             }
             osw.close();
@@ -370,8 +378,8 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    public void initYoutubeFrag(){
-        if(youtubeFragment == null){
+    public void initYoutubeFrag() {
+        if (youtubeFragment == null) {
             youtubeFragment = new YoutubeFragment();
             PlayerListener[] playerListeners = new PlayerListener[2];
             playerListeners[0] = customAdapter;
@@ -380,7 +388,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    public void launchYoutubeFrag(){
+    public void launchYoutubeFrag() {
         FragmentManager manager = getSupportFragmentManager();
         manager.beginTransaction()
                 .add(R.id.flPlayer, youtubeFragment)
@@ -388,26 +396,23 @@ public class MainActivity extends AppCompatActivity
         flPlayer.setVisibility(View.VISIBLE);
     }
 
-    public void initiatePlayer(List<Ost> ostList, int startid){
-
-        lvQueue = (ListView) findViewById(R.id.lvQueue);
+    public void initiatePlayer(List<Ost> ostList, int startid) {
+        ListView lvQueue = (ListView) findViewById(R.id.lvQueue);
         lvQueue.findViewById(R.id.btnOptions);
 
         customAdapter = new CustomAdapter(getBaseContext(), ostList.subList(startid, ostList.size()), this, true);
         lvQueue.setAdapter(customAdapter);
         lvQueue.setDivider(null);
         initYoutubeFrag();
-        youtubeFragment.initiateQueue(Util.extractUrls(ostList), startid);
+        youtubeFragment.initiateQueue(ostList, startid);
         updateYoutubeFrag();
-        youtubeFragment.setMainActivity(this);
     }
 
-    public void updateYoutubeFrag(){
-        if(youtubeFragLaunched){
+    public void updateYoutubeFrag() {
+        if (youtubeFragLaunched) {
             flPlayer.setVisibility(View.VISIBLE);
             youtubeFragment.initPlayer();
-        }
-        else{
+        } else {
             launchYoutubeFrag();
             youtubeFragLaunched = true;
         }
@@ -416,24 +421,24 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onClick(View v) {
         int id = v.getId();
-        switch(id){
-            case R.id.btnStopPlayer:{
+        switch (id) {
+            case R.id.btnStopPlayer: {
                 youtubeFragment.pausePlayer();
                 flPlayer.setVisibility(View.GONE);
                 break;
             }
-            case R.id.btnMovePlayer:{
+            case R.id.btnMovePlayer: {
                 Toast.makeText(this, "Touch and drag to move the player", Toast.LENGTH_SHORT).show();
                 break;
             }
         }
     }
 
-    public void shuffleOn(){
+    public void shuffleOn() {
         youtubeFragment.shuffleOn();
     }
 
-    public void shuffleOff(){
+    public void shuffleOff() {
         youtubeFragment.shuffleOff();
     }
 
@@ -442,8 +447,102 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    public boolean youtubeFragNotLaunched(){
+    public boolean youtubeFragNotLaunched() {
         return youtubeFragLaunched;
+    }
+
+    void checkPermission() {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.READ_CONTACTS)) {
+
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+
+            } else {
+
+                // No explanation needed, we can request the permission.
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        MY_PERMISSIONS_REQUEST_READWRITE_EXTERNAL_STORAGE);
+
+                // MY_PERMISSIONS_REQUEST_READWRITE_EXTERNAL_STORAGE is an
+                // app-defined int constant. The callback method gets the
+                // result of the request.
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_READWRITE_EXTERNAL_STORAGE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
+    }
+
+    public void downloadFile(String uRl, String saveName) {
+        File direct = new File(Environment.getExternalStorageDirectory()
+                + "/OSTthumbnails");
+
+        if (!direct.exists()) {
+            direct.mkdirs();
+        }
+        String saveString = direct.getAbsolutePath() + "/" + saveName + ".jpg";
+        System.out.println(saveString);
+        if(!Util.doesFileExist(saveString)) {
+            DownloadManager mgr = (DownloadManager) this.getSystemService(Context.DOWNLOAD_SERVICE);
+
+            Uri downloadUri = Uri.parse(uRl);
+            DownloadManager.Request request = new DownloadManager.Request(
+                    downloadUri);
+
+            request.setAllowedNetworkTypes(
+                    DownloadManager.Request.NETWORK_WIFI
+                            | DownloadManager.Request.NETWORK_MOBILE)
+                    .setAllowedOverRoaming(false).setTitle(uRl)
+                    .setDescription("Downloading thumbnails")
+                    .setDestinationInExternalPublicDir("/OSTthumbnails", saveName + ".jpg");
+
+            mgr.enqueue(request);
+        }
+    }
+
+    public void downloadThumbnail(String url){
+        downloadFile("http://img.youtube.com/vi/" + Util.urlToId(url) + "/2.jpg", Util.urlToId(url));
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig){
+        super.onConfigurationChanged(newConfig);
+        // Checks the orientation of the screen
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        this.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int height = displayMetrics.heightPixels;
+        int width = displayMetrics.widthPixels;
     }
 
 }

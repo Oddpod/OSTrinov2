@@ -1,23 +1,29 @@
 package com.example.odd.ostrinofragnavdrawer;
 
+import android.content.res.Configuration;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.example.odd.ostrinofragnavdrawer.Listeners.PlayerListener;
+import com.example.odd.ostrinofragnavdrawer.Listeners.QueueListener;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
+import static android.R.attr.orientation;
 
 public class ListFragment extends Fragment implements FunnyJunk.YareYareListener,
         View.OnClickListener, QueueListener, PlayerListener {
@@ -180,7 +186,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         }
     }
 
-    /*@Override
+    @Override
     public void onConfigurationChanged(Configuration newConfig){
         super.onConfigurationChanged(newConfig);
         // Checks the orientation of the screen
@@ -188,17 +194,8 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int height = displayMetrics.heightPixels;
         int width = displayMetrics.widthPixels;
-        orientation = newConfig.orientation;
         System.out.println(playerDocked);
-        if(playerDocked) {
-            if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                flOnTop.setLayoutParams(landParams);
-            } else if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-                flOnTop.invalidate();
-                flOnTop.setLayoutParams(portParams);
-            }
-        }
-    }*/
+    }
 
     public int getOstReplaceId(){
         return ostReplaceId;
@@ -263,7 +260,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
     }
 
     @Override
-    public void shuffle(long seed, Random rnd) {
+    public void shuffle(List<Ost> ostList) {
 
     }
 

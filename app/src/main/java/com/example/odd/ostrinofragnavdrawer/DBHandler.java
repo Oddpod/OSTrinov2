@@ -106,6 +106,14 @@ public class DBHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         String TRUNCATE_TABLE = "DROP TABLE " + OST_TABLE + "";
         db.execSQL(TRUNCATE_TABLE);
+
+        String CREATE_OST_TABLE = "CREATE TABLE " + OST_TABLE + "("
+                + KEY_ID + " INTEGER PRIMARY KEY,"
+                + KEY_TITLE + " TEXT,"
+                + KEY_SHOW + " TEXT,"
+                + KEY_TAGS + " TEXT, "
+                + KEY_URL + " Text " + ")";
+        db.execSQL(CREATE_OST_TABLE);
     }
 
     boolean deleteOst(int delID){
