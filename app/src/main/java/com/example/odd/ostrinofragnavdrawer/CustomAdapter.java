@@ -65,14 +65,12 @@ public class CustomAdapter extends BaseAdapter implements PlayerListener {
         Ost ost = ostList.get(position);
         View v = View.inflate(mContext, R.layout.custom_row, null);
         ImageView thumbnail = (ImageView) v.findViewById(R.id.ivThumbnail);
-        if(thumbnail.getDrawable() == null){
-            File tnFile = new File(Environment.getExternalStorageDirectory()
-                    + "/OSTthumbnails/" + Util.urlToId(ost.getUrl()) + ".jpg");
-            Picasso.with(mContext)
-                    .load(tnFile)
-                    .placeholder(R.drawable.tranquility)
-                    .into(thumbnail);
-        }
+        File tnFile = new File(Environment.getExternalStorageDirectory()
+                + "/OSTthumbnails/" + Util.urlToId(ost.getUrl()) + ".jpg");
+        Picasso.with(mContext)
+                .load(tnFile)
+                .placeholder(R.drawable.tranquility)
+                .into(thumbnail);
         TextView tvTitle = (TextView) v.findViewById(R.id.tvTitle);
         TextView tvShow = (TextView) v.findViewById(R.id.tvShow);
         TextView tvTags = (TextView) v.findViewById(R.id.tvTags);

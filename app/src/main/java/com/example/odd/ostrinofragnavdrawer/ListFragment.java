@@ -3,6 +3,9 @@ package com.example.odd.ostrinofragnavdrawer;
 import android.content.res.Configuration;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
@@ -30,6 +33,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
 
     private boolean editedOst;
     private int ostReplaceId, previouslyPlayed;
+    private View previouslyView;
     private List<Ost> allOsts, currOstList;
     private DBHandler dbHandler;
     private EditText filter;
@@ -45,6 +49,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
     private RelativeLayout.LayoutParams landParams, portParams;
     private Ost unAddedOst;
     private MainActivity mainActivity;
+    private RecyclerView.LayoutManager mLayoutManager;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -59,6 +64,23 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         lvOst.setDivider(null);
 
         allOsts = dbHandler.getAllOsts();
+        /*final RecyclerView rv_ostList = (RecyclerView) rootView.findViewById(R.id.rv_ostsList);
+        mLayoutManager = new LinearLayoutManager(getContext());
+        rv_ostList.setLayoutManager(mLayoutManager);
+        rv_ostList.setItemAnimator(new DefaultItemAnimator());
+        final OstAdapter ostListAdapter = new OstAdapter(getContext(), allOsts, this);
+        rv_ostList.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
+        ostListAdapter.setOnItemClickListener(new OstAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+                currOstList = getCurrDispOstList();
+                mainActivity.initiatePlayer(currOstList, position);
+                mLayoutManager.findViewByPosition(position).setBackgroundResource(R.drawable.greenrect);
+                mLayoutManager.findViewByPosition(previouslyPlayed).setBackgroundResource(R.drawable.white);
+                previouslyPlayed = position;
+            }
+        });
+        rv_ostList.setAdapter(ostListAdapter);*/
 
         customAdapter = new CustomAdapter(getContext(), allOsts, this, false);
         lvOst.setAdapter(customAdapter);

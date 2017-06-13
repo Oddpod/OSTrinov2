@@ -19,12 +19,16 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -47,6 +51,8 @@ import java.io.OutputStreamWriter;
 import java.util.List;
 import java.util.Random;
 
+import static java.security.AccessController.getContext;
+
 public class MainActivity extends AppCompatActivity
         implements AddScreen.AddScreenListener, FunnyJunk.YareYareListener,
         DialogInterface.OnDismissListener, QueueListener, View.OnClickListener {
@@ -57,7 +63,7 @@ public class MainActivity extends AppCompatActivity
     private Random rnd;
     private int backPress;
     private ListFragment listFragment;
-    private CustomAdapter customAdapter;
+    private OstAdapter ostAdapter;
     private YoutubeFragment youtubeFragment = null;
     private FrameLayout flPlayer;
     private RelativeLayout rlContainer;
@@ -373,8 +379,12 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void addToQueue(Ost ost) {
-        youtubeFragment.addToQueue(ost.getUrl());
-        customAdapter.addToQueue(ost);
+        if(youtubeFragment == null){
+            Toast.makeText(this, "You have to play something first", Toast.LENGTH_SHORT).show();
+        }else{
+            youtubeFragment.addToQueue(ost.getUrl());
+            ostAdapter.addToQueue(ost);
+        }
 
     }
 
@@ -382,7 +392,7 @@ public class MainActivity extends AppCompatActivity
         if (youtubeFragment == null) {
             youtubeFragment = new YoutubeFragment();
             PlayerListener[] playerListeners = new PlayerListener[2];
-            playerListeners[0] = customAdapter;
+            playerListeners[0] = ostAdapter;
             playerListeners[1] = listFragment;
             youtubeFragment.setPlayerListeners(playerListeners);
         }
@@ -397,12 +407,13 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void initiatePlayer(List<Ost> ostList, int startid) {
-        ListView lvQueue = (ListView) findViewById(R.id.lvQueue);
-        lvQueue.findViewById(R.id.btnOptions);
+        RecyclerView rvQueue = (RecyclerView) findViewById(R.id.rvQueue);
 
-        customAdapter = new CustomAdapter(getBaseContext(), ostList.subList(startid, ostList.size()), this, true);
-        lvQueue.setAdapter(customAdapter);
-        lvQueue.setDivider(null);
+        final RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
+        rvQueue.setLayoutManager(mLayoutManager);
+        rvQueue.setItemAnimator(new DefaultItemAnimator());
+        ostAdapter = new OstAdapter(this, ostList.subList(startid, ostList.size()), this);
+        rvQueue.setAdapter(ostAdapter);
         initYoutubeFrag();
         youtubeFragment.initiateQueue(ostList, startid);
         updateYoutubeFrag();
