@@ -29,10 +29,12 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.RelativeLayout;
@@ -63,11 +65,12 @@ public class MainActivity extends AppCompatActivity
     private Random rnd;
     private int backPress;
     private ListFragment listFragment;
-    private OstAdapter ostAdapter;
     private YoutubeFragment youtubeFragment = null;
     private FrameLayout flPlayer;
     private RelativeLayout rlContainer;
+    private OstAdapter ostAdapter;
     private boolean youtubeFragLaunched = false;
+    private RecyclerView rvQueue;
     private final static int MY_PERMISSIONS_REQUEST_READWRITE_EXTERNAL_STORAGE = 0;
 
     @Override
@@ -142,6 +145,13 @@ public class MainActivity extends AppCompatActivity
                 return false;
             }
         });
+
+        rvQueue = (RecyclerView) findViewById(R.id.rvQueue);
+
+        final RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
+        rvQueue.setLayoutManager(mLayoutManager);
+        rvQueue.setItemAnimator(new DefaultItemAnimator());
+        rvQueue.setAdapter(new OstAdapter());
 
         listFragment = new ListFragment();
         listFragment.setMainAcitivity(this);
@@ -407,12 +417,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void initiatePlayer(List<Ost> ostList, int startid) {
-        RecyclerView rvQueue = (RecyclerView) findViewById(R.id.rvQueue);
-
-        final RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
-        rvQueue.setLayoutManager(mLayoutManager);
-        rvQueue.setItemAnimator(new DefaultItemAnimator());
-        ostAdapter = new OstAdapter(this, ostList.subList(startid, ostList.size()), this);
+        ostAdapter = new OstAdapter(this, ostList, startid, this);
         rvQueue.setAdapter(ostAdapter);
         initYoutubeFrag();
         youtubeFragment.initiateQueue(ostList, startid);
@@ -456,6 +461,11 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void addToQueue(int addId) {
 
+    }
+
+    @Override
+    public void removeFromQueue(String url) {
+        youtubeFragment.removeFromQueue(url);
     }
 
     public boolean youtubeFragNotLaunched() {

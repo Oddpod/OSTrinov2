@@ -1,23 +1,8 @@
 package com.example.odd.ostrinofragnavdrawer;
 
-
-import android.os.Environment;
-import android.os.StrictMode;
-import android.support.v4.content.ContextCompat;
-
-import com.squareup.picasso.Picasso;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URL;
-
-import static android.R.id.input;
-
 public class Ost {
-    private String title, show, tags, url, thumbnail;
+    private String title, show, tags, url;
+    private boolean isPlaying;
 
     private int id;
 
@@ -28,6 +13,7 @@ public class Ost {
         this.show = show;
         this.tags = tags;
         this.url = url;
+        isPlaying = false;
     }
 
     @Override
@@ -78,5 +64,13 @@ public class Ost {
 
     String getSearchString(){
         return title + show + tags;
+    }
+
+    public void setPlaying(boolean playing) {
+        isPlaying = playing;
+    }
+
+    public boolean isPlaying(){
+        return  isPlaying;
     }
 }

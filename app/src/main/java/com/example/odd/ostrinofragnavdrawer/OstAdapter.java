@@ -18,22 +18,41 @@ import com.squareup.picasso.Picasso;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 
 public class OstAdapter extends RecyclerView.Adapter<OstAdapter.ViewWrapper> implements PlayerListener{
-        private List<Ost> filteredOstList, ostList, played;
+        private List<Ost> filteredOstList, ostList;
+        private Stack<Ost> played, queue;
         private Context mContext;
 
         private QueueListener queueListener;
         private int nowPlaying = -1;
-        private boolean queue;
         private OnItemClickListener onItemClickListener;
+        private boolean emptyAdapter;
 
-    public OstAdapter( Context context, List<Ost> ostList, QueueListener queueListener) {
-            this.ostList = ostList;
+    public OstAdapter(){
+        this.emptyAdapter = true;
+    }
+
+    public OstAdapter(Context context, List<Ost> ostList, int startIndex, QueueListener queueListener) {
+            played = new Stack<>();
+            queue = new Stack<>();
+            for(int i = ostList.size() - 1; i >= 0; i--) {
+                if(i > startIndex){
+                    queue.add(ostList.get(i));
+                }else{
+                    played.add(ostList.get(i));
+                }
+            }
+            this.ostList = ostList.subList(startIndex, ostList.size());
             this.mContext = context;
             this.queueListener = queueListener;
-            this.played = new ArrayList<>();
+        }
+
+        public void updateOstList(List<Ost> ostList){
+            this.ostList = ostList;
+            notifyDataSetChanged();
         }
 
         @Override
@@ -45,9 +64,9 @@ public class OstAdapter extends RecyclerView.Adapter<OstAdapter.ViewWrapper> imp
         }
 
         @Override
-        public void onBindViewHolder(final ViewWrapper viewWrapper, int position) {
-            final int pos = viewWrapper.getAdapterPosition();
-            Ost ost = ostList.get(pos);
+        public void onBindViewHolder(final ViewWrapper viewWrapper, final int position) {
+            final int invPos = queue.size() - (1 + position);
+            final Ost ost = queue.get(invPos);
             viewWrapper.getTitle().setText(ost.getTitle());
             viewWrapper.getShow().setText(ost.getShow());
             viewWrapper.getTags().setText(ost.getTags());
@@ -60,7 +79,9 @@ public class OstAdapter extends RecyclerView.Adapter<OstAdapter.ViewWrapper> imp
             viewWrapper.getBtnOptions().setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    queueListener.addToQueue(pos);
+                    queue.remove(invPos);
+                    queueListener.removeFromQueue(ost.getUrl());
+                    notifyDataSetChanged();
                 }
             });
         }
@@ -70,26 +91,30 @@ public class OstAdapter extends RecyclerView.Adapter<OstAdapter.ViewWrapper> imp
     }
         @Override
         public int getItemCount() {
-            return ostList.size();
+            if(emptyAdapter){
+                return 0;
+            }else{
+                return queue.size();
+            }
         }
 
     @Override
     public void updateCurrentlyPlaying(int newId) {
-            notifyItemChanged(nowPlaying);
             nowPlaying = newId;
-            notifyItemChanged(nowPlaying);
     }
 
     @Override
     public void next() {
-        played.add(ostList.remove(0));
+        played.add(queue.pop());
+        System.out.println("Played: " + played.toString());
+        System.out.println("Queue: " + queue.toString());
         notifyDataSetChanged();
     }
 
     @Override
     public void previous() {
-        ostList.add(0, played.remove(played.size() - 1));
-        notifyDataSetChanged();
+        queue.add(played.pop());
+        notifyItemInserted(0);
 
     }
 
@@ -166,7 +191,7 @@ public class OstAdapter extends RecyclerView.Adapter<OstAdapter.ViewWrapper> imp
     }
 
     public void removeFromQueue(int id){
-        ostList.remove(id);
+        queue.remove(id);
         notifyDataSetChanged();
     }
 

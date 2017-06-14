@@ -64,23 +64,6 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         lvOst.setDivider(null);
 
         allOsts = dbHandler.getAllOsts();
-        /*final RecyclerView rv_ostList = (RecyclerView) rootView.findViewById(R.id.rv_ostsList);
-        mLayoutManager = new LinearLayoutManager(getContext());
-        rv_ostList.setLayoutManager(mLayoutManager);
-        rv_ostList.setItemAnimator(new DefaultItemAnimator());
-        final OstAdapter ostListAdapter = new OstAdapter(getContext(), allOsts, this);
-        rv_ostList.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
-        ostListAdapter.setOnItemClickListener(new OstAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(View view, int position) {
-                currOstList = getCurrDispOstList();
-                mainActivity.initiatePlayer(currOstList, position);
-                mLayoutManager.findViewByPosition(position).setBackgroundResource(R.drawable.greenrect);
-                mLayoutManager.findViewByPosition(previouslyPlayed).setBackgroundResource(R.drawable.white);
-                previouslyPlayed = position;
-            }
-        });
-        rv_ostList.setAdapter(ostListAdapter);*/
 
         customAdapter = new CustomAdapter(getContext(), allOsts, this, false);
         lvOst.setAdapter(customAdapter);
@@ -250,6 +233,11 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
     public void addToQueue(int addId) {
         Ost ost = getCurrDispOstList().get(addId);
         mainActivity.addToQueue(ost);
+
+    }
+
+    @Override
+    public void removeFromQueue(String url) {
 
     }
 

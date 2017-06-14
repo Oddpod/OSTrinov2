@@ -142,6 +142,15 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener,
         queue.add(0, Util.urlToId(url));
     }
 
+    public void removeFromQueue(String url){
+        System.out.println(queue.toString());
+        if(queue.contains(url)){
+            queue.remove(url);
+        } else{
+            preQueue.remove(url);
+        }
+    }
+
     public void previous() {
         if (!played.isEmpty()) {
             preQueue.push(currentlyPlaying);
