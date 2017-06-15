@@ -33,7 +33,6 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
 
     private boolean editedOst;
     private int ostReplaceId, previouslyPlayed;
-    private View previouslyView;
     private List<Ost> allOsts, currOstList;
     private DBHandler dbHandler;
     private EditText filter;
@@ -49,7 +48,6 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
     private RelativeLayout.LayoutParams landParams, portParams;
     private Ost unAddedOst;
     private MainActivity mainActivity;
-    private RecyclerView.LayoutManager mLayoutManager;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -114,7 +112,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                String filterString = s.toString().toLowerCase();
+                String filterString = s.toString();
                 customAdapter.filter(filterString);
             }
 
@@ -233,7 +231,6 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
     public void addToQueue(int addId) {
         Ost ost = getCurrDispOstList().get(addId);
         mainActivity.addToQueue(ost);
-
     }
 
     @Override

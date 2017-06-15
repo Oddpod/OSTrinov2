@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -11,37 +11,53 @@
         android:id="@+id/ivThumbnail"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:contentDescription="@android:string/yes" />
+        android:contentDescription="@android:string/yes"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="50dp"
-        android:layout_height="40dp"
-        android:layout_weight="1.00"
-        android:padding="1dp"
-        android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+        android:layout_height="20dp"
+        android:layout_above="@+id/tvShow"
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@id/ivThumbnail"
+        android:layout_toLeftOf="@+id/tvTags"
+        android:layout_toRightOf="@+id/ivThumbnail"
+        android:layout_toStartOf="@+id/tvTags"
+        android:paddingTop="1dp"
+        android:text="hmmmmm"
+        android:textAppearance="@style/TextAppearance.AppCompat.Widget.TextView.SpinnerItem" />
 
     <TextView
         android:id="@+id/tvShow"
         android:layout_width="50dp"
-        android:layout_height="40dp"
-        android:layout_weight="1"
-        android:padding="1dp"
-        android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+        android:layout_height="20dp"
+        android:layout_alignBottom="@+id/ivThumbnail"
+        android:layout_toEndOf="@id/ivThumbnail"
+        android:layout_toLeftOf="@+id/tvTags"
+        android:layout_toRightOf="@+id/ivThumbnail"
+        android:layout_toStartOf="@+id/tvTags"
+        android:paddingBottom="1dp"
+        android:textAppearance="@android:style/TextAppearance.Holo.Small" />
 
     <TextView
         android:id="@+id/tvTags"
-        android:layout_width="50dp"
+        android:layout_width="75dp"
         android:layout_height="40dp"
-        android:layout_weight="1"
+        android:layout_alignParentTop="true"
+        android:layout_toLeftOf="@+id/btnOptions"
         android:padding="1dp"
         android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 
     <ImageButton
         android:id="@+id/btnOptions"
-        android:layout_width="20dp"
+        android:layout_width="50dp"
         android:layout_height="40dp"
-        android:layout_weight="1"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
         android:contentDescription="@android:string/ok"
         app:srcCompat="@android:drawable/ic_input_add" />
-</LinearLayout>
+</RelativeLayout>

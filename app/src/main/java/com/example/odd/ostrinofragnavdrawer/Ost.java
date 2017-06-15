@@ -63,7 +63,7 @@ public class Ost {
     }
 
     String getSearchString(){
-        return title + show + tags;
+        return title + ", " + show + ", " + tags;
     }
 
     public void setPlaying(boolean playing) {

@@ -22,12 +22,11 @@ import java.util.Stack;
 
 
 public class OstAdapter extends RecyclerView.Adapter<OstAdapter.ViewWrapper> implements PlayerListener{
-        private List<Ost> filteredOstList, ostList;
         private Stack<Ost> played, queue;
         private Context mContext;
 
         private QueueListener queueListener;
-        private int nowPlaying = -1;
+        private int nowPlaying = -1, queueAddPos;
         private OnItemClickListener onItemClickListener;
         private boolean emptyAdapter;
 
@@ -36,6 +35,7 @@ public class OstAdapter extends RecyclerView.Adapter<OstAdapter.ViewWrapper> imp
     }
 
     public OstAdapter(Context context, List<Ost> ostList, int startIndex, QueueListener queueListener) {
+            queueAddPos = 0;
             played = new Stack<>();
             queue = new Stack<>();
             for(int i = ostList.size() - 1; i >= 0; i--) {
@@ -45,14 +45,8 @@ public class OstAdapter extends RecyclerView.Adapter<OstAdapter.ViewWrapper> imp
                     played.add(ostList.get(i));
                 }
             }
-            this.ostList = ostList.subList(startIndex, ostList.size());
             this.mContext = context;
             this.queueListener = queueListener;
-        }
-
-        public void updateOstList(List<Ost> ostList){
-            this.ostList = ostList;
-            notifyDataSetChanged();
         }
 
         @Override
@@ -106,15 +100,15 @@ public class OstAdapter extends RecyclerView.Adapter<OstAdapter.ViewWrapper> imp
     @Override
     public void next() {
         played.add(queue.pop());
-        System.out.println("Played: " + played.toString());
-        System.out.println("Queue: " + queue.toString());
         notifyDataSetChanged();
+        queueAddPos--;
     }
 
     @Override
     public void previous() {
         queue.add(played.pop());
         notifyItemInserted(0);
+        queueAddPos++;
 
     }
 
@@ -196,7 +190,8 @@ public class OstAdapter extends RecyclerView.Adapter<OstAdapter.ViewWrapper> imp
     }
 
     public void addToQueue(Ost ost){
-        ostList.add(1, ost);
+        queue.add(queue.size() - queueAddPos,ost);
+        queueAddPos++;
         notifyDataSetChanged();
     }
 }

@@ -15,10 +15,8 @@ import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Random;
 import java.util.Stack;
 
 public class CustomAdapter extends BaseAdapter implements PlayerListener {
@@ -123,14 +121,13 @@ public class CustomAdapter extends BaseAdapter implements PlayerListener {
         notifyDataSetChanged();
     }
 
-    public void filter(String charText) {
+    void filter(String charText) {
         charText = charText.toLowerCase(Locale.getDefault());
         ostList.clear();
         if (charText.length() == 0) {
             ostList.addAll(filteredOstList);
         }
-        else
-        {
+        else{
             for (Ost ost : filteredOstList) {
                 if (ost.getSearchString().toLowerCase(Locale.getDefault()).contains(charText)) {
                     ostList.add(ost);
