@@ -39,13 +39,11 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
     private String TAG = "OstInfo";
     private String TAG2 = "Jojo";
     private String filterText;
-    private TextWatcher textWatcher;
-    private ImageButton btnShuffle, btnShufflePlay, btnAdd;
+    private ImageButton btnShuffle;
     private CustomAdapter customAdapter;
     private ListView lvOst;
     boolean shuffleActivated, playerDocked;
     private AddScreen dialog;
-    private RelativeLayout.LayoutParams landParams, portParams;
     private Ost unAddedOst;
     private MainActivity mainActivity;
 
@@ -63,7 +61,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
 
         allOsts = dbHandler.getAllOsts();
 
-        customAdapter = new CustomAdapter(getContext(), allOsts, this, false);
+        customAdapter = new CustomAdapter(getContext(), allOsts, this);
         lvOst.setAdapter(customAdapter);
 
         lvOst.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -71,11 +69,12 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 currOstList = getCurrDispOstList();
                 mainActivity.initiatePlayer(currOstList, position);
-                if(currOstList.contains(allOsts.get(previouslyPlayed))) {
+                if(previouslyPlayed >= 0 && previouslyPlayed < currOstList.size()){
                     getViewByPosition(previouslyPlayed, lvOst).setBackgroundResource(R.drawable.white);
                 }
                 view.setBackgroundResource(R.drawable.greenrect);
-                previouslyPlayed = position;
+                customAdapter.updateCurrentlyPlaying(position);
+                previouslyPlayed = customAdapter.getNowPlaying();
             }
         });
 
@@ -95,17 +94,9 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
             }
         });
 
-        //Landscape and Portrait parameters for the view containing the YoutubeFragment
-        landParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        landParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
-        landParams.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
-        portParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        portParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-        portParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
-
         filter = (EditText) rootView.findViewById(R.id.edtFilter);
         filterText = "";
-        textWatcher = new TextWatcher() {
+        TextWatcher textWatcher = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
@@ -129,8 +120,8 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         };
         filter.addTextChangedListener(textWatcher);
         btnShuffle = (ImageButton)  rootView.findViewById(R.id.btnShuffle);
-        btnShufflePlay = (ImageButton) rootView.findViewById(R.id.btnShufflePlay);
-        btnAdd = (ImageButton)  rootView.findViewById(R.id.btnAdd);
+        ImageButton btnShufflePlay = (ImageButton) rootView.findViewById(R.id.btnShufflePlay);
+        ImageButton btnAdd = (ImageButton)  rootView.findViewById(R.id.btnAdd);
 
         btnShuffle.setOnClickListener(this);
         btnShufflePlay.setOnClickListener(this);
@@ -206,10 +197,6 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
 
     public boolean isEditedOst(){
         return editedOst;
-    }
-
-    public void isNotEdited(){
-        editedOst = false;
     }
 
     public List<Ost> getCurrDispOstList(){
@@ -289,5 +276,9 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
 
     public void setMainAcitivity(MainActivity mainAcitivity){
         this.mainActivity = mainAcitivity;
+    }
+
+    public CustomAdapter getCustomAdapter() {
+        return customAdapter;
     }
 }

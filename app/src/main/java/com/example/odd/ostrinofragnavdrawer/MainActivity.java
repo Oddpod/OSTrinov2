@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -28,14 +29,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.ListAdapter;
-import android.widget.ListView;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -51,9 +48,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.List;
-import java.util.Random;
-
-import static java.security.AccessController.getContext;
 
 public class MainActivity extends AppCompatActivity
         implements AddScreen.AddScreenListener, FunnyJunk.YareYareListener,
@@ -62,13 +56,12 @@ public class MainActivity extends AppCompatActivity
     private DBHandler db;
     private Ost unAddedOst;
     private List<Ost> ostList;
-    private Random rnd;
     private int backPress;
     private ListFragment listFragment;
     private YoutubeFragment youtubeFragment = null;
     private FrameLayout flPlayer;
     private RelativeLayout rlContainer;
-    private OstAdapter ostAdapter;
+    private QueueAdapter QueueAdapter;
     private boolean youtubeFragLaunched = false;
     private RecyclerView rvQueue;
     private final static int MY_PERMISSIONS_REQUEST_READWRITE_EXTERNAL_STORAGE = 0;
@@ -82,18 +75,11 @@ public class MainActivity extends AppCompatActivity
         db = new DBHandler(this);
         unAddedOst = null;
 
-        //For reseting database
-        //SQLiteDatabase dtb = db.getWritableDatabase();
-        rnd = new Random();
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         //drawer.setDrawerListener(toggle);
         toggle.syncState();
-
-        /*NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);*/
 
         flPlayer = (FrameLayout) findViewById(R.id.flPlayer);
         rlContainer = (RelativeLayout) findViewById(R.id.rlContainer);
@@ -151,7 +137,7 @@ public class MainActivity extends AppCompatActivity
         final RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
         rvQueue.setLayoutManager(mLayoutManager);
         rvQueue.setItemAnimator(new DefaultItemAnimator());
-        rvQueue.setAdapter(new OstAdapter());
+        rvQueue.setAdapter(new QueueAdapter());
 
         listFragment = new ListFragment();
         listFragment.setMainAcitivity(this);
@@ -208,11 +194,28 @@ public class MainActivity extends AppCompatActivity
 
             case R.id.export_osts: {
                 chooseFileExport();
+                break;
             }
 
             case R.id.delete_allOsts:{
                 db.emptyTable();
                 listFragment.refreshListView();
+                break;
+            }
+
+            case  R.id.refresh_tagsTable:{
+                /*SQLiteDatabase sqLiteDatabase = db.getWritableDatabase();
+                String CREATE_TAGS_TABLE = "CREATE TABLE " + "tagsTable" + "("
+                        + "tagid" + " INTEGER PRIMARY KEY,"
+                        + "tag" + " TEXT " + ")";
+                sqLiteDatabase.execSQL(CREATE_TAGS_TABLE);
+
+                String CREATE_SHOW_TABLE = "CREATE TABLE " + "showTable" + "("
+                        + "showid" + " INTEGER PRIMARY KEY,"
+                        + "show" + " TEXT " + ")";
+                sqLiteDatabase.execSQL(CREATE_SHOW_TABLE);*/
+                db.reCreateTagsAndShowTables();
+                break;
             }
             default:
                 return true;
@@ -393,7 +396,7 @@ public class MainActivity extends AppCompatActivity
             Toast.makeText(this, "You have to play something first", Toast.LENGTH_SHORT).show();
         }else{
             youtubeFragment.addToQueue(ost.getUrl());
-            ostAdapter.addToQueue(ost);
+            QueueAdapter.addToQueue(ost);
         }
 
     }
@@ -401,9 +404,10 @@ public class MainActivity extends AppCompatActivity
     public void initYoutubeFrag() {
         if (youtubeFragment == null) {
             youtubeFragment = new YoutubeFragment();
-            PlayerListener[] playerListeners = new PlayerListener[2];
-            playerListeners[0] = ostAdapter;
+            PlayerListener[] playerListeners = new PlayerListener[3];
+            playerListeners[0] = QueueAdapter;
             playerListeners[1] = listFragment;
+            playerListeners[2] = listFragment.getCustomAdapter();
             youtubeFragment.setPlayerListeners(playerListeners);
         }
     }
@@ -417,8 +421,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void initiatePlayer(List<Ost> ostList, int startid) {
-        ostAdapter = new OstAdapter(this, ostList, startid, this);
-        rvQueue.setAdapter(ostAdapter);
+        QueueAdapter = new QueueAdapter(this, ostList, startid, this);
+        rvQueue.setAdapter(QueueAdapter);
         initYoutubeFrag();
         youtubeFragment.initiateQueue(ostList, startid);
         updateYoutubeFrag();

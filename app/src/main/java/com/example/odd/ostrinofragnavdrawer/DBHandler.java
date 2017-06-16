@@ -292,4 +292,27 @@ public class DBHandler extends SQLiteOpenHelper {
         cursor.close();
         return tagsTable;
     }
+
+    public void reCreateTagsAndShowTables(){
+        SQLiteDatabase db = this.getWritableDatabase();
+        String TRUNCATE_TABLE = "DROP TABLE " + TAGS_TABLE + "";
+        db.execSQL(TRUNCATE_TABLE);
+        String TRUNCATE_TABLE2 = "DROP TABLE " + SHOW_TABLE + "";
+        db.execSQL(TRUNCATE_TABLE2);
+
+        String CREATE_OST_TABLE = "CREATE TABLE " + TAGS_TABLE + "("
+                + "tagid" + " INTEGER PRIMARY KEY,"
+                + KEY_TAG + " TEXT" + ")";
+        db.execSQL(CREATE_OST_TABLE);
+
+        String CREATE_OST_TABLE2 = "CREATE TABLE " + SHOW_TABLE + "("
+                + "showid" + " INTEGER PRIMARY KEY,"
+                + KEY_SHOW + " TEXT" + ")";
+        db.execSQL(CREATE_OST_TABLE2);
+
+        ostList = getAllOsts();
+        for (Ost ost: ostList) {
+            addNewTagsandShows(ost.getShow(), ost.getTags());
+        }
+    }
 }

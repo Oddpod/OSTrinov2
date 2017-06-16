@@ -268,7 +268,6 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener,
             }
 
             case R.id.btnPause: {
-                System.out.println(playing);
                 if (playerStopped) {
                     mPlayer.loadVideo(currentlyPlaying, playbackPosMilliSec);
                 } else if (playing) {

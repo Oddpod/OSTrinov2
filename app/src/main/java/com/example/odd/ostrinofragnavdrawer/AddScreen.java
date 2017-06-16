@@ -2,6 +2,7 @@ package com.example.odd.ostrinofragnavdrawer;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -13,6 +14,8 @@ import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.MultiAutoCompleteTextView;
 
+import java.sql.Array;
+import java.util.Arrays;
 import java.util.List;
 
 public class AddScreen extends DialogFragment {
@@ -48,7 +51,6 @@ public class AddScreen extends DialogFragment {
             throw new ClassCastException(activity.toString()
                     + " must implement AddScreenListener");
         }
-
     }
 
     @Override
@@ -61,13 +63,13 @@ public class AddScreen extends DialogFragment {
     }
 
     @Override
+    @NonNull
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         DBHandler dbHandler = new DBHandler(getActivity());
         List<String> showList = dbHandler.getAllShows();
         List<String> tagList = dbHandler.getAllTags();
         String[] tagsArray = dbHandler.getAllTagsArray();
-        //System.out.println("ShowList: " + showList.toString());
-        //System.out.println("tagList: " + tagList.toString());
+        System.out.println(Arrays.asList(tagsArray));
 
         builder = new AlertDialog.Builder(getActivity());
 
@@ -92,6 +94,9 @@ public class AddScreen extends DialogFragment {
                 }
             });
         }
+        ArrayAdapter<String> tagsArrayAdapter = new ArrayAdapter<>(getContext(),
+                android.R.layout.simple_spinner_dropdown_item, tagsArray);
+        System.out.println(tagsArrayAdapter.toString());
 
         ArrayAdapter<String> tagsAdapter = new ArrayAdapter<>(getActivity(),
                 android.R.layout.simple_dropdown_item_1line, tagList);
@@ -117,10 +122,6 @@ public class AddScreen extends DialogFragment {
         return builder.create();
     }
 
-    public View getDialogView() {
-        return dialogView;
-    }
-
     public void setText(Ost ost) {
         // sets editText to the chosen osts values
         title = ost.getTitle();
@@ -131,10 +132,6 @@ public class AddScreen extends DialogFragment {
 
     public void setButtonText(String text) {
         buttonText = text;
-    }
-
-    public String getButtonText() {
-        return buttonText;
     }
 
     public String[] getFieldData() {

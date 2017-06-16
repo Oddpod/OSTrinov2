@@ -16,25 +16,23 @@ import com.example.odd.ostrinofragnavdrawer.Listeners.QueueListener;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-
-public class OstAdapter extends RecyclerView.Adapter<OstAdapter.ViewWrapper> implements PlayerListener{
+public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper> implements PlayerListener{
         private Stack<Ost> played, queue;
         private Context mContext;
 
         private QueueListener queueListener;
-        private int nowPlaying = -1, queueAddPos;
+        private int queueAddPos;
         private OnItemClickListener onItemClickListener;
         private boolean emptyAdapter;
 
-    public OstAdapter(){
+    public QueueAdapter(){
         this.emptyAdapter = true;
     }
 
-    public OstAdapter(Context context, List<Ost> ostList, int startIndex, QueueListener queueListener) {
+    public QueueAdapter(Context context, List<Ost> ostList, int startIndex, QueueListener queueListener) {
             queueAddPos = 0;
             played = new Stack<>();
             queue = new Stack<>();
@@ -94,7 +92,6 @@ public class OstAdapter extends RecyclerView.Adapter<OstAdapter.ViewWrapper> imp
 
     @Override
     public void updateCurrentlyPlaying(int newId) {
-            nowPlaying = newId;
     }
 
     @Override

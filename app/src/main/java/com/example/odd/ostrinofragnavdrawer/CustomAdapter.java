@@ -1,7 +1,10 @@
 package com.example.odd.ostrinofragnavdrawer;
 
 import android.content.Context;
+import android.media.Image;
 import android.os.Environment;
+import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -12,34 +15,35 @@ import android.widget.TextView;
 import com.example.odd.ostrinofragnavdrawer.Listeners.PlayerListener;
 import com.example.odd.ostrinofragnavdrawer.Listeners.QueueListener;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.RequestCreator;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Stack;
 
 public class CustomAdapter extends BaseAdapter implements PlayerListener {
 
     private List<Ost> filteredOstList, ostList;
-    private Stack<Ost> played;
     private Context mContext;
-
-    private ImageButton btnOptions;
+    private LayoutInflater mInflater;
     private QueueListener queueListener;
     private int nowPlaying = -1;
-    private boolean queue;
+    private File[] tnFiles;
 
-    public CustomAdapter(Context context, List<Ost> ostListin, QueueListener ql, boolean queue) {
+    public CustomAdapter(Context context, List<Ost> ostListin, QueueListener ql) {
         mContext = context;
         ostList = new ArrayList<>();
         ostList.addAll(ostListin);
         filteredOstList = new ArrayList<>();
         filteredOstList.addAll(ostListin);
         queueListener = ql;
-        if(queue){
-            played = new Stack<>();
-            this.queue = queue;
+        mInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        tnFiles = new File[ostListin.size()];
+        for (int i = 0; i < ostList.size(); i++) {
+            File tnFile = new File(Environment.getExternalStorageDirectory()
+                    + "/OSTthumbnails/" + Util.urlToId(ostList.get(i).getUrl()) + ".jpg");
+            tnFiles[i] = tnFile;
         }
     }
 
@@ -49,7 +53,7 @@ public class CustomAdapter extends BaseAdapter implements PlayerListener {
     }
 
     @Override
-    public Object getItem(int position) {
+    public Ost getItem(int position) {
         return ostList.get(position);
     }
 
@@ -61,24 +65,20 @@ public class CustomAdapter extends BaseAdapter implements PlayerListener {
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
         Ost ost = ostList.get(position);
-        View v = View.inflate(mContext, R.layout.custom_row, null);
+        View v = mInflater.inflate(R.layout.custom_row, null);
         ImageView thumbnail = (ImageView) v.findViewById(R.id.ivThumbnail);
-        File tnFile = new File(Environment.getExternalStorageDirectory()
+        Picasso.with(mContext).load(tnFiles[position]).into(thumbnail);
+        /*File tnFile = new File(Environment.getExternalStorageDirectory()
                 + "/OSTthumbnails/" + Util.urlToId(ost.getUrl()) + ".jpg");
         Picasso.with(mContext)
                 .load(tnFile)
-                .placeholder(R.drawable.tranquility)
-                .into(thumbnail);
+                .into(thumbnail);*/
         TextView tvTitle = (TextView) v.findViewById(R.id.tvTitle);
         TextView tvShow = (TextView) v.findViewById(R.id.tvShow);
         TextView tvTags = (TextView) v.findViewById(R.id.tvTags);
-        btnOptions = (ImageButton) v.findViewById(R.id.btnOptions);
+        ImageButton btnOptions = (ImageButton) v.findViewById(R.id.btnOptions);
 
         if (nowPlaying == position) {
-            System.out.println(nowPlaying + ", " + position);
-            v.setBackgroundResource(R.drawable.greenrect);
-        }
-        if(queue && position == 0){
             v.setBackgroundResource(R.drawable.greenrect);
         }
         btnOptions.setOnClickListener(new View.OnClickListener() {
@@ -96,29 +96,25 @@ public class CustomAdapter extends BaseAdapter implements PlayerListener {
         return v;
     }
 
+    private class ViewHolder{
+
+    }
+
     @Override
     public void updateCurrentlyPlaying(int newId) {
-        if(!queue){
-            nowPlaying = newId;
-        }
+        nowPlaying = newId;
     }
 
     @Override
     public void next() {
-        played.add(ostList.remove(0));
-        notifyDataSetChanged();
     }
 
     @Override
     public void previous() {
-        ostList.add(0, played.pop());
-        notifyDataSetChanged();
     }
 
     @Override
     public void shuffle(List<Ost> updatedList) {
-        ostList = updatedList;
-        notifyDataSetChanged();
     }
 
     void filter(String charText) {
@@ -143,13 +139,7 @@ public class CustomAdapter extends BaseAdapter implements PlayerListener {
         System.out.println(ostList.toString());
     }
 
-    public void removeFromQueue(int id){
-        ostList.remove(id);
-        notifyDataSetChanged();
-    }
-
-    public void addToQueue(Ost ost){
-        ostList.add(1, ost);
-        notifyDataSetChanged();
+    public int getNowPlaying(){
+        return nowPlaying;
     }
 }
