@@ -1,17 +1,19 @@
 package com.example.odd.ostrinofragnavdrawer;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.database.sqlite.SQLiteDatabase;
+import android.media.MediaDataSource;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
@@ -24,11 +26,13 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -39,6 +43,39 @@ import android.widget.Toast;
 
 import com.example.odd.ostrinofragnavdrawer.Listeners.PlayerListener;
 import com.example.odd.ostrinofragnavdrawer.Listeners.QueueListener;
+import com.google.android.exoplayer2.C;
+import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.Format;
+import com.google.android.exoplayer2.PlaybackParameters;
+import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.Timeline;
+import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
+import com.google.android.exoplayer2.extractor.ExtractorsFactory;
+import com.google.android.exoplayer2.source.AdaptiveMediaSourceEventListener;
+import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.source.dash.DashChunkSource;
+import com.google.android.exoplayer2.source.dash.DashMediaSource;
+import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
+import com.google.android.exoplayer2.source.hls.HlsMediaSource;
+import com.google.android.exoplayer2.source.smoothstreaming.DefaultSsChunkSource;
+import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource;
+import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelection;
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.google.android.exoplayer2.trackselection.TrackSelector;
+import com.google.android.exoplayer2.ui.PlaybackControlView;
+import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
+import com.google.android.exoplayer2.upstream.BandwidthMeter;
+import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DataSpec;
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.google.android.exoplayer2.util.Util;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -51,7 +88,8 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity
         implements AddScreen.AddScreenListener, FunnyJunk.YareYareListener,
-        DialogInterface.OnDismissListener, QueueListener, View.OnClickListener {
+        DialogInterface.OnDismissListener, QueueListener,
+        View.OnClickListener{
 
     private DBHandler db;
     private Ost unAddedOst;
@@ -60,20 +98,22 @@ public class MainActivity extends AppCompatActivity
     private ListFragment listFragment;
     private YoutubeFragment youtubeFragment = null;
     private FrameLayout flPlayer;
-    private RelativeLayout rlContainer;
-    private QueueAdapter QueueAdapter;
+    private RelativeLayout rlContent;
     private boolean youtubeFragLaunched = false;
     private RecyclerView rvQueue;
     private final static int MY_PERMISSIONS_REQUEST_READWRITE_EXTERNAL_STORAGE = 0;
+    private Toolbar toolbar;
+    private QueueAdapter queueAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         db = new DBHandler(this);
         unAddedOst = null;
+        rlContent = (RelativeLayout) findViewById(R.id.rlContent);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -82,12 +122,10 @@ public class MainActivity extends AppCompatActivity
         toggle.syncState();
 
         flPlayer = (FrameLayout) findViewById(R.id.flPlayer);
-        rlContainer = (RelativeLayout) findViewById(R.id.rlContainer);
         Button btnStopPlayer = (Button) flPlayer.findViewById(R.id.btnStopPlayer);
         Button btnMovePlayer = (Button) flPlayer.findViewById(R.id.btnMovePlayer);
 
         btnStopPlayer.setOnClickListener(this);
-        btnMovePlayer.setOnClickListener(this);
         btnMovePlayer.setOnTouchListener(new View.OnTouchListener() {
             float dx, dy;
             RelativeLayout.LayoutParams lParams = (RelativeLayout.LayoutParams) flPlayer.getLayoutParams();
@@ -98,6 +136,7 @@ public class MainActivity extends AppCompatActivity
                 getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
                 int height = displayMetrics.heightPixels;
                 int width = displayMetrics.widthPixels;
+
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN: {
                         dx = event.getRawX() - flPlayer.getX();
@@ -108,7 +147,7 @@ public class MainActivity extends AppCompatActivity
                         float setPosX = event.getRawX() - dx;
                         float setPosY = event.getRawY() - dy;
                         boolean xOutsideScreen = setPosX < 0 || setPosX > width - flPlayer.getWidth();
-                        boolean yOutsideScreen = setPosY < toolbar.getHeight() || setPosY > rlContainer.getHeight() - flPlayer.getHeight() - lParams.topMargin;
+                        boolean yOutsideScreen = setPosY < toolbar.getHeight() || setPosY > rlContent.getHeight() - flPlayer.getHeight() - lParams.topMargin;
                         if (xOutsideScreen && yOutsideScreen) {
                             return false;
                         }
@@ -120,7 +159,6 @@ public class MainActivity extends AppCompatActivity
                             flPlayer.setX(setPosX);
                             flPlayer.setY(setPosY);
                         }
-                        //System.out.println("X: " + flPlayer.getX() + ", Y: " + flPlayer.getY());
                         break;
                     }
                     case MotionEvent.ACTION_UP: {
@@ -134,17 +172,26 @@ public class MainActivity extends AppCompatActivity
 
         rvQueue = (RecyclerView) findViewById(R.id.rvQueue);
 
-        final RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
         rvQueue.setLayoutManager(mLayoutManager);
+        queueAdapter = new QueueAdapter(this, this);
+        rvQueue.setAdapter(queueAdapter);
         rvQueue.setItemAnimator(new DefaultItemAnimator());
-        rvQueue.setAdapter(new QueueAdapter());
 
         listFragment = new ListFragment();
         listFragment.setMainAcitivity(this);
         FragmentManager manager = getSupportFragmentManager();
         manager.beginTransaction()
-                .replace(R.id.rlContent, listFragment)
+                .replace(R.id.rlListContainer, listFragment)
                 .commit();
+
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        int ostId = intent.getIntExtra("Ost of the Day", 2);
+
+        if(action.equals("start ost")){
+            initiatePlayer(db.getAllOsts(), ostId);
+        }
     }
 
     @Override
@@ -255,7 +302,7 @@ public class MainActivity extends AppCompatActivity
             }
         } else {
             Toast.makeText(this, lastAddedOst.getTitle() + " From " + lastAddedOst.getShow() + " has already been added", Toast.LENGTH_SHORT).show();
-            lastAddedOst = null;
+            //lastAddedOst = null;
         }
     }
 
@@ -396,7 +443,7 @@ public class MainActivity extends AppCompatActivity
             Toast.makeText(this, "You have to play something first", Toast.LENGTH_SHORT).show();
         }else{
             youtubeFragment.addToQueue(ost.getUrl());
-            QueueAdapter.addToQueue(ost);
+            queueAdapter.addToQueue(ost);
         }
 
     }
@@ -405,7 +452,7 @@ public class MainActivity extends AppCompatActivity
         if (youtubeFragment == null) {
             youtubeFragment = new YoutubeFragment();
             PlayerListener[] playerListeners = new PlayerListener[3];
-            playerListeners[0] = QueueAdapter;
+            playerListeners[0] = queueAdapter;
             playerListeners[1] = listFragment;
             playerListeners[2] = listFragment.getCustomAdapter();
             youtubeFragment.setPlayerListeners(playerListeners);
@@ -421,8 +468,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void initiatePlayer(List<Ost> ostList, int startid) {
-        QueueAdapter = new QueueAdapter(this, ostList, startid, this);
-        rvQueue.setAdapter(QueueAdapter);
+        queueAdapter.initiateQueue(ostList, startid);
         initYoutubeFrag();
         youtubeFragment.initiateQueue(ostList, startid);
         updateYoutubeFrag();
@@ -445,10 +491,6 @@ public class MainActivity extends AppCompatActivity
             case R.id.btnStopPlayer: {
                 youtubeFragment.pausePlayer();
                 flPlayer.setVisibility(View.GONE);
-                break;
-            }
-            case R.id.btnMovePlayer: {
-                Toast.makeText(this, "Touch and drag to move the player", Toast.LENGTH_SHORT).show();
                 break;
             }
         }
@@ -538,7 +580,7 @@ public class MainActivity extends AppCompatActivity
         }
         String saveString = direct.getAbsolutePath() + "/" + saveName + ".jpg";
         System.out.println(saveString);
-        if(!Util.doesFileExist(saveString)) {
+        if(!UtilMeths.doesFileExist(saveString)) {
             DownloadManager mgr = (DownloadManager) this.getSystemService(Context.DOWNLOAD_SERVICE);
 
             Uri downloadUri = Uri.parse(uRl);
@@ -557,7 +599,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void downloadThumbnail(String url){
-        downloadFile("http://img.youtube.com/vi/" + Util.urlToId(url) + "/2.jpg", Util.urlToId(url));
+        downloadFile("http://img.youtube.com/vi/" + UtilMeths.urlToId(url) + "/2.jpg", UtilMeths.urlToId(url));
     }
 
     @Override
@@ -569,5 +611,4 @@ public class MainActivity extends AppCompatActivity
         int height = displayMetrics.heightPixels;
         int width = displayMetrics.widthPixels;
     }
-
 }

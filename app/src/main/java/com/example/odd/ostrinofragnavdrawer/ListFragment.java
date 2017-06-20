@@ -180,17 +180,6 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         }
     }
 
-    @Override
-    public void onConfigurationChanged(Configuration newConfig){
-        super.onConfigurationChanged(newConfig);
-        // Checks the orientation of the screen
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int height = displayMetrics.heightPixels;
-        int width = displayMetrics.widthPixels;
-        System.out.println(playerDocked);
-    }
-
     public int getOstReplaceId(){
         return ostReplaceId;
     }

@@ -1,9 +1,7 @@
 package com.example.odd.ostrinofragnavdrawer;
 
 import android.content.Context;
-import android.media.Image;
 import android.os.Environment;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +13,6 @@ import android.widget.TextView;
 import com.example.odd.ostrinofragnavdrawer.Listeners.PlayerListener;
 import com.example.odd.ostrinofragnavdrawer.Listeners.QueueListener;
 import com.squareup.picasso.Picasso;
-import com.squareup.picasso.RequestCreator;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -29,7 +26,6 @@ public class CustomAdapter extends BaseAdapter implements PlayerListener {
     private LayoutInflater mInflater;
     private QueueListener queueListener;
     private int nowPlaying = -1;
-    private File[] tnFiles;
 
     public CustomAdapter(Context context, List<Ost> ostListin, QueueListener ql) {
         mContext = context;
@@ -39,12 +35,6 @@ public class CustomAdapter extends BaseAdapter implements PlayerListener {
         filteredOstList.addAll(ostListin);
         queueListener = ql;
         mInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        tnFiles = new File[ostListin.size()];
-        for (int i = 0; i < ostList.size(); i++) {
-            File tnFile = new File(Environment.getExternalStorageDirectory()
-                    + "/OSTthumbnails/" + Util.urlToId(ostList.get(i).getUrl()) + ".jpg");
-            tnFiles[i] = tnFile;
-        }
     }
 
     @Override
@@ -59,45 +49,54 @@ public class CustomAdapter extends BaseAdapter implements PlayerListener {
 
     @Override
     public long getItemId(int position) {
-        return position; //ostStringList.get(position).getId();
+        return position;
     }
 
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
-        Ost ost = ostList.get(position);
-        View v = mInflater.inflate(R.layout.custom_row, null);
-        ImageView thumbnail = (ImageView) v.findViewById(R.id.ivThumbnail);
-        Picasso.with(mContext).load(tnFiles[position]).into(thumbnail);
-        /*File tnFile = new File(Environment.getExternalStorageDirectory()
-                + "/OSTthumbnails/" + Util.urlToId(ost.getUrl()) + ".jpg");
+        Ost ost = getItem(position);
+        ViewHolder holder;
+        if( convertView == null){
+            convertView = mInflater.inflate(R.layout.custom_row, null);
+            holder = new ViewHolder();
+            holder.tvTitle = (TextView) convertView.findViewById(R.id.tvTitle);
+            holder.tvShow = (TextView) convertView.findViewById(R.id.tvShow);
+            holder.tvTags = (TextView) convertView.findViewById(R.id.tvTags);
+            holder.thumbnail = (ImageView) convertView.findViewById(R.id.ivThumbnail);
+            holder.btnOptions = (ImageButton) convertView.findViewById(R.id.btnOptions);
+            convertView.setTag(holder);
+        } else{
+            holder = (ViewHolder) convertView.getTag();
+        }
+        File tnFile = new File(Environment.getExternalStorageDirectory()
+                + "/OSTthumbnails/" + UtilMeths.urlToId(ost.getUrl()) + ".jpg");
         Picasso.with(mContext)
                 .load(tnFile)
-                .into(thumbnail);*/
-        TextView tvTitle = (TextView) v.findViewById(R.id.tvTitle);
-        TextView tvShow = (TextView) v.findViewById(R.id.tvShow);
-        TextView tvTags = (TextView) v.findViewById(R.id.tvTags);
-        ImageButton btnOptions = (ImageButton) v.findViewById(R.id.btnOptions);
+                .into(holder.thumbnail);
 
         if (nowPlaying == position) {
-            v.setBackgroundResource(R.drawable.greenrect);
+            convertView.setBackgroundResource(R.drawable.greenrect);
+        } else{
+            convertView.setBackgroundResource(R.drawable.white);
         }
-        btnOptions.setOnClickListener(new View.OnClickListener() {
+        holder.btnOptions.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 queueListener.addToQueue(position);
             }
         });
 
-        tvTitle.setText(ost.getTitle());
-        tvShow.setText((ost.getShow()));
-        tvTags.setText(ost.getTags());
+        holder.tvTitle.setText(ost.getTitle());
+        holder.tvShow.setText((ost.getShow()));
+        holder.tvTags.setText(ost.getTags());
 
-        v.setTag(ost.getId());
-        return v;
+        return convertView;
     }
 
     private class ViewHolder{
-
+        TextView tvTitle, tvShow, tvTags;
+        ImageButton btnOptions;
+        ImageView thumbnail;
     }
 
     @Override
@@ -136,7 +135,6 @@ public class CustomAdapter extends BaseAdapter implements PlayerListener {
     public void updateList(List<Ost> updatedList){
         ostList = updatedList;
         notifyDataSetChanged();
-        System.out.println(ostList.toString());
     }
 
     public int getNowPlaying(){

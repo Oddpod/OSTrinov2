@@ -32,17 +32,9 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper>
         this.emptyAdapter = true;
     }
 
-    public QueueAdapter(Context context, List<Ost> ostList, int startIndex, QueueListener queueListener) {
-            queueAddPos = 0;
-            played = new Stack<>();
-            queue = new Stack<>();
-            for(int i = ostList.size() - 1; i >= 0; i--) {
-                if(i > startIndex){
-                    queue.add(ostList.get(i));
-                }else{
-                    played.add(ostList.get(i));
-                }
-            }
+    public QueueAdapter(Context context, QueueListener queueListener) {
+            this.played = new Stack<>();
+            this.queue = new Stack<>();
             this.mContext = context;
             this.queueListener = queueListener;
         }
@@ -63,7 +55,7 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper>
             viewWrapper.getShow().setText(ost.getShow());
             viewWrapper.getTags().setText(ost.getTags());
             File tnFile = new File(Environment.getExternalStorageDirectory()
-                    + "/OSTthumbnails/" + Util.urlToId(ost.getUrl()) + ".jpg");
+                    + "/OSTthumbnails/" + UtilMeths.urlToId(ost.getUrl()) + ".jpg");
             Picasso.with(mContext)
                     .load(tnFile)
                     .placeholder(R.drawable.tranquility)
@@ -162,10 +154,6 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper>
                 return btnOptions;
             }
 
-            View getBase(){
-                return base;
-            }
-
             @Override
             public void onClick(View v) {
                 try {
@@ -189,6 +177,20 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper>
     public void addToQueue(Ost ost){
         queue.add(queue.size() - queueAddPos,ost);
         queueAddPos++;
+        notifyDataSetChanged();
+    }
+
+    public void initiateQueue(List<Ost> ostList, int startId){
+        queueAddPos = 0;
+        played = new Stack<>();
+        queue = new Stack<>();
+        for(int i = ostList.size() - 1; i >= 0; i--) {
+            if(i > startId){
+                queue.add(ostList.get(i));
+            }else{
+                played.add(ostList.get(i));
+            }
+        }
         notifyDataSetChanged();
     }
 }

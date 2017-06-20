@@ -14,8 +14,7 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:contentDescription="@android:string/yes"
-        app:srcCompat="@drawable/tranquility" />
+        android:contentDescription="@android:string/yes"/>
 
     <TextView
         android:id="@+id/tvTitle"

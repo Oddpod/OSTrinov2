@@ -20,7 +20,6 @@ import com.google.android.youtube.player.YouTubePlayer.Provider;
 import com.google.android.youtube.player.YouTubePlayerSupportFragment;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -118,7 +117,7 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener,
         this.ostQueue = ostList;
         videoIds = new ArrayList<>();
         for (Ost ost : ostList) {
-            videoIds.add(Util.urlToId(ost.getUrl()));
+            videoIds.add(UtilMeths.urlToId(ost.getUrl()));
         }
         played = new Stack<>();
         preQueue = new Stack<>();
@@ -139,15 +138,15 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener,
 
     public void addToQueue(String url) {
         btnNext.setVisibility(View.VISIBLE);
-        queue.add(0, Util.urlToId(url));
+        queue.add(0, UtilMeths.urlToId(url));
     }
 
     public void removeFromQueue(String url){
-        System.out.println(queue.toString());
-        if(queue.contains(url)){
-            queue.remove(url);
+        String videoId = UtilMeths.urlToId(url);
+        if(queue.contains(videoId)){
+            queue.remove(videoId);
         } else{
-            preQueue.remove(url);
+            preQueue.remove(videoId);
         }
     }
 
@@ -192,7 +191,7 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener,
     }
 
     public void setVideoId(String url) {
-        currentlyPlaying = Util.urlToId(url);
+        currentlyPlaying = UtilMeths.urlToId(url);
     }
 
     @Override

@@ -1,32 +1,32 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="@dimen/widget_margin"
     android:background="#55000000">
 
     <ImageView
-        android:id="@+id/imageView"
-        android:layout_width="0dp"
+        android:id="@+id/widgetThumbnail"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:src="@drawable/yare_yare_daze"/>
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="22dp"
+        android:contentDescription="@string/label_ost_of_the_day" />
 
     <TextView
-        android:id="@+id/textView"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:text="000"
-        android:textSize="@dimen/abc_text_size_large_material"
-        android:textStyle="bold"/>
+        android:id="@+id/tvOstoftheDay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:text="@string/label_ost_of_the_day"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:layout_marginBottom="14dp"
+        android:layout_alignBottom="@+id/widgetThumbnail"
+        android:layout_alignRight="@+id/widgetThumbnail"
+        android:layout_alignEnd="@+id/widgetThumbnail"
+        android:layout_marginRight="10dp"
+        android:layout_marginEnd="10dp" />
 
-    <Button
-        android:id="@+id/btnRefresh"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:text="Refresh"/>
-
-</LinearLayout>
+</RelativeLayout>

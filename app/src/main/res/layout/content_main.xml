@@ -7,7 +7,6 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.example.odd.ostrinofragnavdrawer.MainActivity"
     tools:showIn="@layout/app_bar_main">
-
     <RelativeLayout
         android:id="@+id/rlContent"
         android:layout_width="wrap_content"
@@ -16,6 +15,40 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent" >
+
+        <RelativeLayout
+            android:id="@+id/rlListContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        </RelativeLayout>
+
+        <FrameLayout
+            android:id="@+id/flPlayer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:visibility="gone">
+
+            <Button
+                android:id="@+id/btnStopPlayer"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|start"
+                android:background="@drawable/close"
+                android:visibility="visible" />
+
+            <Button
+                android:id="@+id/btnMovePlayer"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:background="@android:drawable/ic_lock_lock"
+                android:visibility="visible" />
+
+        </FrameLayout>
+    </RelativeLayout>
 
 </android.support.constraint.ConstraintLayout>
