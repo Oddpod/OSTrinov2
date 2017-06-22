@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/tvAbout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="@dimen/widget_margin"
+        android:text="@string/text_about_app"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+
+    <TextView
+        android:id="@+id/tvPicasso"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:autoLink="web"
+        android:text="@string/text_picasso"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+        android:paddingBottom="@dimen/widget_margin"/>
+
+    <TextView
+        android:id="@+id/tvOkHttp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:autoLink="web"
+        android:text="@string/text_okhttp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+        android:paddingBottom="@dimen/widget_margin"/>
+
+</LinearLayout>

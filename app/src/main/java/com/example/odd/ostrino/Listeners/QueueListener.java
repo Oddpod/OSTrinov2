@@ -1,4 +1,4 @@
-package com.example.odd.ostrinofragnavdrawer.Listeners;
+package com.example.odd.ostrino.Listeners;
 
 public interface QueueListener{
     void addToQueue(int addId);

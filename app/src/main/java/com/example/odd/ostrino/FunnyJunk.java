@@ -1,4 +1,4 @@
-package com.example.odd.ostrinofragnavdrawer;
+package com.example.odd.ostrino;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
+
+import com.example.odd.ostrinofragnavdrawer.R;
 
 public class FunnyJunk extends DialogFragment{
 
@@ -23,18 +25,6 @@ public class FunnyJunk extends DialogFragment{
 
         YareYareListener yareyareListener;
 
-        @Override
-        public void onAttach(Activity activity){
-            super.onAttach(activity);
-
-            try{
-                yareyareListener = (FunnyJunk.YareYareListener) activity;
-            } catch(ClassCastException e){
-                throw new ClassCastException(activity.toString()
-                        + " must implement yareyareListener");
-            }
-
-        }
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState){
 

@@ -1,4 +1,4 @@
-package com.example.odd.ostrinofragnavdrawer.Listeners;
+package com.example.odd.ostrino.Listeners;
 
 public interface RearrangeListener {
     void onGrab(int index);

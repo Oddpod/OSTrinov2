@@ -1,4 +1,4 @@
-package com.example.odd.ostrinofragnavdrawer;
+package com.example.odd.ostrino;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -13,13 +13,13 @@ public class ServerDBHandler{
         private String user = "root";
         private String password = "";
 
-        public void startConnectiontoDatabaseAndUpdate(String sql) throws SQLException {
+        private void startConnectiontoDatabaseAndUpdate(String sql) throws SQLException {
             Connection myConn = DriverManager.getConnection(url, user, password);
             Statement myStat = myConn.createStatement();
             myStat.executeUpdate(sql);
         }
 
-        public ResultSet startConnectiontoDatabaseAndQuery(String sql) throws SQLException {
+        private ResultSet startConnectiontoDatabaseAndQuery(String sql) throws SQLException {
             Connection myConn = DriverManager.getConnection(url, user, password);
             Statement myStat = myConn.createStatement();
             ResultSet myRsi = myStat.executeQuery(sql);

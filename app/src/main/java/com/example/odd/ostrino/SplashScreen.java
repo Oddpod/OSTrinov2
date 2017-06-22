@@ -1,4 +1,4 @@
-package com.example.odd.ostrinofragnavdrawer;
+package com.example.odd.ostrino;
 
 import android.content.Intent;
 import android.media.MediaPlayer;
@@ -7,6 +7,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
+
+import com.example.odd.ostrinofragnavdrawer.R;
 
 public class SplashScreen extends AppCompatActivity{
 

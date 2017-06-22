@@ -18,6 +18,18 @@
     <string name="label_clean_tags">Clean Tags and Show Table</string>
     <string name="label_ost_of_the_day">Ost of the day</string>
     <string name="label_go">Go</string>
+    <string name="label_about">About</string>
+    <string name="text_picasso"><b>Picasso</b>\n
+                    "  Copyright 2013 Square, Inc." \n
+                    "  License: Apache 2.0" \n
+                    " " Website: <a href="http://square.github.io/picasso/">http://square.github.io/picasso/</a></string>
+    <string name="text_okhttp"><b>OkHttp</b>\n
+                    "  Copyright 2016 Square, Inc." \n
+                    "  License: Apache 2.0" \n
+                    " " Website: <a href="http://square.github.io/okhttp/">http://square.github.io/okhttp/</a></string>
+    <string name="text_about_app"> <b>OSTrino</b> \n
+                                    © 2017 Odd Harald Sjursen Sande \n
+                                    This app uses the following open source libraries:</string>
 
     <string name="label_filter">Filter</string>
 

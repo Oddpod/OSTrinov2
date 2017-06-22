@@ -1,4 +1,4 @@
-package com.example.odd.ostrinofragnavdrawer;
+package com.example.odd.ostrino;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -11,15 +11,16 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.odd.ostrinofragnavdrawer.Listeners.PlayerListener;
-import com.example.odd.ostrinofragnavdrawer.Listeners.QueueListener;
+import com.example.odd.ostrino.Listeners.PlayerListener;
+import com.example.odd.ostrino.Listeners.QueueListener;
+import com.example.odd.ostrinofragnavdrawer.R;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.util.List;
 import java.util.Stack;
 
-public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper> implements PlayerListener{
+class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper> implements PlayerListener{
         private Stack<Ost> played, queue;
         private Context mContext;
 
@@ -32,7 +33,7 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper>
         this.emptyAdapter = true;
     }
 
-    public QueueAdapter(Context context, QueueListener queueListener) {
+    QueueAdapter(Context context, QueueListener queueListener) {
             this.played = new Stack<>();
             this.queue = new Stack<>();
             this.mContext = context;
@@ -165,7 +166,7 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper>
                 }
             }
         }
-    public interface OnItemClickListener {
+    interface OnItemClickListener {
         void onItemClick(View view, int position);
     }
 
@@ -174,13 +175,13 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper>
         notifyDataSetChanged();
     }
 
-    public void addToQueue(Ost ost){
+    void addToQueue(Ost ost){
         queue.add(queue.size() - queueAddPos,ost);
         queueAddPos++;
         notifyDataSetChanged();
     }
 
-    public void initiateQueue(List<Ost> ostList, int startId){
+    void initiateQueue(List<Ost> ostList, int startId){
         queueAddPos = 0;
         played = new Stack<>();
         queue = new Stack<>();

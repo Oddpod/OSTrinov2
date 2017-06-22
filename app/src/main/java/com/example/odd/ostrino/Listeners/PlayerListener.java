@@ -1,6 +1,6 @@
-package com.example.odd.ostrinofragnavdrawer.Listeners;
+package com.example.odd.ostrino.Listeners;
 
-import com.example.odd.ostrinofragnavdrawer.Ost;
+import com.example.odd.ostrino.Ost;
 
 import java.util.List;
 

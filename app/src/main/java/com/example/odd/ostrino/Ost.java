@@ -1,4 +1,4 @@
-package com.example.odd.ostrinofragnavdrawer;
+package com.example.odd.ostrino;
 
 public class Ost {
     private String title, show, tags, url;

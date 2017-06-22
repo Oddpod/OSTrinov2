@@ -23,9 +23,6 @@
         android:text="@string/label_ost_of_the_day"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
         android:layout_marginBottom="14dp"
-        android:layout_alignBottom="@+id/widgetThumbnail"
-        android:layout_alignRight="@+id/widgetThumbnail"
-        android:layout_alignEnd="@+id/widgetThumbnail"
         android:layout_marginRight="10dp"
         android:layout_marginEnd="10dp" />
 

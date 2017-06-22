@@ -1,4 +1,4 @@
-package com.example.odd.ostrinofragnavdrawer;
+package com.example.odd.ostrino;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -12,7 +12,8 @@ import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-import com.example.odd.ostrinofragnavdrawer.Listeners.PlayerListener;
+import com.example.odd.ostrino.Listeners.PlayerListener;
+import com.example.odd.ostrinofragnavdrawer.R;
 import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubePlayer;
 import com.google.android.youtube.player.YouTubePlayer.OnInitializedListener;
@@ -34,10 +35,8 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener,
         YouTubePlayer.PlayerStateChangeListener,
         YouTubePlayer.PlaybackEventListener{
 
-    // API キー
     public static final String API_KEY = "AIzaSyDSMKvbGUJxKhPz5t4PMFEByD5qFy1sjEA";
 
-    // YouTubeのビデオID
     private String currentlyPlaying;
     private boolean minimized = false, playing, playerStopped, shuffle = false;
     public YouTubePlayer mPlayer = null;
@@ -59,7 +58,6 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener,
         View rootView = inflater.inflate(R.layout.youtube_api, container, false);
         layoutView = (RelativeLayout) rootView;
         playerLayout = (FrameLayout) rootView.findViewById(R.id.youtube_layout);
-        // YouTubeフラグメントインスタンスを取得
 
         btnPrevious = (Button) rootView.findViewById(R.id.btnPrevious);
         btnPause = (Button) rootView.findViewById(R.id.btnPause);
@@ -73,24 +71,20 @@ public class YoutubeFragment extends Fragment implements View.OnClickListener,
 
         YouTubePlayerSupportFragment youTubePlayerFragment = YouTubePlayerSupportFragment.newInstance();
 
-        // レイアウトにYouTubeフラグメントを追加
         FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
         transaction.add(R.id.youtube_layout, youTubePlayerFragment).commit();
 
-        // YouTubeフラグメントのプレーヤーを初期化する
         youTubePlayerFragment.initialize(API_KEY, this);
 
         return rootView;
     }
 
-    // YouTubeプレーヤーの初期化成功
     @Override
     public void onInitializationSuccess(Provider provider, YouTubePlayer player, boolean wasRestored) {
         this.mPlayer = player;
         initPlayer();
     }
 
-    // YouTubeプレーヤーの初期化失敗
     @Override
     public void onInitializationFailure(Provider provider, YouTubeInitializationResult error) {
         // YouTube error

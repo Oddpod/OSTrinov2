@@ -1,4 +1,4 @@
-package com.example.odd.ostrinofragnavdrawer;
+package com.example.odd.ostrino;
 
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
@@ -6,9 +6,9 @@ import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Environment;
-import android.widget.ImageView;
 import android.widget.RemoteViews;
 
+import com.example.odd.ostrinofragnavdrawer.R;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;

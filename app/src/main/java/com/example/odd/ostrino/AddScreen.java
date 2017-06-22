@@ -1,4 +1,4 @@
-package com.example.odd.ostrinofragnavdrawer;
+package com.example.odd.ostrino;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -14,7 +14,8 @@ import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.MultiAutoCompleteTextView;
 
-import java.sql.Array;
+import com.example.odd.ostrinofragnavdrawer.R;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -40,18 +41,6 @@ public class AddScreen extends DialogFragment {
     }
 
     AddScreenListener addScreenListener;
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-
-        try {
-            addScreenListener = (AddScreenListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement AddScreenListener");
-        }
-    }
 
     @Override
     public void onDismiss(final DialogInterface dialog) {

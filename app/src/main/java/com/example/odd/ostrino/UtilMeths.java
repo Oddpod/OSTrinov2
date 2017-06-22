@@ -1,6 +1,4 @@
-package com.example.odd.ostrinofragnavdrawer;
-
-import android.os.Environment;
+package com.example.odd.ostrino;
 
 import java.io.File;
 import java.util.ArrayList;

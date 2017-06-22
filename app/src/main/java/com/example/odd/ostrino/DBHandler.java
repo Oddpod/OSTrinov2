@@ -1,4 +1,4 @@
-package com.example.odd.ostrinofragnavdrawer;
+package com.example.odd.ostrino;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -8,9 +8,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
-public class DBHandler extends SQLiteOpenHelper {
+class DBHandler extends SQLiteOpenHelper {
 
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "ostdb", OST_TABLE = "ostTable", SHOW_TABLE = "showTable", TAGS_TABLE = "tagsTable";
@@ -80,7 +79,7 @@ public class DBHandler extends SQLiteOpenHelper {
 
     }
 
-    public void addNewShow(String newShow){
+    private void addNewShow(String newShow){
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
@@ -91,7 +90,7 @@ public class DBHandler extends SQLiteOpenHelper {
 
     }
 
-    public void addNewTag(String newTag){
+    private void addNewTag(String newTag){
 
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -101,7 +100,7 @@ public class DBHandler extends SQLiteOpenHelper {
         System.out.println("added new tag");
     }
 
-    public void emptyTable(){
+     void emptyTable(){
         //Truncate does not work in sqllite
         SQLiteDatabase db = this.getWritableDatabase();
         String TRUNCATE_TABLE = "DROP TABLE " + OST_TABLE + "";
@@ -200,7 +199,7 @@ public class DBHandler extends SQLiteOpenHelper {
     }
 
 
-    public boolean checkIfShowInDB(String show){
+    private boolean checkIfShowInDB(String show){
         showList = getAllShows();
         String showString = show.toLowerCase();
         for (String showFromDB : showList){
@@ -211,7 +210,7 @@ public class DBHandler extends SQLiteOpenHelper {
         return false;
     }
 
-    public boolean checkIfTagInDB(String tag){
+    private boolean checkIfTagInDB(String tag){
         tagsList = getAllTags();
         String tagString = tag.toLowerCase();
         for (String tagFromDB : tagsList){
@@ -223,7 +222,7 @@ public class DBHandler extends SQLiteOpenHelper {
     }
 
 
-    public List<String> getAllShows(){
+    List<String> getAllShows(){
 
         List<String> showList = new ArrayList<>();
 
@@ -242,7 +241,7 @@ public class DBHandler extends SQLiteOpenHelper {
         return showList;
     }
 
-    public List<String> getAllTags(){
+    List<String> getAllTags(){
         List<String> tagsTable = new ArrayList<>();
 
         String selectQuery = "SELECT * FROM " + TAGS_TABLE;
@@ -260,7 +259,7 @@ public class DBHandler extends SQLiteOpenHelper {
         return tagsTable;
     }
 
-    public void addNewTagsandShows(String show, String tagString){
+    private void addNewTagsandShows(String show, String tagString){
         if(!checkIfShowInDB(show)){
             addNewShow(show);
         }
@@ -273,7 +272,7 @@ public class DBHandler extends SQLiteOpenHelper {
         }
     }
 
-    public String[] getAllTagsArray(){
+    String[] getAllTagsArray(){
 
         String selectQuery = "SELECT * FROM " + TAGS_TABLE;
 
@@ -293,7 +292,7 @@ public class DBHandler extends SQLiteOpenHelper {
         return tagsTable;
     }
 
-    public void reCreateTagsAndShowTables(){
+    void reCreateTagsAndShowTables(){
         SQLiteDatabase db = this.getWritableDatabase();
         String TRUNCATE_TABLE = "DROP TABLE " + TAGS_TABLE + "";
         db.execSQL(TRUNCATE_TABLE);
