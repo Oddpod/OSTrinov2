@@ -4,7 +4,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.odd.ostrino.AddScreen">
+    tools:context="com.odd.ostrino.ostrino.AddScreen">
 
     <TextView
         android:id="@+id/Title"

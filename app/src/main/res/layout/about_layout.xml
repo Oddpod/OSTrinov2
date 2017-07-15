@@ -7,6 +7,7 @@
         android:id="@+id/tvAbout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:autoLink="web"
         android:paddingBottom="@dimen/widget_margin"
         android:text="@string/text_about_app"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
@@ -28,5 +29,13 @@
         android:text="@string/text_okhttp"
         android:textAppearance="@style/TextAppearance.AppCompat.Body2"
         android:paddingBottom="@dimen/widget_margin"/>
+
+    <TextView
+        android:id="@+id/tvMaterialIcons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:autoLink="web"
+        android:text="@string/text_material_icons"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
 
 </LinearLayout>

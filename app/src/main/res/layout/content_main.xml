@@ -5,13 +5,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.example.odd.ostrino.MainActivity"
+    tools:context="com.odd.ostrino.MainActivity"
     tools:showIn="@layout/app_bar_main">
     <RelativeLayout
         android:id="@+id/rlContent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -49,6 +48,11 @@
                 android:visibility="visible" />
 
         </FrameLayout>
+        <FrameLayout
+            android:id="@+id/floatingPlayer"
+            android:layout_width="200dp"
+            android:layout_height="110dp">
+            </FrameLayout>
     </RelativeLayout>
 
 </android.support.constraint.ConstraintLayout>

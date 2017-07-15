@@ -30,26 +30,28 @@
 
             <ImageButton
                 android:id="@+id/btnShuffle"
-                android:contentDescription="@string/label_shuffle"
                 style="@style/Widget.AppCompat.Button.Borderless"
-                android:layout_width="wrap_content"
+                android:layout_width="20dp"
                 android:layout_height="wrap_content"
-                android:background="@drawable/shuffle" />
+                android:contentDescription="@string/label_shuffle"
+                app:srcCompat="@drawable/ic_shuffle_black_24dp" />
 
             <ImageButton
                 android:id="@+id/btnShufflePlay"
-                android:layout_width="wrap_content"
+                style="@style/Base.Widget.AppCompat.Button.Borderless"
+                android:layout_width="30dp"
                 android:layout_height="match_parent"
                 android:contentDescription="@string/label_shuffle_play"
-                app:srcCompat="@drawable/ic_menu_send" />
+                app:srcCompat="@drawable/shuffle_play" />
 
             <ImageButton
                 android:id="@+id/btnAdd"
+                style="@style/Widget.AppCompat.Button.Borderless"
                 android:layout_width="40dp"
                 android:layout_height="match_parent"
                 android:layout_gravity="end"
                 android:contentDescription="@string/label_add"
-                app:srcCompat="@android:drawable/ic_menu_add" />
+                app:srcCompat="@drawable/ic_add_black_24dp" />
         </TableRow>
 
     </TableLayout>

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.odd.ostrinofragnavdrawer">
+    package="com.odd.ostrino">
 
     <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
     <application
         android:allowBackup="true"
         android:icon="@drawable/appikon"
@@ -13,17 +13,19 @@
         android:theme="@style/AppTheme">
         <activity
             android:windowSoftInputMode="stateAlwaysHidden"
-            android:name="com.example.odd.ostrino.MainActivity"
+            android:name="com.odd.ostrino.MainActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar"
             android:configChanges="orientation|keyboard|keyboardHidden|screenSize"
             android:screenOrientation="sensor">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.MAIN"/>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <receiver android:name="com.example.odd.ostrino.WidgetProvider" >
+        <service android:name="com.odd.ostrino.YTplayerService"/>
+        <receiver android:name="com.odd.ostrino.WidgetProvider" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>

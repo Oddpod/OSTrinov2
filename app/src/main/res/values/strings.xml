@@ -1,5 +1,6 @@
 <resources>
-    <string name="app_name">OSTrino.v2</string>
+    <string name="app_name">OSTrino</string>
+    <string name="API_KEY">"AIzaSyDSMKvbGUJxKhPz5t4PMFEByD5qFy1sjEA"</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
@@ -17,7 +18,6 @@
     <string name="label_delete_all">Delete All Osts</string>
     <string name="label_clean_tags">Clean Tags and Show Table</string>
     <string name="label_ost_of_the_day">Ost of the day</string>
-    <string name="label_go">Go</string>
     <string name="label_about">About</string>
     <string name="text_picasso"><b>Picasso</b>\n
                     "  Copyright 2013 Square, Inc." \n
@@ -27,12 +27,24 @@
                     "  Copyright 2016 Square, Inc." \n
                     "  License: Apache 2.0" \n
                     " " Website: <a href="http://square.github.io/okhttp/">http://square.github.io/okhttp/</a></string>
+    <string name="text_material_icons"><b>Material Icons</b>\n
+                    "  License: Apache 2.0" \n
+                    " " Website: <a href="https://material.io/icons/">https://material.io/icons/</a></string>
     <string name="text_about_app"> <b>OSTrino</b> \n
                                     © 2017 Odd Harald Sjursen Sande \n
                                     This app uses the following open source libraries:</string>
-
     <string name="label_filter">Filter</string>
 
     <string name="menu_import">Import OSTs</string>
     <string name="menu_export">Exports OSTs</string>
+    <string name="menu_launchFloater">Launch Floater</string>
+
+    <!-- App name -->
+    <string name="app_version_number">1.0</string>
+    <string name="menu_settings">Settings</string>
+
+    <string name="cd_repeat">Repeat one or all</string>
+    <string name="cd_previous">Skip backwards</string>
+    <string name="cd_play">Play and pause</string>
+    <string name="cd_next">Skip forwards</string>
 </resources>
