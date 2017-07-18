@@ -1,5 +1,10 @@
 package com.odd.ostrino;
 
+import android.app.Service;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,10 +24,10 @@ class UtilMeths {
         return lineArray[1];
     }
 
-    static List<String> extractUrls(List<Ost> ostList){
+    static List<String> getVideoIdList(List<Ost> ostList){
         List<String> queueList = new ArrayList<>();
         for (Ost ost : ostList){
-            queueList.add(ost.getUrl());
+            queueList.add(urlToId(ost.getUrl()));
         }
         return queueList;
     }

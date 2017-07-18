@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout android:id="@+id/notificationbg" android:layout_width="fill_parent" android:layout_height="128.0dip"
+<RelativeLayout android:id="@+id/notificationbg" android:layout_width="match_parent"
+    android:layout_height="120dip"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <ImageView
@@ -8,6 +9,7 @@
         android:layout_height="@dimen/notification_expanded_height"
         android:scaleType="centerCrop"
         android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"/>
 
     <LinearLayout
@@ -18,7 +20,9 @@
         android:layout_height="wrap_content"
         android:divider="?android:listDivider"
         android:layout_toRightOf="@id/status_bar_album_art"
+        android:layout_toEndOf="@+id/status_bar_album_art"
         android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:showDividers="middle"
         android:dividerPadding="12.0dip">

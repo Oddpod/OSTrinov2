@@ -18,6 +18,7 @@ import android.widget.RelativeLayout;
 
 import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubePlayer;
+import com.google.android.youtube.player.YouTubePlayerFragment;
 import com.google.android.youtube.player.YouTubePlayerSupportFragment;
 import com.google.android.youtube.player.YouTubePlayerView;
 
@@ -46,6 +47,7 @@ public class FloatingWindow extends Service implements View.OnClickListener, You
 
         inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
         wm = (WindowManager) getSystemService(WINDOW_SERVICE);
+
         //rl = (RelativeLayout) inflater.inflate(R.layout.activity_youtube, null);
         //YouTubePlayerView youTubePlayerView = (YouTubePlayerView) rl.findViewById(R.id.youtubeView);
         //youTubePlayerView.initialize(Constants.API_TOKEN, this);
@@ -63,7 +65,9 @@ public class FloatingWindow extends Service implements View.OnClickListener, You
 
         rl.setBackgroundColor(Color.argb(66, 255, 0, 0));
 
-        params = new WindowManager.LayoutParams(420, WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.TYPE_PHONE, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);
+        params = new WindowManager.LayoutParams(420, WindowManager.LayoutParams.WRAP_CONTENT
+                , WindowManager.LayoutParams.TYPE_PHONE, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                PixelFormat.TRANSLUCENT);
         params.x = 0;
         params.y = 0;
         params.gravity = Gravity.CENTER;

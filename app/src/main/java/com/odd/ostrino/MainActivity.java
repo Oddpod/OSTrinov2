@@ -15,6 +15,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.net.Uri;
 import android.os.Build;
@@ -22,6 +23,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
 import android.provider.Settings;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
@@ -49,6 +51,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -68,6 +71,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.List;
+
+import static com.odd.ostrino.PermissionHandlerKt.isSystemAlertPermissionGranted;
+import static com.odd.ostrino.PermissionHandlerKt.requestSystemAlertPermission;
 
 public class MainActivity extends AppCompatActivity
         implements AddScreen.AddScreenListener, FunnyJunk.YareYareListener,
@@ -91,6 +97,8 @@ public class MainActivity extends AppCompatActivity
     private YouTubePlayerSupportFragment youTubePlayerFragment;
     private Boolean floaterLaunched = false;
     private YTplayerService yTplayerService;
+    private WindowManager wm;
+    private LinearLayout ll;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -644,7 +652,7 @@ public class MainActivity extends AppCompatActivity
             wm = (WindowManager) getSystemService(WINDOW_SERVICE);
             LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
             final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    800,
                     WindowManager.LayoutParams.WRAP_CONTENT,
                     WindowManager.LayoutParams.TYPE_PHONE,
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
@@ -653,17 +661,23 @@ public class MainActivity extends AppCompatActivity
             params.x = 0;
             params.y = 100;
 
-            final RelativeLayout rl = (RelativeLayout) inflater.inflate(R.layout.youtube_api, null);
+            //WindowManager.LayoutParams.WRAP_CONTENT,
+              //      WindowManager.LayoutParams.WRAP_CONTENT,
+
+            final LinearLayout ll = new LinearLayout(this); //inflater.inflate(R.layout.youtube_api, null);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(400,
+                    800);
+            ll.setBackgroundColor(Color.argb(66, 255, 0, 0));
+            ll.setLayoutParams(lp);
 
             if(!floaterLaunched){
                 rlContent.removeView(floatingPlayer);
-                rl.addView(floatingPlayer);
+                ll.addView(floatingPlayer);
                 startService();
                 doBindService();
-                wm.addView(rl, params);
-                rl.setDescendantFocusability(RelativeLayout.FOCUS_BEFORE_DESCENDANTS);
-                floatingPlayer.setDescendantFocusability(FrameLayout.FOCUS_BEFORE_DESCENDANTS);
-                rl.setOnTouchListener(new View.OnTouchListener() {
+                wm.addView(ll, params);
+                ll.setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
+                ll.setOnTouchListener(new View.OnTouchListener() {
 
                     private WindowManager.LayoutParams updateParams = params;
                     int X, Y;
@@ -679,7 +693,7 @@ public class MainActivity extends AppCompatActivity
                                 touchedX = event.getRawX();
                                 touchedY = event.getRawY();
 
-                                System.out.println(X + ", " + Y);
+                                //System.out.println(X + ", " + Y);
 
                                 break;
                             case MotionEvent.ACTION_MOVE:
@@ -687,7 +701,7 @@ public class MainActivity extends AppCompatActivity
                                 updateParams.x = (int) (X + (event.getRawX() - touchedX));
                                 updateParams.y = (int) (Y + (event.getRawY() - touchedY));
 
-                                wm.updateViewLayout(rl, updateParams);
+                                wm.updateViewLayout(ll, updateParams);
 
                                 break;
 
@@ -705,26 +719,9 @@ public class MainActivity extends AppCompatActivity
 
             }
         }
-
     }
 
-    public static void requestSystemAlertPermission(Activity context, int requestCode) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
-            return;
-        final String packageName = context == null ? context.getPackageName() : context.getPackageName();
-        final Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + packageName));
-        if (context != null)
-            context.startActivityForResult(intent, requestCode);
-        else
-            context.startActivityForResult(intent, requestCode);
-    }
-    @TargetApi(23)
-    public static boolean isSystemAlertPermissionGranted(Context context) {
-        final boolean result = Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(context);
-        return result;
-    }
-
-    public void startService() {
+    void startService() {
         Intent serviceIntent = new Intent(MainActivity.this, YTplayerService.class);
         serviceIntent.setAction(Constants.STARTFOREGROUND_ACTION);
         startService(serviceIntent);
@@ -739,6 +736,10 @@ public class MainActivity extends AppCompatActivity
             // cast its IBinder to a concrete class and directly access it.
             yTplayerService = ((YTplayerService.LocalBinder)service).getService();
             youTubePlayerFragment.initialize(Constants.API_TOKEN, yTplayerService);
+            rlContent.removeView(floatingPlayer);
+            yTplayerService.launchFloater(floatingPlayer, MainActivity.this);
+            yTplayerService.startQueue(listFragment.getCurrDispOstList(), 0, false);
+
 
             // Tell the user about this for our demo.
             Toast.makeText(getApplicationContext(), "Connected", Toast.LENGTH_SHORT).show();
@@ -750,7 +751,7 @@ public class MainActivity extends AppCompatActivity
             // Because it is running in our same process, we should never
             // see this happen.
             yTplayerService = null;
-            Toast.makeText(getApplicationContext(), "connected", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "Disconnected", Toast.LENGTH_SHORT).show();
         }
     };
 
@@ -768,7 +769,18 @@ public class MainActivity extends AppCompatActivity
     public void onStop() {
         super.onStop();
         // Do your stuff
-        launchFloater();
+        //launchFloater();
+        startService();
+        doBindService();
+    }
+
+    @Override
+    public void onStart(){
+        super.onStart();
+        if(yTplayerService != null){
+            yTplayerService.stopFloater();
+            rlContent.addView(floatingPlayer);
+        }
     }
 
 }
