@@ -1,16 +1,17 @@
 package com.odd.ostrino
 
+import com.google.android.youtube.player.YouTubePlayer
 import java.util.*
 import com.odd.ostrino.Listeners.PlayerListener
 
 
-data class QueueHandler(var ostList: List<Ost>, var startIndex : Int, var shuffle : Boolean){
+data class QueueHandler(var ostList: List<Ost>, var startIndex : Int, var shuffle
+: Boolean, var playerListeners: Array<PlayerListener> ) : YouTubePlayer.PlayerStateChangeListener{
 
-    private var playerListeners: Array<PlayerListener>? = null
     private var preQueue: Stack<String>
     private var played: Stack<String>
-    lateinit private var queue:Stack<String>
-    private val videoIds: List<String> = UtilMeths.getVideoIdList(ostList)
+    private var queue:Stack<String>
+    private var videoIds: List<String> = UtilMeths.getVideoIdList(ostList)
     var currentlyPlaying : String
     private var playbackPosMilliSec: Int = 0
     private var currPlayingIndex:Int = 0
@@ -34,6 +35,26 @@ data class QueueHandler(var ostList: List<Ost>, var startIndex : Int, var shuffl
         }
     }
 
+    fun initiateQueue(ostList: List<Ost>, startIndex: Int, shuffle: Boolean) {
+        //btnNext.setVisibility(View.VISIBLE);
+        videoIds = ArrayList<String>()
+        videoIds = UtilMeths.getVideoIdList(ostList)
+        played = Stack<String>()
+        preQueue = Stack<String>()
+        currentlyPlaying = videoIds[startIndex]
+        for (i in ostList.indices) {
+            val videoId = videoIds[i]
+            if (i < startIndex) {
+                played.add(videoId)
+            } else if (i > startIndex) {
+                preQueue.add(0, videoId)
+            }
+        }
+        if (shuffle) {
+            shuffleOn()
+        }
+    }
+
     fun shuffleOff() {
         currPlayingIndex = videoIds.indexOf(currentlyPlaying)
         played = Stack<String>()
@@ -51,9 +72,7 @@ data class QueueHandler(var ostList: List<Ost>, var startIndex : Int, var shuffl
 
     fun shuffleOn() {
         val seed = System.nanoTime()
-        val ostQ = ostList.subList(currPlayingIndex, ostList.size)
         Collections.shuffle(preQueue, Random(seed))
-        Collections.shuffle(ostQ, Random(seed))
         //notifyShuffle(ostQ)
         shuffle = true
     }
@@ -72,40 +91,31 @@ data class QueueHandler(var ostList: List<Ost>, var startIndex : Int, var shuffl
         }
     }
 
-    fun previous() : String?{
+    fun previous(): String?{
         if (!played.isEmpty()) {
             preQueue.push(currentlyPlaying)
             currentlyPlaying = played.pop()
-            return currentlyPlaying
         }else {
-            /*if (played.isEmpty()) {
-            btnPrevious.setVisibility(View.INVISIBLE)
-        }*/
             //notifyPlayerListeners(true)
-            return null
         }
+
+        return currentlyPlaying
     }
 
-    fun next() : String{
+    fun next() : String?{
         if (!queue.isEmpty()) {
             played.push(currentlyPlaying)
             currentlyPlaying = queue.pop()
-            return currentlyPlaying
         } else if (!preQueue.isEmpty()) {
             played.push(currentlyPlaying)
             currentlyPlaying = preQueue.pop()
-            return currentlyPlaying
         }
         if (preQueue.isEmpty()) {
             //btnNext.setVisibility(View.INVISIBLE)
         }
         //btnPrevious.setVisibility(View.VISIBLE)
         //notifyPlayerListeners(false)
-        return ""
-    }
-
-    fun setPlayerListeners(playerListeners: Array<PlayerListener>) {
-        this.playerListeners = playerListeners
+        return currentlyPlaying
     }
 
     fun notifyPlayerListeners(previous: Boolean) {
@@ -127,6 +137,46 @@ data class QueueHandler(var ostList: List<Ost>, var startIndex : Int, var shuffl
     }
 
     fun getCurrPlayingOst() : Ost{
-        return ostList.get(currPlayingIndex)
+        return ostList.get(videoIds.indexOf(currentlyPlaying))
     }
+
+    override fun onAdStarted() {
+    }
+
+    override fun onLoading() {
+    }
+
+    override fun onVideoStarted() {
+    }
+
+    override fun onLoaded(p0: String?) {
+    }
+
+    override fun onVideoEnded() {
+        next()
+    }
+
+    override fun onError(p0: YouTubePlayer.ErrorReason?) {
+        println("Error")
+    }
+
+    /*override fun onSeekTo(p0: Int) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun onBuffering(p0: Boolean) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun onPlaying() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun onStopped() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun onPaused() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }*/
 }

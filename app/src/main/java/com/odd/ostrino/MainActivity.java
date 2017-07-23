@@ -1,11 +1,7 @@
 package com.odd.ostrino;
 
 import android.Manifest;
-import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.DownloadManager;
-import android.app.IntentService;
-import android.app.Service;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ComponentName;
@@ -22,8 +18,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
-import android.provider.Settings;
-import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
@@ -45,7 +39,6 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.view.WindowManager;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -54,11 +47,8 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.youtube.player.YouTubeInitializationResult;
-import com.google.android.youtube.player.YouTubePlayer;
 import com.google.android.youtube.player.YouTubePlayerSupportFragment;
 import com.odd.ostrino.Listeners.PlayerListener;
 import com.odd.ostrino.Listeners.QueueListener;
@@ -95,10 +85,8 @@ public class MainActivity extends AppCompatActivity
     private QueueAdapter queueAdapter;
     private FragmentManager manager;
     private YouTubePlayerSupportFragment youTubePlayerFragment;
-    private Boolean floaterLaunched = false;
+    private Boolean floaterLaunched = false, mIsBound = false;
     private YTplayerService yTplayerService;
-    private WindowManager wm;
-    private LinearLayout ll;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,6 +97,7 @@ public class MainActivity extends AppCompatActivity
         db = new DBHandler(this);
         unAddedOst = null;
         rlContent = (RelativeLayout) findViewById(R.id.rlContent);
+
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -179,6 +168,7 @@ public class MainActivity extends AppCompatActivity
         manager = getSupportFragmentManager();
         manager.beginTransaction()
                 .replace(R.id.rlListContainer, listFragment)
+                .addToBackStack("list")
                 .commit();
 
         youTubePlayerFragment = YouTubePlayerSupportFragment.newInstance();
@@ -258,7 +248,8 @@ public class MainActivity extends AppCompatActivity
             }
 
             case R.id.launch_Floater:{
-                launchFloater();
+                doUnbindService();
+                //launchFloater();
                 floaterLaunched = true;
                 break;
             }
@@ -470,10 +461,10 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void addToQueue(Ost ost) {
-        if(youtubeFragment == null){
+        if(!youtubeFragLaunched){
             Toast.makeText(this, "You have to play something first", Toast.LENGTH_SHORT).show();
         }else{
-            youtubeFragment.addToQueue(ost.getUrl());
+            yTplayerService.queueHandler.addToQueue(ost.getUrl());
             queueAdapter.addToQueue(ost);
         }
 
@@ -490,6 +481,13 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    public void initPlayerService(){
+        if(yTplayerService == null){
+            startService();
+            doBindService();
+        }
+    }
+
     public void launchYoutubeFrag() {
         FragmentManager manager = getSupportFragmentManager();
         manager.beginTransaction()
@@ -500,9 +498,28 @@ public class MainActivity extends AppCompatActivity
 
     public void initiatePlayer(List<Ost> ostList, int startid) {
         queueAdapter.initiateQueue(ostList, startid);
-        initYoutubeFrag();
+        /*initYoutubeFrag();
         youtubeFragment.initiateQueue(ostList, startid);
-        updateYoutubeFrag();
+        updateYoutubeFrag();*/
+
+        if(!mIsBound){
+            initPlayerService();
+        }
+        if (!youtubeFragLaunched) {
+            //floatingPlayer.setVisibility(View.VISIBLE);
+            rlContent.removeView(floatingPlayer);
+            youtubeFragLaunched = true;
+            PlayerListener[] playerListeners = new PlayerListener[3];
+            playerListeners[0] = queueAdapter;
+            playerListeners[1] = listFragment;
+            playerListeners[2] = listFragment.getCustomAdapter();
+            yTplayerService.startQueue(ostList, startid, listFragment.shuffleActivated,
+                    playerListeners, youTubePlayerFragment);
+            yTplayerService.launchFloater(floatingPlayer, this);
+            //youTubePlayerFragment.initialize(Constants.API_TOKEN, yTplayerService);
+        }else {
+            yTplayerService.initiateQueue(ostList, startid, listFragment.shuffleActivated);
+        }
     }
 
     public void updateYoutubeFrag() {
@@ -528,7 +545,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void shuffleOn() {
-        youtubeFragment.shuffleOn();
+        yTplayerService.queueHandler.shuffleOn();
     }
 
     public void shuffleOff() {
@@ -542,11 +559,11 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void removeFromQueue(String url) {
-        youtubeFragment.removeFromQueue(url);
+        yTplayerService.queueHandler.removeFromQueue(url);
     }
 
     public boolean youtubeFragNotLaunched() {
-        return youtubeFragLaunched;
+        return youtubeFragLaunched = false;
     }
 
     void checkPermission() {
@@ -735,12 +752,6 @@ public class MainActivity extends AppCompatActivity
             // service that we know is running in our own process, we can
             // cast its IBinder to a concrete class and directly access it.
             yTplayerService = ((YTplayerService.LocalBinder)service).getService();
-            youTubePlayerFragment.initialize(Constants.API_TOKEN, yTplayerService);
-            rlContent.removeView(floatingPlayer);
-            yTplayerService.launchFloater(floatingPlayer, MainActivity.this);
-            yTplayerService.startQueue(listFragment.getCurrDispOstList(), 0, false);
-
-
             // Tell the user about this for our demo.
             Toast.makeText(getApplicationContext(), "Connected", Toast.LENGTH_SHORT).show();
         }
@@ -750,7 +761,7 @@ public class MainActivity extends AppCompatActivity
             // unexpectedly disconnected -- that is, its process crashed.
             // Because it is running in our same process, we should never
             // see this happen.
-            yTplayerService = null;
+            mIsBound = false;
             Toast.makeText(getApplicationContext(), "Disconnected", Toast.LENGTH_SHORT).show();
         }
     };
@@ -761,26 +772,55 @@ public class MainActivity extends AppCompatActivity
         // applications replace our component.
         bindService(new Intent(this,
                 YTplayerService.class), mConnection, Context.BIND_AUTO_CREATE);
-        //mIsBound = true;
+        mIsBound = true;
         //mCallbackText.setText("Binding.");
+    }
+
+    void doUnbindService() {
+        if (mIsBound) {
+            // If we have received the service, and hence registered with
+            // it, then now is the time to unregister.
+            /*if (yTplayerService != null) {
+                try {
+                    Message msg = Message.obtain(null,
+                            MessengerService.MSG_UNREGISTER_CLIENT);
+                    msg.replyTo = mMessenger;
+                    mService.send(msg);
+                } catch (RemoteException e) {
+                    // There is nothing special we need to do if the service
+                    // has crashed.
+                }
+            }*/
+
+            // Detach our existing connection.
+            unbindService(mConnection);
+            mIsBound = false;
+        }
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        // Do your stuff
-        //launchFloater();
-        startService();
-        doBindService();
+        if(!youtubeFragLaunched){
+        rlContent.removeView(floatingPlayer);
+        //youTubePlayerFragment.initialize(Constants.API_TOKEN, yTplayerService);
+        PlayerListener[] playerListeners = new PlayerListener[3];
+        playerListeners[0] = queueAdapter;
+        playerListeners[1] = listFragment;
+        playerListeners[2] = listFragment.getCustomAdapter();
+        yTplayerService.startQueue(listFragment.getCurrDispOstList(), 0, false, playerListeners, youTubePlayerFragment);
+        yTplayerService.launchFloater(floatingPlayer, MainActivity.this);
+        youtubeFragLaunched = true;
+        } else{
+            yTplayerService.refresh();
+        }
     }
 
     @Override
     public void onStart(){
         super.onStart();
-        if(yTplayerService != null){
-            yTplayerService.stopFloater();
-            rlContent.addView(floatingPlayer);
+        if(!youtubeFragLaunched) {
+            initPlayerService();
         }
     }
-
 }

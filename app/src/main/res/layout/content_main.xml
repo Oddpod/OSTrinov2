@@ -51,8 +51,11 @@
         <FrameLayout
             android:id="@+id/floatingPlayer"
             android:layout_width="200dp"
-            android:layout_height="110dp">
-            </FrameLayout>
+            android:layout_height="110dp"
+            android:visibility="gone"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentBottom="true"/>
     </RelativeLayout>
 
 </android.support.constraint.ConstraintLayout>
