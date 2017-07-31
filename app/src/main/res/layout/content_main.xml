@@ -7,6 +7,7 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.odd.ostrino.MainActivity"
     tools:showIn="@layout/app_bar_main">
+
     <RelativeLayout
         android:id="@+id/rlContent"
         android:layout_width="wrap_content"
@@ -16,10 +17,57 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" >
 
+        <LinearLayout
+            android:id="@+id/llPlayerControls"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:orientation="vertical">
+
+            <SeekBar
+                android:id="@+id/seekBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <TableRow
+                android:id="@+id/trPlayerControls"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="1">
+
+                <ImageButton
+                    android:id="@+id/btnPrevious"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:background="?attr/selectableItemBackground"
+                    android:contentDescription="@string/cd_next"
+                    app:srcCompat="@drawable/ic_skip_previous_black_24dp" />
+
+                <ImageButton
+                    android:id="@+id/btnPause"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:contentDescription="@string/cd_next"
+                    app:srcCompat="@drawable/ic_pause_black_24dp" />
+
+                <ImageButton
+                    android:id="@+id/btnNext"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:contentDescription="@string/cd_next"
+                    app:srcCompat="@drawable/ic_skip_next_black_24dp" />
+            </TableRow>
+
+        </LinearLayout>
+
         <RelativeLayout
             android:id="@+id/rlListContainer"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:layout_above="@+id/llPlayerControls">
         </RelativeLayout>
 
         <FrameLayout

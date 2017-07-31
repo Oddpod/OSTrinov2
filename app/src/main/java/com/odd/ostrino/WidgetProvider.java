@@ -38,7 +38,7 @@ public class WidgetProvider extends AppWidgetProvider {
             intent.setAction("start ost");
             intent.putExtra("Ost of the Day", ost.getId());
             PendingIntent pendingIntent = PendingIntent.getActivity(context,
-                    0, intent, 0);
+                    ost.getId(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
             remoteViews.setOnClickPendingIntent(R.id.widgetThumbnail, pendingIntent);
             appWidgetManager.updateAppWidget(widgetId, remoteViews);
         }

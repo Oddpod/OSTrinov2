@@ -88,16 +88,22 @@ class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper> implem
 
     @Override
     public void next() {
-        played.add(queue.pop());
-        notifyDataSetChanged();
-        queueAddPos--;
+        if(!queue.isEmpty()) {
+            played.add(queue.pop());
+            notifyDataSetChanged();
+        }
+        if(queueAddPos != 0){
+            queueAddPos--;
+        }
     }
 
     @Override
     public void previous() {
-        queue.add(played.pop());
-        notifyItemInserted(0);
-        queueAddPos++;
+        if(!played.isEmpty()){
+            queue.add(played.pop());
+            notifyItemInserted(0);
+            queueAddPos++;
+        }
 
     }
 
@@ -167,11 +173,6 @@ class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper> implem
         }
     interface OnItemClickListener {
         void onItemClick(View view, int position);
-    }
-
-    public void removeFromQueue(int id){
-        queue.remove(id);
-        notifyDataSetChanged();
     }
 
     void addToQueue(Ost ost){

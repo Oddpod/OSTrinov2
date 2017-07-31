@@ -1,30 +1,33 @@
 package com.odd.ostrino
 
 import android.app.Notification
+import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
-import android.widget.Toast
 import android.app.PendingIntent
 import android.content.Context
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.os.Environment
+import android.os.Handler
+import android.support.v4.app.NotificationBuilderWithBuilderAccessor
+import android.support.v4.app.NotificationCompat
 import android.view.*
-import android.widget.FrameLayout
-import android.widget.LinearLayout
-import android.widget.RemoteViews
+import android.widget.*
 import com.google.android.youtube.player.YouTubeInitializationResult
 import com.google.android.youtube.player.YouTubePlayer
 import com.google.android.youtube.player.YouTubePlayerSupportFragment
 import com.odd.ostrino.Listeners.PlayerListener
 import com.squareup.picasso.Picasso
 import java.io.File
+import java.util.*
 
 class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
         YouTubePlayer.PlayerStateChangeListener,
-        YouTubePlayer.PlaybackEventListener{
+        YouTubePlayer.PlaybackEventListener,
+        SeekBar.OnSeekBarChangeListener{
 
     private val binder = LocalBinder()
     lateinit var queueHandler: QueueHandler
@@ -32,7 +35,7 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
     lateinit private var ll: LinearLayout
     lateinit private var floatingPlayer: FrameLayout
     private var floatingPlayerInitialized : Boolean = false
-    private var playing : Boolean = true
+    var playing : Boolean = true
     private var currTime: Int = 0
     lateinit private var mainActivity : MainActivity
     lateinit var views: RemoteViews
@@ -52,7 +55,7 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
     }
 
     private val LOG_TAG = "NotificationService"
-    private lateinit var yPlayer : YouTubePlayer
+    lateinit var yPlayer : YouTubePlayer
 
     override fun onInitializationSuccess(provider: YouTubePlayer.Provider?, player: YouTubePlayer?, wasRestored: Boolean) {
         if(!wasRestored)
@@ -71,10 +74,11 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
             println("initialized")
             yPlayer.setPlayerStateChangeListener(this)
             yPlayer.setPlaybackEventListener(this)
+            mainActivity.seekBar.setOnSeekBarChangeListener(this)
     }
 
     override fun onInitializationFailure(p0: YouTubePlayer.Provider?, p1: YouTubeInitializationResult?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        println("oops")
     }
 
     private fun handleIntent(intent: Intent?) {
@@ -82,31 +86,21 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
             return
 
         val action = intent.action
-        println(action.toString())
 
         if (action.equals(Constants.PLAY_ACTION, ignoreCase = true)) {
-            if(yPlayer.isPlaying) {
-                yPlayer.pause()
-                playing = false
-            }else{
-                yPlayer.play()
-                playing = true
-            }
+            pausePlay()
 
         } else if (action.equals("", ignoreCase = true)) {
             TODO()
         } else if (action.equals(Constants.PREV_ACTION, ignoreCase = true)) {
-            yPlayer.loadVideo(queueHandler.previous()!!)
-            updateNotInfo()
+           playerPrevious()
             /*
             if (yPlayer.hasPrevious()) {
                 yPlayer.previous()
                 yPlayer.cueVideo("VneKjsUR1oM")
             }*/
         } else if (action.equals(Constants.NEXT_ACTION, ignoreCase = true)) {
-            //yPlayer.next()
-            yPlayer.loadVideo(queueHandler.next()!!)
-            updateNotInfo()
+            playerNext()
         } else if (action.equals(Constants.STOPFOREGROUND_ACTION, ignoreCase = true)) {
             //yPlayer.stop()
         }
@@ -114,7 +108,7 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         if (intent.action == Constants.STARTFOREGROUND_ACTION) {
-            showNotification()
+            //showNotification()
             Toast.makeText(this, "Service Started", Toast.LENGTH_SHORT).show()
         } else if (intent.action == Constants.PREV_ACTION) {
             Toast.makeText(this, "Clicked Previous", Toast.LENGTH_SHORT).show()
@@ -136,15 +130,16 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
             yPlayer.pause()
             mainActivity.doUnbindService()
             mainActivity.youtubeFragNotLaunched()
-            stopForeground(true)
+            mNotifyMgr.cancel(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE)
             //stopSelf()
         }
         return Service.START_NOT_STICKY
     }
 
-    lateinit var status: Notification
+    lateinit var status: NotificationCompat.Builder
+    lateinit var mNotifyMgr : NotificationManager
 
-    private fun showNotification() {
+    fun showNotification() {
         // Using RemoteViews to bind custom layouts into Notification
         views = RemoteViews(packageName,
                 R.layout.status_bar)
@@ -209,13 +204,15 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
 
         bigViews.setTextViewText(R.id.status_bar_album_name, "Album Name")
 
-        status = Notification.Builder(this).build()
-        status.contentView = views
-        status.bigContentView = bigViews
-        status.flags = Notification.FLAG_ONGOING_EVENT
-        status.icon = R.drawable.ic_launcher
-        status.contentIntent = pendingIntent
-        startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, status)
+        mNotifyMgr = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+
+        status = NotificationCompat.Builder(this)
+                .setCustomContentView(views)
+                .setCustomBigContentView(bigViews)
+                .setSmallIcon(R.drawable.ic_launcher)
+                .setContentIntent(pendingIntent)
+        mNotifyMgr.notify(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, status.build())
+        //startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, status)
     }
 
     fun startQueue(ostList: List<Ost>, startIndex: Int, shuffle: Boolean,
@@ -234,7 +231,12 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
         queueHandler.initiateQueue(ostList, startIndex, shuffle)
         yPlayer.loadVideo(queueHandler.currentlyPlaying)
         updateNotInfo()
-}
+    }
+
+    fun resetPlayerListeners(playerListeners: Array<PlayerListener>){
+        queueHandler.playerListeners = playerListeners
+        queueHandler.notifyPlayerListeners(false)
+    }
     fun refresh(){
         youTubePlayerFragment.onResume()
     }
@@ -244,7 +246,7 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
         val tnFile = File(Environment.getExternalStorageDirectory().toString()
                 + "/OSTthumbnails/" + UtilMeths.urlToId(ost.url) + ".jpg")
         Picasso.with(this).load(tnFile).into(bigViews, R.id.status_bar_album_art,
-                Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, status)
+                Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, status.build())
         views.setTextViewText(R.id.status_bar_track_name, ost.title)
         bigViews.setTextViewText(R.id.status_bar_track_name, ost.title)
 
@@ -253,9 +255,9 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
 
         bigViews.setTextViewText(R.id.status_bar_album_name, ost.tags)
 
-        status.contentView = views
-        status.bigContentView = bigViews
-        startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, status)
+        status.setCustomContentView(views)
+        status.setCustomBigContentView(bigViews)
+        mNotifyMgr.notify(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, status.build())
     }
 
     fun launchFloater(floatingPlayer : FrameLayout, activity: MainActivity) {
@@ -289,6 +291,8 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
                     800)
             ll.setBackgroundColor(Color.argb(66, 255, 0, 0))
             ll.layoutParams = lp
+
+            val toggle : ToggleButton = ToggleButton(this)
             ll.addView(floatingPlayer)
             wm.addView(ll, params)
             //ll.descendantFocusability = ViewGroup.FOCUS_BEFORE_DESCENDANTS
@@ -338,6 +342,28 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
         return floatingPlayer
     }
 
+    fun pausePlay(){
+        if(yPlayer.isPlaying) {
+            yPlayer.pause()
+            playing = false
+        }else{
+            yPlayer.play()
+            playing = true
+        }
+    }
+
+    fun playerNext(){
+        yPlayer.loadVideo(queueHandler.next()!!)
+        updateNotInfo()
+        currTime++
+    }
+
+    fun playerPrevious(){
+        yPlayer.loadVideo(queueHandler.previous()!!)
+        updateNotInfo()
+        currTime++
+    }
+
     override fun onAdStarted() {
         //
     }
@@ -353,11 +379,13 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
     }
 
     override fun onVideoEnded() {
-        val next : String? = queueHandler.next()
-        if(next == "")
-        else
+        if(queueHandler.hasNext()) {
+            val next: String? = queueHandler.next()
             yPlayer.loadVideo(next)
-
+        }
+        else
+            yPlayer.pause()
+        currTime++
     }
 
     override fun onError(p0: YouTubePlayer.ErrorReason?) {
@@ -379,5 +407,19 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
 
     override fun onPaused() {
         playing = false
+    }
+
+    //Seekbar functions
+    override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+        yPlayer.seekToMillis(progress)
+        currTime = progress
+    }
+
+    override fun onStartTrackingTouch(seekBar: SeekBar?) {
+        mainActivity.seekBar.max = yPlayer.durationMillis
+    }
+
+    override fun onStopTrackingTouch(seekBar: SeekBar?) {
+
     }
 }

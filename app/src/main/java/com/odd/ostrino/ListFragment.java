@@ -9,15 +9,22 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.TableLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.odd.ostrino.Listeners.PlayerListener;
 import com.odd.ostrino.Listeners.QueueListener;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -51,6 +58,8 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         dialog = new AddScreen();
         dialog.setAddScreenListener(mainActivity);
 
+        final TableLayout tlTop = (TableLayout) rootView.findViewById(R.id.tlTop);
+
         lvOst = (ListView) rootView.findViewById(R.id.lvOstList);
         lvOst.findViewById(R.id.btnOptions);
         lvOst.setDivider(null);
@@ -59,6 +68,21 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
 
         customAdapter = new CustomAdapter(getContext(), allOsts, this);
         lvOst.setAdapter(customAdapter);
+
+        lvOst.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                if(firstVisibleItem == 0){
+                    tlTop.setVisibility(View.VISIBLE);
+                } else{
+                    tlTop.setVisibility(View.GONE);
+                }
+            }
+        });
 
         lvOst.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -88,6 +112,57 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
                 return true;
             }
         });
+
+        if(allOsts.isEmpty()){
+            final TextView tv = new TextView(getContext());
+            ViewGroup.LayoutParams tvParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT);
+            tv.setLayoutParams(tvParams);
+            tv.setText("Empty List :C, start adding some Osts or click this text to load Osts from assets");
+            tv.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                        DBHandler db = new DBHandler(getContext());
+                        BufferedReader reader = null;
+                        try {
+                            reader = new BufferedReader(
+                                    new InputStreamReader(getContext().getAssets().open("Osts24_07_2017.txt")));
+
+                            // do reading, usually loop until end of file reading
+                            String line;
+                            while ((line = reader.readLine()) != null) {
+                                Ost ost = new Ost();
+                                String[] lineArray = line.split("; ");
+                                if (lineArray.length < 4) {
+                                    return;
+                                }
+                                ost.setTitle(lineArray[0]);
+                                ost.setShow(lineArray[1]);
+                                ost.setTags(lineArray[2]);
+                                ost.setUrl(lineArray[3]);
+                                boolean alreadyInDB = db.checkiIfOstInDB(ost);
+                                if (!alreadyInDB) {
+                                    db.addNewOst(ost);
+                                    UtilMeths.downloadThumbnail(lineArray[3], getContext());
+                                }
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } finally {
+                            if (reader != null) {
+                                try {
+                                    reader.close();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                        lvOst.removeHeaderView(tv);
+                        refreshListView();
+                }
+            });
+            lvOst.addHeaderView(tv);
+        }
 
         filter = (EditText) rootView.findViewById(R.id.edtFilter);
         filterText = "";

@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
@@ -17,7 +18,9 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
@@ -44,9 +47,11 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.google.android.youtube.player.YouTubePlayerSupportFragment;
@@ -61,6 +66,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static com.odd.ostrino.PermissionHandlerKt.isSystemAlertPermissionGranted;
 import static com.odd.ostrino.PermissionHandlerKt.requestSystemAlertPermission;
@@ -85,8 +92,11 @@ public class MainActivity extends AppCompatActivity
     private QueueAdapter queueAdapter;
     private FragmentManager manager;
     private YouTubePlayerSupportFragment youTubePlayerFragment;
-    private Boolean floaterLaunched = false, mIsBound = false;
+    private Boolean floaterLaunched = false, mIsBound = false, playing = false;
     private YTplayerService yTplayerService;
+    private ImageButton btnPlayPause;
+    SeekBar seekBar;
+    private int currTime = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,6 +119,17 @@ public class MainActivity extends AppCompatActivity
         Button btnStopPlayer = (Button) flPlayer.findViewById(R.id.btnStopPlayer);
         Button btnMovePlayer = (Button) flPlayer.findViewById(R.id.btnMovePlayer);
         floatingPlayer = (FrameLayout) findViewById(R.id.floatingPlayer);
+
+        btnPlayPause = (ImageButton) findViewById(R.id.btnPause);
+        ImageButton btnNext = (ImageButton) findViewById(R.id.btnNext);
+        ImageButton btnPrevious = (ImageButton) findViewById(R.id.btnPrevious);
+
+        btnPlayPause.setOnClickListener(this);
+        btnNext.setOnClickListener(this);
+        btnPrevious.setOnClickListener(this);
+
+        seekBar = (SeekBar) findViewById(R.id.seekBar);
+        //Make sure you update Seekbar on UI thread
 
         btnStopPlayer.setOnClickListener(this);
         btnMovePlayer.setOnTouchListener(new View.OnTouchListener() {
@@ -513,6 +534,7 @@ public class MainActivity extends AppCompatActivity
             playerListeners[0] = queueAdapter;
             playerListeners[1] = listFragment;
             playerListeners[2] = listFragment.getCustomAdapter();
+            yTplayerService.showNotification();
             yTplayerService.startQueue(ostList, startid, listFragment.shuffleActivated,
                     playerListeners, youTubePlayerFragment);
             yTplayerService.launchFloater(floatingPlayer, this);
@@ -520,6 +542,8 @@ public class MainActivity extends AppCompatActivity
         }else {
             yTplayerService.initiateQueue(ostList, startid, listFragment.shuffleActivated);
         }
+        playing = true;
+        btnPlayPause.setImageResource(R.drawable.ic_pause_black_24dp);
     }
 
     public void updateYoutubeFrag() {
@@ -539,6 +563,31 @@ public class MainActivity extends AppCompatActivity
             case R.id.btnStopPlayer: {
                 youtubeFragment.pausePlayer();
                 flPlayer.setVisibility(View.GONE);
+                break;
+            }
+            case R.id.btnPause:{
+                if(!youtubeFragLaunched){
+                    Toast.makeText(this, "Play something first bruh :)", Toast.LENGTH_SHORT).show();
+                    break;
+                }
+                else if(playing){
+                    btnPlayPause.setImageResource(R.drawable.ic_play_arrow_black_24dp);
+                    playing = false;
+                } else{
+                    btnPlayPause.setImageResource(R.drawable.ic_pause_black_24dp);
+                    playing = true;
+                }
+                yTplayerService.pausePlay();
+                break;
+            }
+            case R.id.btnNext:{
+                yTplayerService.playerNext();
+                btnPlayPause.setImageResource(R.drawable.ic_pause_black_24dp);
+                break;
+            }
+            case R.id.btnPrevious:{
+                yTplayerService.playerPrevious();
+                btnPlayPause.setImageResource(R.drawable.ic_pause_black_24dp);
                 break;
             }
         }
@@ -654,10 +703,17 @@ public class MainActivity extends AppCompatActivity
     public void onConfigurationChanged(Configuration newConfig){
         super.onConfigurationChanged(newConfig);
         // Checks the orientation of the screen
-        DisplayMetrics displayMetrics = new DisplayMetrics();
+        Boolean autoRotate = Settings.System.getInt(getContentResolver(), Settings.System.ACCELEROMETER_ROTATION, 0) == 1;
+        if (autoRotate){
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        }
+        else{
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        }
+        /*DisplayMetrics displayMetrics = new DisplayMetrics();
         this.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int height = displayMetrics.heightPixels;
-        int width = displayMetrics.widthPixels;
+        int width = displayMetrics.widthPixels;*/
     }
 
     void launchFloater(){
@@ -801,7 +857,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onStop() {
         super.onStop();
-        if(!youtubeFragLaunched){
+        /*if(!youtubeFragLaunched){
         rlContent.removeView(floatingPlayer);
         //youTubePlayerFragment.initialize(Constants.API_TOKEN, yTplayerService);
         PlayerListener[] playerListeners = new PlayerListener[3];
@@ -811,7 +867,8 @@ public class MainActivity extends AppCompatActivity
         yTplayerService.startQueue(listFragment.getCurrDispOstList(), 0, false, playerListeners, youTubePlayerFragment);
         yTplayerService.launchFloater(floatingPlayer, MainActivity.this);
         youtubeFragLaunched = true;
-        } else{
+        }*/
+        if(youtubeFragLaunched){
             yTplayerService.refresh();
         }
     }
@@ -821,6 +878,14 @@ public class MainActivity extends AppCompatActivity
         super.onStart();
         if(!youtubeFragLaunched) {
             initPlayerService();
+        }
+    }
+
+    public void updateSeekbar(){
+        if(youtubeFragLaunched){
+            if(yTplayerService.getPlaying()){
+                seekBar.setProgress(currTime++);
+            }
         }
     }
 }
