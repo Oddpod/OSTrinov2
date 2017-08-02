@@ -9,7 +9,6 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -23,7 +22,6 @@ import com.odd.ostrino.Listeners.QueueListener;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +45,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
     private AddScreen dialog;
     private Ost unAddedOst;
     private MainActivity mainActivity;
+    TableLayout tlTop;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -58,7 +57,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         dialog = new AddScreen();
         dialog.setAddScreenListener(mainActivity);
 
-        final TableLayout tlTop = (TableLayout) rootView.findViewById(R.id.tlTop);
+        tlTop = (TableLayout) rootView.findViewById(R.id.tlTop);
 
         lvOst = (ListView) rootView.findViewById(R.id.lvOstList);
         lvOst.findViewById(R.id.btnOptions);
@@ -68,21 +67,6 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
 
         customAdapter = new CustomAdapter(getContext(), allOsts, this);
         lvOst.setAdapter(customAdapter);
-
-        lvOst.setOnScrollListener(new AbsListView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(AbsListView view, int scrollState) {
-            }
-
-            @Override
-            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                if(firstVisibleItem == 0){
-                    tlTop.setVisibility(View.VISIBLE);
-                } else{
-                    tlTop.setVisibility(View.GONE);
-                }
-            }
-        });
 
         lvOst.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -118,7 +102,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
             ViewGroup.LayoutParams tvParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT);
             tv.setLayoutParams(tvParams);
-            tv.setText("Empty List :C, start adding some Osts or click this text to load Osts from assets");
+            tv.setText(R.string.label_empty_list_import);
             tv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -126,7 +110,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
                         BufferedReader reader = null;
                         try {
                             reader = new BufferedReader(
-                                    new InputStreamReader(getContext().getAssets().open("Osts24_07_2017.txt")));
+                                    new InputStreamReader(getContext().getAssets().open("Osts02_08_2017.txt")));
 
                             // do reading, usually loop until end of file reading
                             String line;

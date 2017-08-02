@@ -1,6 +1,5 @@
 package com.odd.ostrino
 
-import android.app.Notification
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
@@ -11,8 +10,6 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.os.Environment
-import android.os.Handler
-import android.support.v4.app.NotificationBuilderWithBuilderAccessor
 import android.support.v4.app.NotificationCompat
 import android.view.*
 import android.widget.*
@@ -22,7 +19,6 @@ import com.google.android.youtube.player.YouTubePlayerSupportFragment
 import com.odd.ostrino.Listeners.PlayerListener
 import com.squareup.picasso.Picasso
 import java.io.File
-import java.util.*
 
 class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
         YouTubePlayer.PlayerStateChangeListener,
@@ -35,12 +31,12 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
     lateinit private var ll: LinearLayout
     lateinit private var floatingPlayer: FrameLayout
     private var floatingPlayerInitialized : Boolean = false
-    var playing : Boolean = true
+    var playing : Boolean = false
     private var currTime: Int = 0
     lateinit private var mainActivity : MainActivity
     lateinit var views: RemoteViews
     lateinit var bigViews: RemoteViews
-    lateinit var youTubePlayerFragment : YouTubePlayerSupportFragment
+    lateinit var yTPlayerFrag: YouTubePlayerSupportFragment
     override fun onCreate() {
         super.onCreate()
     }
@@ -71,7 +67,6 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
             }
             }*/
             yPlayer.loadVideo(queueHandler.currentlyPlaying)
-            println("initialized")
             yPlayer.setPlayerStateChangeListener(this)
             yPlayer.setPlaybackEventListener(this)
             mainActivity.seekBar.setOnSeekBarChangeListener(this)
@@ -127,7 +122,7 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
             Toast.makeText(this, "Service Stopped", Toast.LENGTH_SHORT).show()
             ll.removeView(floatingPlayer)
             wm.removeView(ll)
-            yPlayer.pause()
+            yPlayer.release()
             mainActivity.doUnbindService()
             mainActivity.youtubeFragNotLaunched()
             mNotifyMgr.cancel(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE)
@@ -218,12 +213,10 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
     fun startQueue(ostList: List<Ost>, startIndex: Int, shuffle: Boolean,
                    playerListeners: Array<PlayerListener>, youTubePlayerFragment : YouTubePlayerSupportFragment) {
         queueHandler = QueueHandler(ostList, startIndex, shuffle, playerListeners)
-        youTubePlayerFragment.initialize(Constants.API_TOKEN, this)
-        this.youTubePlayerFragment = youTubePlayerFragment
-        youTubePlayerFragment.retainInstance = true
-        if(!playing){
-            yPlayer.loadVideo(queueHandler.currentlyPlaying)
-        }
+        //yTPlayerFrag.initialize(Constants.API_TOKEN, this)
+        this.yTPlayerFrag = youTubePlayerFragment
+        this.yTPlayerFrag.initialize(Constants.API_TOKEN, this)
+        this.yTPlayerFrag.retainInstance = true
         updateNotInfo()
     }
 
@@ -238,7 +231,9 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
         queueHandler.notifyPlayerListeners(false)
     }
     fun refresh(){
-        youTubePlayerFragment.onResume()
+        yPlayer.release()
+        yTPlayerFrag.onResume()
+        yTPlayerFrag.initialize(Constants.API_TOKEN, this)
     }
 
     fun updateNotInfo(){
@@ -375,7 +370,7 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
     }
 
     override fun onLoaded(p0: String?) {
-
+        mainActivity.seekBar.max = yPlayer.durationMillis
     }
 
     override fun onVideoEnded() {
@@ -386,6 +381,7 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
         else
             yPlayer.pause()
         currTime++
+        mainActivity.seekBar.progress = 0
     }
 
     override fun onError(p0: YouTubePlayer.ErrorReason?) {
@@ -411,12 +407,13 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
 
     //Seekbar functions
     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-        yPlayer.seekToMillis(progress)
-        currTime = progress
+        if(fromUser){
+            yPlayer.seekToMillis(progress)
+            currTime = progress
+        }
     }
 
     override fun onStartTrackingTouch(seekBar: SeekBar?) {
-        mainActivity.seekBar.max = yPlayer.durationMillis
     }
 
     override fun onStopTrackingTouch(seekBar: SeekBar?) {

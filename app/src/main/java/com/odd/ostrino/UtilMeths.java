@@ -1,10 +1,7 @@
 package com.odd.ostrino;
 
 import android.app.DownloadManager;
-import android.app.Service;
-import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Environment;
 
@@ -41,7 +38,7 @@ class UtilMeths {
 
     }
 
-    static void downloadFile(Context context, String uRl, String saveName) {
+    static private void downloadFile(Context context, String uRl, String saveName) {
         File direct = new File(Environment.getExternalStorageDirectory()
                 + "/OSTthumbnails");
 

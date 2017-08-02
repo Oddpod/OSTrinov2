@@ -12,8 +12,6 @@ import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.Color;
-import android.graphics.PixelFormat;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -34,21 +32,13 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.DisplayMetrics;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.AutoCompleteTextView;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
@@ -69,9 +59,6 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static com.odd.ostrino.PermissionHandlerKt.isSystemAlertPermissionGranted;
-import static com.odd.ostrino.PermissionHandlerKt.requestSystemAlertPermission;
-
 public class MainActivity extends AppCompatActivity
         implements AddScreen.AddScreenListener, FunnyJunk.YareYareListener,
         DialogInterface.OnDismissListener, QueueListener,
@@ -82,32 +69,44 @@ public class MainActivity extends AppCompatActivity
     private List<Ost> ostList;
     private int backPress;
     private ListFragment listFragment;
-    private YoutubeFragment youtubeFragment = null;
-    private FrameLayout flPlayer, floatingPlayer;
+    private FrameLayout floatingPlayer;
     private RelativeLayout rlContent;
     private boolean youtubeFragLaunched = false, about = false;
-    private RecyclerView rvQueue;
     private final static int MY_PERMISSIONS_REQUEST_READWRITE_EXTERNAL_STORAGE = 0;
-    private Toolbar toolbar;
     private QueueAdapter queueAdapter;
     private FragmentManager manager;
     private YouTubePlayerSupportFragment youTubePlayerFragment;
-    private Boolean floaterLaunched = false, mIsBound = false, playing = false;
+    private Boolean mIsBound = false, playing = false;
     private YTplayerService yTplayerService;
     private ImageButton btnPlayPause;
     SeekBar seekBar;
     private int currTime = 0;
+    private Runnable runnable;
+    private Handler handler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         db = new DBHandler(this);
         unAddedOst = null;
         rlContent = (RelativeLayout) findViewById(R.id.rlContent);
 
+        final int interval = 1000; // 1 Second
+        runnable = new Runnable(){
+            public void run() {
+                if(youtubeFragLaunched && yTplayerService.getPlaying()){
+                    System.out.println(yTplayerService.yPlayer.getCurrentTimeMillis());
+                    seekBar.setProgress(yTplayerService.yPlayer.getCurrentTimeMillis());
+                }
+                handler.postDelayed(runnable, interval);
+            }
+        };
+
+        handler.postAtTime(runnable, System.currentTimeMillis()+interval);
+        handler.postDelayed(runnable, interval);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -115,9 +114,6 @@ public class MainActivity extends AppCompatActivity
         //drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        flPlayer = (FrameLayout) findViewById(R.id.flPlayer);
-        Button btnStopPlayer = (Button) flPlayer.findViewById(R.id.btnStopPlayer);
-        Button btnMovePlayer = (Button) flPlayer.findViewById(R.id.btnMovePlayer);
         floatingPlayer = (FrameLayout) findViewById(R.id.floatingPlayer);
 
         btnPlayPause = (ImageButton) findViewById(R.id.btnPause);
@@ -131,52 +127,7 @@ public class MainActivity extends AppCompatActivity
         seekBar = (SeekBar) findViewById(R.id.seekBar);
         //Make sure you update Seekbar on UI thread
 
-        btnStopPlayer.setOnClickListener(this);
-        btnMovePlayer.setOnTouchListener(new View.OnTouchListener() {
-            float dx, dy;
-            RelativeLayout.LayoutParams lParams = (RelativeLayout.LayoutParams) flPlayer.getLayoutParams();
-
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                DisplayMetrics displayMetrics = new DisplayMetrics();
-                getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-                int height = displayMetrics.heightPixels;
-                int width = displayMetrics.widthPixels;
-
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN: {
-                        dx = event.getRawX() - flPlayer.getX();
-                        dy = event.getRawY() - flPlayer.getY();
-                    }
-                    break;
-                    case MotionEvent.ACTION_MOVE: {
-                        float setPosX = event.getRawX() - dx;
-                        float setPosY = event.getRawY() - dy;
-                        boolean xOutsideScreen = setPosX < 0 || setPosX > width - flPlayer.getWidth();
-                        boolean yOutsideScreen = setPosY < toolbar.getHeight() || setPosY > rlContent.getHeight() - flPlayer.getHeight() - lParams.topMargin;
-                        if (xOutsideScreen && yOutsideScreen) {
-                            return false;
-                        }
-                        if (xOutsideScreen) {
-                            flPlayer.setY(setPosY);
-                        } else if (yOutsideScreen) {
-                            flPlayer.setX(setPosX);
-                        } else {
-                            flPlayer.setX(setPosX);
-                            flPlayer.setY(setPosY);
-                        }
-                        break;
-                    }
-                    case MotionEvent.ACTION_UP: {
-                        //your stuff
-                    }
-                    return true;
-                }
-                return false;
-            }
-        });
-
-        rvQueue = (RecyclerView) findViewById(R.id.rvQueue);
+        RecyclerView rvQueue = (RecyclerView) findViewById(R.id.rvQueue);
 
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
         rvQueue.setLayoutManager(mLayoutManager);
@@ -196,14 +147,6 @@ public class MainActivity extends AppCompatActivity
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.add(R.id.floatingPlayer, youTubePlayerFragment).commit();
-
-        Intent intent = getIntent();
-        String action = intent.getAction();
-        int ostId = intent.getIntExtra("Ost of the Day", 2);
-
-        if(action.equals("start ost")){
-            initiatePlayer(db.getAllOsts(), ostId);
-        }
     }
 
     @Override
@@ -268,10 +211,12 @@ public class MainActivity extends AppCompatActivity
                 break;
             }
 
-            case R.id.launch_Floater:{
-                doUnbindService();
-                //launchFloater();
-                floaterLaunched = true;
+            case R.id.hide_SearchBar:{
+                if(listFragment.tlTop.getVisibility() == View.GONE){
+                    listFragment.tlTop.setVisibility(View.VISIBLE);
+                } else{
+                    listFragment.tlTop.setVisibility(View.GONE);
+                }
                 break;
             }
 
@@ -491,17 +436,6 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    public void initYoutubeFrag() {
-        if (youtubeFragment == null) {
-            youtubeFragment = new YoutubeFragment();
-            PlayerListener[] playerListeners = new PlayerListener[3];
-            playerListeners[0] = queueAdapter;
-            playerListeners[1] = listFragment;
-            playerListeners[2] = listFragment.getCustomAdapter();
-            youtubeFragment.setPlayerListeners(playerListeners);
-        }
-    }
-
     public void initPlayerService(){
         if(yTplayerService == null){
             startService();
@@ -509,19 +443,8 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    public void launchYoutubeFrag() {
-        FragmentManager manager = getSupportFragmentManager();
-        manager.beginTransaction()
-                .add(R.id.flPlayer, youtubeFragment)
-                .commit();
-        flPlayer.setVisibility(View.VISIBLE);
-    }
-
     public void initiatePlayer(List<Ost> ostList, int startid) {
         queueAdapter.initiateQueue(ostList, startid);
-        /*initYoutubeFrag();
-        youtubeFragment.initiateQueue(ostList, startid);
-        updateYoutubeFrag();*/
 
         if(!mIsBound){
             initPlayerService();
@@ -538,7 +461,7 @@ public class MainActivity extends AppCompatActivity
             yTplayerService.startQueue(ostList, startid, listFragment.shuffleActivated,
                     playerListeners, youTubePlayerFragment);
             yTplayerService.launchFloater(floatingPlayer, this);
-            //youTubePlayerFragment.initialize(Constants.API_TOKEN, yTplayerService);
+            //yTPlayerFrag.initialize(Constants.API_TOKEN, yTplayerService);
         }else {
             yTplayerService.initiateQueue(ostList, startid, listFragment.shuffleActivated);
         }
@@ -546,25 +469,10 @@ public class MainActivity extends AppCompatActivity
         btnPlayPause.setImageResource(R.drawable.ic_pause_black_24dp);
     }
 
-    public void updateYoutubeFrag() {
-        if (youtubeFragLaunched) {
-            flPlayer.setVisibility(View.VISIBLE);
-            youtubeFragment.initPlayer();
-        } else {
-            launchYoutubeFrag();
-            youtubeFragLaunched = true;
-        }
-    }
-
     @Override
     public void onClick(View v) {
         int id = v.getId();
         switch (id) {
-            case R.id.btnStopPlayer: {
-                youtubeFragment.pausePlayer();
-                flPlayer.setVisibility(View.GONE);
-                break;
-            }
             case R.id.btnPause:{
                 if(!youtubeFragLaunched){
                     Toast.makeText(this, "Play something first bruh :)", Toast.LENGTH_SHORT).show();
@@ -598,7 +506,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void shuffleOff() {
-        youtubeFragment.shuffleOff();
+        yTplayerService.queueHandler.shuffleOff();
     }
 
     @Override
@@ -716,84 +624,6 @@ public class MainActivity extends AppCompatActivity
         int width = displayMetrics.widthPixels;*/
     }
 
-    void launchFloater(){
-        if(!isSystemAlertPermissionGranted(this)){
-            requestSystemAlertPermission(this, 3);
-            System.out.println("permission not granted");
-        } else {
-            final WindowManager wm;
-            wm = (WindowManager) getSystemService(WINDOW_SERVICE);
-            LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
-            final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                    800,
-                    WindowManager.LayoutParams.WRAP_CONTENT,
-                    WindowManager.LayoutParams.TYPE_PHONE,
-                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-                    PixelFormat.TRANSLUCENT);
-            params.gravity = Gravity.TOP | Gravity.LEFT;
-            params.x = 0;
-            params.y = 100;
-
-            //WindowManager.LayoutParams.WRAP_CONTENT,
-              //      WindowManager.LayoutParams.WRAP_CONTENT,
-
-            final LinearLayout ll = new LinearLayout(this); //inflater.inflate(R.layout.youtube_api, null);
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(400,
-                    800);
-            ll.setBackgroundColor(Color.argb(66, 255, 0, 0));
-            ll.setLayoutParams(lp);
-
-            if(!floaterLaunched){
-                rlContent.removeView(floatingPlayer);
-                ll.addView(floatingPlayer);
-                startService();
-                doBindService();
-                wm.addView(ll, params);
-                ll.setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
-                ll.setOnTouchListener(new View.OnTouchListener() {
-
-                    private WindowManager.LayoutParams updateParams = params;
-                    int X, Y;
-                    float touchedX, touchedY;
-
-                    @Override
-                    public boolean onTouch(View v, MotionEvent event) {
-                        switch (event.getAction()) {
-                            case MotionEvent.ACTION_DOWN:
-                                X = updateParams.x;
-                                Y = updateParams.y;
-
-                                touchedX = event.getRawX();
-                                touchedY = event.getRawY();
-
-                                //System.out.println(X + ", " + Y);
-
-                                break;
-                            case MotionEvent.ACTION_MOVE:
-
-                                updateParams.x = (int) (X + (event.getRawX() - touchedX));
-                                updateParams.y = (int) (Y + (event.getRawY() - touchedY));
-
-                                wm.updateViewLayout(ll, updateParams);
-
-                                break;
-
-                            case MotionEvent.ACTION_MASK:{
-
-                            }
-
-                            default:
-                                break;
-                        }
-
-                        return false;
-                    }
-                });
-
-            }
-        }
-    }
-
     void startService() {
         Intent serviceIntent = new Intent(MainActivity.this, YTplayerService.class);
         serviceIntent.setAction(Constants.STARTFOREGROUND_ACTION);
@@ -857,17 +687,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onStop() {
         super.onStop();
-        /*if(!youtubeFragLaunched){
-        rlContent.removeView(floatingPlayer);
-        //youTubePlayerFragment.initialize(Constants.API_TOKEN, yTplayerService);
-        PlayerListener[] playerListeners = new PlayerListener[3];
-        playerListeners[0] = queueAdapter;
-        playerListeners[1] = listFragment;
-        playerListeners[2] = listFragment.getCustomAdapter();
-        yTplayerService.startQueue(listFragment.getCurrDispOstList(), 0, false, playerListeners, youTubePlayerFragment);
-        yTplayerService.launchFloater(floatingPlayer, MainActivity.this);
-        youtubeFragLaunched = true;
-        }*/
         if(youtubeFragLaunched){
             yTplayerService.refresh();
         }
@@ -887,5 +706,17 @@ public class MainActivity extends AppCompatActivity
                 seekBar.setProgress(currTime++);
             }
         }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        int ostId = intent.getIntExtra(getString(R.string.label_ost_of_the_day), -1);
+
+        System.out.println(ostId);
+        if(ostId != -1){
+            initiatePlayer(db.getAllOsts(), ostId);
+        }
+
+        super.onNewIntent(intent);
     }
 }

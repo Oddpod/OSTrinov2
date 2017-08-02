@@ -12,11 +12,11 @@
         app:showAsAction="ifRoom"
         android:orderInCategory="101"/>
     <item
-        android:id="@+id/launch_Floater"
-        android:title="@string/menu_launchFloater"
-        android:icon="@drawable/ic_add_black_24dp"
-        app:showAsAction="ifRoom"
-        android:orderInCategory="102"/>
+        android:id="@+id/hide_SearchBar"
+        android:icon="@drawable/ic_search_black_24dp"
+        android:orderInCategory="102"
+        android:title="@string/menu_hideSearchBar"
+        app:showAsAction="always" />
     <item
         android:id="@+id/export_osts"
         android:title="@string/menu_export"

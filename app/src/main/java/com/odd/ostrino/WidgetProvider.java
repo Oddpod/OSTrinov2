@@ -18,13 +18,12 @@ public class WidgetProvider extends AppWidgetProvider {
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
-        final int count = appWidgetIds.length;
         DBHandler dbHandler = new DBHandler(context);
 
-        for (int i = 0; i < count; i++) {
-            int widgetId = appWidgetIds[i];
+        for (int appWidgetId : appWidgetIds) {
             List<Ost> ostList = dbHandler.getAllOsts();
-            Ost ost = ostList.get(new Random().nextInt(ostList.size()));
+            int ostNum = new Random().nextInt(ostList.size());
+            Ost ost = ostList.get(ostNum);
 
             RemoteViews remoteViews = new RemoteViews(context.getPackageName(),
                     R.layout.widget_layout);
@@ -35,12 +34,11 @@ public class WidgetProvider extends AppWidgetProvider {
                     .into(remoteViews, R.id.widgetThumbnail, appWidgetIds);
 
             Intent intent = new Intent(context, MainActivity.class);
-            intent.setAction("start ost");
-            intent.putExtra("Ost of the Day", ost.getId());
+            intent.putExtra("Ost of the day", ostNum);
             PendingIntent pendingIntent = PendingIntent.getActivity(context,
-                    ost.getId(), intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                    0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
             remoteViews.setOnClickPendingIntent(R.id.widgetThumbnail, pendingIntent);
-            appWidgetManager.updateAppWidget(widgetId, remoteViews);
+            appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
         }
     }
 }

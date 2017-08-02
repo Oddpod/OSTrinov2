@@ -1,8 +1,9 @@
 Pokemon League (Day); Pokemon Diamond/Pearl/Platinum; Piano, Tender; https://www.youtube.com/watch?v=Mxb7chtXGBE&index=123&list=PL179D9EEB47465C35; 
-Victory Road; Pokemon Diamond/Pearl/Platinum; Dark, Mystical, Eerie; https://www.youtube.com/watch?v=vYiDG2qHl9g&index=125&list=PL179D9EEB47465C35; 
+Pokemon League (Night); Pokemon Diamond/Pearl/Platinum; Calm, Light; https://www.youtube.com/watch?v=7dzZl8ge1z0&index=124&list=PL179D9EEB47465C35
+Victory Road; Pokemon Diamond/Pearl/Platinum; Dark, Mystical, Eerie; https://www.youtube.com/watch?v=vYiDG2qHl9g&index=125&list=PL179D9EEB47465C35;
 Champion Cynthia Battle Theme; Pokemon Diamond/Pearl/Platinum; Battle, Fast-paced; https://www.youtube.com/watch?v=DvlHaZIrndA&index=132&list=PL179D9EEB47465C35; 
 Night of Nights; Touhou; Fast-paced, Remix; https://youtu.be/vS_a8Edde8k; 
-Kokuten; Naruto; Battle, Serious; https://youtu.be/pR2gl3sKXhU; 
+Kokuten; Naruto; Battle, Serious, Heavy beat, ; https://youtu.be/pR2gl3sKXhU; 
 Rave Racer; Sega GT 2002; Racing, Guitar, ; https://youtu.be/Ph6HCXg6WRo; 
 Pleasure of Combat; Bleach; Guitar, Fast-Paced; https://youtu.be/4pBIf2hSV0w; 
 Tsuna Awakes; Katekyo Hitman Reborn; Majestic; https://youtu.be/QK7UP_JFxG8; 
@@ -62,3 +63,8 @@ Gym Leader theme; Pokemon FireRed/LeafGreen; Battle, ; https://youtu.be/VxFadPqM
 Oceanic Museum; Pokémon Ruby/Sapphire; Calm, Extended, ; https://youtu.be/x2xpL-pn3Qw; 
 Hello, world; Kekkai Sensen; Opening, Bump of Chicken; https://youtu.be/rOU4YiuaxAM; 
 Geyser Rock; Jak and Daxter; BGM, Quirky, ; https://youtu.be/XTmLL8jB76c; 
+Wanna Go Home; Konosuba 2; Calm, Soothing, Ending, Relaxing, ; https://youtu.be/ABQp7UPjgR8; 
+Foretree City; Pokemon Omega Ruby/Alpha Sapphire; Calm, Soothing, Relaxing, ; https://youtu.be/btKxl0MTzmk; 
+Fly High; Haikyuu; Rock, Opening, Sports, Fast-paced, ; https://youtu.be/6wIYUy0ZnjE; 
+Abandoned Ship; Pokemon Omega Ruby/Alpha Sapphire; Eerie, ; https://youtu.be/iblj-w-VKRs; 
+Through the Sea of Time ; Pokémon Mystery Dungeon Explorers of Time/Darkness/Sky; Relaxing, ; https://youtu.be/8aTOaRB_XX4; 
