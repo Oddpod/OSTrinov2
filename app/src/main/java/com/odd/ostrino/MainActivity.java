@@ -45,6 +45,7 @@ import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.google.android.youtube.player.YouTubePlayerSupportFragment;
+import com.google.android.youtube.player.YouTubePlayerView;
 import com.odd.ostrino.Listeners.PlayerListener;
 import com.odd.ostrino.Listeners.QueueListener;
 
@@ -76,7 +77,7 @@ public class MainActivity extends AppCompatActivity
     private QueueAdapter queueAdapter;
     private FragmentManager manager;
     private YouTubePlayerSupportFragment youTubePlayerFragment;
-    private Boolean mIsBound = false, playing = false;
+    private Boolean mIsBound = false;
     private YTplayerService yTplayerService;
     private ImageButton btnPlayPause;
     SeekBar seekBar;
@@ -98,7 +99,6 @@ public class MainActivity extends AppCompatActivity
         runnable = new Runnable(){
             public void run() {
                 if(youtubeFragLaunched && yTplayerService.getPlaying()){
-                    System.out.println(yTplayerService.yPlayer.getCurrentTimeMillis());
                     seekBar.setProgress(yTplayerService.yPlayer.getCurrentTimeMillis());
                 }
                 handler.postDelayed(runnable, interval);
@@ -144,7 +144,6 @@ public class MainActivity extends AppCompatActivity
                 .commit();
 
         youTubePlayerFragment = YouTubePlayerSupportFragment.newInstance();
-
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.add(R.id.floatingPlayer, youTubePlayerFragment).commit();
     }
@@ -450,7 +449,6 @@ public class MainActivity extends AppCompatActivity
             initPlayerService();
         }
         if (!youtubeFragLaunched) {
-            //floatingPlayer.setVisibility(View.VISIBLE);
             rlContent.removeView(floatingPlayer);
             youtubeFragLaunched = true;
             PlayerListener[] playerListeners = new PlayerListener[3];
@@ -461,12 +459,9 @@ public class MainActivity extends AppCompatActivity
             yTplayerService.startQueue(ostList, startid, listFragment.shuffleActivated,
                     playerListeners, youTubePlayerFragment);
             yTplayerService.launchFloater(floatingPlayer, this);
-            //yTPlayerFrag.initialize(Constants.API_TOKEN, yTplayerService);
         }else {
             yTplayerService.initiateQueue(ostList, startid, listFragment.shuffleActivated);
         }
-        playing = true;
-        btnPlayPause.setImageResource(R.drawable.ic_pause_black_24dp);
     }
 
     @Override
@@ -476,16 +471,9 @@ public class MainActivity extends AppCompatActivity
             case R.id.btnPause:{
                 if(!youtubeFragLaunched){
                     Toast.makeText(this, "Play something first bruh :)", Toast.LENGTH_SHORT).show();
-                    break;
-                }
-                else if(playing){
-                    btnPlayPause.setImageResource(R.drawable.ic_play_arrow_black_24dp);
-                    playing = false;
                 } else{
-                    btnPlayPause.setImageResource(R.drawable.ic_pause_black_24dp);
-                    playing = true;
+                    yTplayerService.pausePlay();
                 }
-                yTplayerService.pausePlay();
                 break;
             }
             case R.id.btnNext:{
@@ -499,6 +487,15 @@ public class MainActivity extends AppCompatActivity
                 break;
             }
         }
+    }
+
+    public void pausePlay(){
+        if(yTplayerService.getPlaying()){
+            btnPlayPause.setImageResource(R.drawable.ic_pause_black_24dp);
+        } else{
+            btnPlayPause.setImageResource(R.drawable.ic_play_arrow_black_24dp);
+        }
+
     }
 
     public void shuffleOn() {
@@ -638,6 +635,7 @@ public class MainActivity extends AppCompatActivity
             // service that we know is running in our own process, we can
             // cast its IBinder to a concrete class and directly access it.
             yTplayerService = ((YTplayerService.LocalBinder)service).getService();
+            yTplayerService.registerBroadcastReceiver();
             // Tell the user about this for our demo.
             Toast.makeText(getApplicationContext(), "Connected", Toast.LENGTH_SHORT).show();
         }
@@ -700,19 +698,10 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    public void updateSeekbar(){
-        if(youtubeFragLaunched){
-            if(yTplayerService.getPlaying()){
-                seekBar.setProgress(currTime++);
-            }
-        }
-    }
-
     @Override
     protected void onNewIntent(Intent intent) {
         int ostId = intent.getIntExtra(getString(R.string.label_ost_of_the_day), -1);
 
-        System.out.println(ostId);
         if(ostId != -1){
             initiatePlayer(db.getAllOsts(), ostId);
         }
