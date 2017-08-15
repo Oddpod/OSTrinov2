@@ -17,67 +17,109 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" >
 
-        <LinearLayout
-            android:id="@+id/llPlayerControls"
+        <RelativeLayout
+            android:id="@+id/rlPlayerControls"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/player_button_size_large"
+            android:orientation="vertical"
             android:layout_alignParentBottom="true"
-            android:orientation="vertical">
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true">
 
-            <SeekBar
-                android:id="@+id/seekBar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+            <ImageButton
+                android:id="@+id/btnRepeat"
+                android:layout_width="@dimen/player_button_size_large"
+                android:layout_height="match_parent"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginLeft="46dp"
+                android:layout_marginStart="46dp"
+                android:background="?attr/selectableItemBackground"
+                android:contentDescription="@string/cd_repeat"
+                android:scaleType="fitXY"
+                app:srcCompat="@drawable/ic_repeat_black_24dp" />
 
-            <TableRow
-                android:id="@+id/trPlayerControls"
-                android:layout_width="wrap_content"
-                android:layout_height="0dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_weight="1">
+            <ImageButton
+                android:id="@+id/btnPrevious"
+                android:layout_width="@dimen/player_button_size_large"
+                android:layout_height="match_parent"
+                android:layout_alignParentTop="true"
+                android:layout_toLeftOf="@+id/btnPause"
+                android:layout_toStartOf="@+id/btnPause"
+                android:background="?attr/selectableItemBackground"
+                android:contentDescription="@string/cd_next"
+                android:scaleType="fitXY"
+                app:srcCompat="@drawable/ic_skip_previous_black_24dp" />
 
-                <ImageButton
-                    android:id="@+id/btnPrevious"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:background="?attr/selectableItemBackground"
-                    android:contentDescription="@string/cd_next"
-                    app:srcCompat="@drawable/ic_skip_previous_black_24dp" />
+            <ImageButton
+                android:id="@+id/btnPause"
+                android:layout_width="@dimen/player_button_size_large"
+                android:layout_height="match_parent"
+                android:background="?android:attr/selectableItemBackground"
+                android:contentDescription="@string/cd_next"
+                android:scaleType="fitXY"
+                app:srcCompat="@drawable/ic_pause_black_24dp"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true" />
 
-                <ImageButton
-                    android:id="@+id/btnPause"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:background="?android:attr/selectableItemBackground"
-                    android:contentDescription="@string/cd_next"
-                    app:srcCompat="@drawable/ic_pause_black_24dp" />
+            <ImageButton
+                android:id="@+id/btnNext"
+                android:layout_width="@dimen/player_button_size_large"
+                android:layout_height="match_parent"
+                android:layout_alignParentTop="true"
+                android:layout_toEndOf="@+id/btnPause"
+                android:layout_toRightOf="@+id/btnPause"
+                android:background="?android:attr/selectableItemBackground"
+                android:contentDescription="@string/cd_next"
+                android:scaleType="fitXY"
+                app:srcCompat="@drawable/ic_skip_next_black_24dp" />
 
-                <ImageButton
-                    android:id="@+id/btnNext"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:background="?android:attr/selectableItemBackground"
-                    android:contentDescription="@string/cd_next"
-                    app:srcCompat="@drawable/ic_skip_next_black_24dp" />
-            </TableRow>
+            <ImageButton
+                android:id="@+id/btnShuffle"
+                android:layout_width="@dimen/player_button_size_large"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="46dp"
+                android:layout_marginRight="46dp"
+                android:background="?attr/selectableItemBackground"
+                android:contentDescription="@string/label_shuffle"
+                android:scaleType="fitXY"
+                app:srcCompat="@drawable/ic_shuffle_black_24dp"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true" />
 
-        </LinearLayout>
+        </RelativeLayout>
 
         <RelativeLayout
             android:id="@+id/rlListContainer"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_above="@+id/llPlayerControls">
+            android:layout_above="@+id/seekBar">
+
         </RelativeLayout>
 
         <FrameLayout
             android:id="@+id/floatingPlayer"
             android:layout_width="200dp"
             android:layout_height="110dp"
-            android:visibility="gone"
+            android:layout_alignParentBottom="true"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
-            android:layout_alignParentBottom="true"/>
+            android:clickable="true"
+            android:visibility="gone">
+
+        </FrameLayout>
+
+        <SeekBar
+            android:id="@+id/seekBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/rlPlayerControls"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            tools:layout_editor_absoluteX="0dp"
+            tools:layout_editor_absoluteY="470dp" />
     </RelativeLayout>
 
 </android.support.constraint.ConstraintLayout>

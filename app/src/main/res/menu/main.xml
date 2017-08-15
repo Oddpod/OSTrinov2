@@ -6,6 +6,12 @@
         android:orderInCategory="200"
         android:title="@string/menu_import"/>
     <item
+        android:id="@+id/action_search"
+        android:icon="@android:drawable/ic_menu_search"
+        android:title="Search"
+        app:actionViewClass="android.support.v7.widget.SearchView"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/share"
         android:title="@string/label_share"
         android:icon="@drawable/ic_menu_share"

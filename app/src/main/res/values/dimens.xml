@@ -8,6 +8,9 @@
     <dimen name="text_size_medium">16sp</dimen>
     <dimen name="text_size_large">18sp</dimen>
 
+
+    <dimen name="player_button_size_large">40dp</dimen>
+
     <!-- Nofication bar button -->
     <dimen name="status_bar_button_width_height">48dp</dimen>
     <dimen name="status_bar_album_art">64dp</dimen>

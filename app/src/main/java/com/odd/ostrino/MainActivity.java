@@ -1,7 +1,7 @@
 package com.odd.ostrino;
 
 import android.Manifest;
-import android.app.DownloadManager;
+import android.app.SearchManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ComponentName;
@@ -12,10 +12,12 @@ import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.provider.Settings;
@@ -31,7 +33,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -44,8 +48,10 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
+import com.google.android.youtube.player.YouTubeApiServiceUtil;
 import com.google.android.youtube.player.YouTubePlayerSupportFragment;
-import com.google.android.youtube.player.YouTubePlayerView;
+import com.google.android.youtube.player.YouTubeStandalonePlayer;
+import com.google.android.youtube.player.YouTubeThumbnailLoader;
 import com.odd.ostrino.Listeners.PlayerListener;
 import com.odd.ostrino.Listeners.QueueListener;
 
@@ -57,13 +63,13 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+
+import okhttp3.internal.Util;
 
 public class MainActivity extends AppCompatActivity
         implements AddScreen.AddScreenListener, FunnyJunk.YareYareListener,
         DialogInterface.OnDismissListener, QueueListener,
-        View.OnClickListener{
+        View.OnClickListener {
 
     private DBHandler db;
     private Ost unAddedOst;
@@ -72,18 +78,19 @@ public class MainActivity extends AppCompatActivity
     private ListFragment listFragment;
     private FrameLayout floatingPlayer;
     private RelativeLayout rlContent;
-    private boolean youtubeFragLaunched = false, about = false;
+    private boolean youtubePlayerLaunched = false, about = false;
     private final static int MY_PERMISSIONS_REQUEST_READWRITE_EXTERNAL_STORAGE = 0;
     private QueueAdapter queueAdapter;
     private FragmentManager manager;
     private YouTubePlayerSupportFragment youTubePlayerFragment;
-    private Boolean mIsBound = false;
+    private Boolean mIsBound = false, shuffleActivated = false, repeat = false;
     private YTplayerService yTplayerService;
-    private ImageButton btnPlayPause;
+    private ImageButton btnRepeat, btnPlayPause, btnShuffle;
     SeekBar seekBar;
-    private int currTime = 0;
     private Runnable runnable;
     private Handler handler = new Handler();
+    private SearchView searchView = null;
+    private SearchView.OnQueryTextListener queryTextListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,16 +103,16 @@ public class MainActivity extends AppCompatActivity
         rlContent = (RelativeLayout) findViewById(R.id.rlContent);
 
         final int interval = 1000; // 1 Second
-        runnable = new Runnable(){
+        runnable = new Runnable() {
             public void run() {
-                if(youtubeFragLaunched && yTplayerService.getPlaying()){
+                if (youtubePlayerLaunched && yTplayerService.getPlaying()) {
                     seekBar.setProgress(yTplayerService.yPlayer.getCurrentTimeMillis());
                 }
                 handler.postDelayed(runnable, interval);
             }
         };
 
-        handler.postAtTime(runnable, System.currentTimeMillis()+interval);
+        handler.postAtTime(runnable, System.currentTimeMillis() + interval);
         handler.postDelayed(runnable, interval);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -116,13 +123,17 @@ public class MainActivity extends AppCompatActivity
 
         floatingPlayer = (FrameLayout) findViewById(R.id.floatingPlayer);
 
+        btnRepeat = (ImageButton) findViewById(R.id.btnRepeat);
         btnPlayPause = (ImageButton) findViewById(R.id.btnPause);
         ImageButton btnNext = (ImageButton) findViewById(R.id.btnNext);
         ImageButton btnPrevious = (ImageButton) findViewById(R.id.btnPrevious);
+        btnShuffle = (ImageButton) findViewById(R.id.btnShuffle);
 
+        btnRepeat.setOnClickListener(this);
         btnPlayPause.setOnClickListener(this);
         btnNext.setOnClickListener(this);
         btnPrevious.setOnClickListener(this);
+        btnShuffle.setOnClickListener(this);
 
         seekBar = (SeekBar) findViewById(R.id.seekBar);
         //Make sure you update Seekbar on UI thread
@@ -142,7 +153,6 @@ public class MainActivity extends AppCompatActivity
                 .replace(R.id.rlListContainer, listFragment)
                 .addToBackStack("list")
                 .commit();
-
         youTubePlayerFragment = YouTubePlayerSupportFragment.newInstance();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.add(R.id.floatingPlayer, youTubePlayerFragment).commit();
@@ -153,7 +163,7 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else if(about){
+        } else if (about) {
             super.onBackPressed();
             about = false;
         } else {
@@ -170,6 +180,33 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+        MenuItem searchItem = menu.findItem(R.id.action_search);
+
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+
+        if (searchItem != null) {
+            searchView = (SearchView) searchItem.getActionView();
+        }
+        if (searchView != null) {
+            searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+
+            queryTextListener = new SearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    Log.i("onQueryTextChange", newText);
+
+                    return true;
+                }
+
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    Log.i("onQueryTextSubmit", query);
+
+                    return true;
+                }
+            };
+            searchView.setOnQueryTextListener(queryTextListener);
+        }
         return true;
     }
 
@@ -187,7 +224,7 @@ public class MainActivity extends AppCompatActivity
                 break;
             }
 
-            case R.id.action_about:{
+            case R.id.action_about: {
                 AboutFragment aboutFragment = new AboutFragment();
                 manager.beginTransaction()
                         .replace(R.id.rlListContainer, aboutFragment)
@@ -199,10 +236,10 @@ public class MainActivity extends AppCompatActivity
 
             case R.id.share: {
                 ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-                if(listFragment.getCustomAdapter().getNowPlaying() == -1){
+                if (!youtubePlayerLaunched) {
                     Toast.makeText(this, "Nothing is playing", Toast.LENGTH_SHORT).show();
-                } else{
-                    Ost ost = listFragment.getCustomAdapter().getNowPlayingOst();
+                } else {
+                    Ost ost = yTplayerService.queueHandler.getCurrPlayingOst();
                     ClipData clip = ClipData.newPlainText("Ost url", ost.getUrl());
                     clipboard.setPrimaryClip(clip);
                     Toast.makeText(this, "Link Copied to Clipboard", Toast.LENGTH_SHORT).show();
@@ -210,10 +247,10 @@ public class MainActivity extends AppCompatActivity
                 break;
             }
 
-            case R.id.hide_SearchBar:{
-                if(listFragment.tlTop.getVisibility() == View.GONE){
+            case R.id.hide_SearchBar: {
+                if (listFragment.tlTop.getVisibility() == View.GONE) {
                     listFragment.tlTop.setVisibility(View.VISIBLE);
-                } else{
+                } else {
                     listFragment.tlTop.setVisibility(View.GONE);
                 }
                 break;
@@ -229,13 +266,13 @@ public class MainActivity extends AppCompatActivity
                 break;
             }
 
-            case R.id.delete_allOsts:{
+            case R.id.delete_allOsts: {
                 db.emptyTable();
                 listFragment.refreshListView();
                 break;
             }
 
-            case  R.id.refresh_tagsTable:{
+            case R.id.refresh_tagsTable: {
                 /*SQLiteDatabase sqLiteDatabase = db.getWritableDatabase();
                 String CREATE_TAGS_TABLE = "CREATE TABLE " + "tagsTable" + "("
                         + "tagid" + " INTEGER PRIMARY KEY,"
@@ -275,7 +312,7 @@ public class MainActivity extends AppCompatActivity
         if (listFragment.isEditedOst()) {
             db.updateOst(lastAddedOst);
             listFragment.refreshListView();
-            downloadThumbnail(url);
+            UtilMeths.INSTANCE.downloadThumbnail(url, this);
         } else if (!alreadyAdded) {
             if (!url.contains("https://")) {
                 Toast.makeText(this, "You have to put in a valid youtube link", Toast.LENGTH_SHORT).show();
@@ -283,7 +320,7 @@ public class MainActivity extends AppCompatActivity
                 db.addNewOst(lastAddedOst);
                 Toast.makeText(getApplicationContext(), lastAddedOst.getTitle() + " added", Toast.LENGTH_SHORT).show();
                 listFragment.refreshListView();
-                downloadThumbnail(url);
+                UtilMeths.INSTANCE.downloadThumbnail(url, this);
             }
         } else {
             Toast.makeText(this, lastAddedOst.getTitle() + " From " + lastAddedOst.getShow() + " has already been added", Toast.LENGTH_SHORT).show();
@@ -367,8 +404,8 @@ public class MainActivity extends AppCompatActivity
                 System.out.println(" caught IOexception");
             }
         }
-        if(requestCode == 3){
-            //launchFloater();
+        if (requestCode == 3) {
+            yTplayerService.launchFloater(floatingPlayer, this);
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -391,7 +428,7 @@ public class MainActivity extends AppCompatActivity
                 boolean alreadyInDB = db.checkiIfOstInDB(ost);
                 if (!alreadyInDB) {
                     db.addNewOst(ost);
-                    downloadThumbnail(lineArray[3]);
+                    UtilMeths.INSTANCE.downloadThumbnail(lineArray[3], this);
                 }
             }
         } catch (IOException e) {
@@ -426,17 +463,17 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void addToQueue(Ost ost) {
-        if(!youtubeFragLaunched){
+        if (!youtubePlayerLaunched) {
             Toast.makeText(this, "You have to play something first", Toast.LENGTH_SHORT).show();
-        }else{
+        } else {
             yTplayerService.queueHandler.addToQueue(ost.getUrl());
             queueAdapter.addToQueue(ost);
         }
 
     }
 
-    public void initPlayerService(){
-        if(yTplayerService == null){
+    public void initPlayerService() {
+        if (yTplayerService == null) {
             startService();
             doBindService();
         }
@@ -445,54 +482,78 @@ public class MainActivity extends AppCompatActivity
     public void initiatePlayer(List<Ost> ostList, int startid) {
         queueAdapter.initiateQueue(ostList, startid);
 
-        if(!mIsBound){
+        if (!mIsBound) {
             initPlayerService();
         }
-        if (!youtubeFragLaunched) {
+        if (!youtubePlayerLaunched) {
             rlContent.removeView(floatingPlayer);
-            youtubeFragLaunched = true;
+            youtubePlayerLaunched = true;
             PlayerListener[] playerListeners = new PlayerListener[3];
             playerListeners[0] = queueAdapter;
             playerListeners[1] = listFragment;
             playerListeners[2] = listFragment.getCustomAdapter();
             yTplayerService.showNotification();
-            yTplayerService.startQueue(ostList, startid, listFragment.shuffleActivated,
+            yTplayerService.startQueue(ostList, startid, shuffleActivated,
                     playerListeners, youTubePlayerFragment);
             yTplayerService.launchFloater(floatingPlayer, this);
-        }else {
-            yTplayerService.initiateQueue(ostList, startid, listFragment.shuffleActivated);
+        } else {
+            yTplayerService.initiateQueue(ostList, startid, shuffleActivated);
         }
     }
 
     @Override
     public void onClick(View v) {
         int id = v.getId();
-        switch (id) {
-            case R.id.btnPause:{
-                if(!youtubeFragLaunched){
-                    Toast.makeText(this, "Play something first bruh :)", Toast.LENGTH_SHORT).show();
-                } else{
-                    yTplayerService.pausePlay();
+        if (!youtubePlayerLaunched) {
+            Toast.makeText(this, "Play something first bruh :)", Toast.LENGTH_SHORT).show();
+        } else {
+            switch (id) {
+                case R.id.btnRepeat:{
+                    if(!repeat){
+                        yTplayerService.setRepeat(true);
+                        btnRepeat.setColorFilter(Color.GREEN, PorterDuff.Mode.SRC_ATOP);
+                        repeat = true;
+                    }else{
+                        yTplayerService.setRepeat(false);
+                        btnRepeat.clearColorFilter();
+                        repeat = false;
+                    }
+                    break;
                 }
-                break;
-            }
-            case R.id.btnNext:{
-                yTplayerService.playerNext();
-                btnPlayPause.setImageResource(R.drawable.ic_pause_black_24dp);
-                break;
-            }
-            case R.id.btnPrevious:{
-                yTplayerService.playerPrevious();
-                btnPlayPause.setImageResource(R.drawable.ic_pause_black_24dp);
-                break;
+                case R.id.btnPause: {
+                    yTplayerService.pausePlay();
+                    break;
+                }
+                case R.id.btnNext: {
+                    yTplayerService.playerNext();
+                    btnPlayPause.setImageResource(R.drawable.ic_pause_black_24dp);
+                    break;
+                }
+                case R.id.btnPrevious: {
+                    yTplayerService.playerPrevious();
+                    btnPlayPause.setImageResource(R.drawable.ic_pause_black_24dp);
+                    break;
+                }
+
+                case R.id.btnShuffle:{
+                    if(shuffleActivated){
+                        shuffleOff();
+                        shuffleActivated = false;
+                    }
+                    else{
+                        shuffleOn();
+                        shuffleActivated = true;
+                    }
+                    break;
+                }
             }
         }
     }
 
-    public void pausePlay(){
-        if(yTplayerService.getPlaying()){
+    public void pausePlay() {
+        if (yTplayerService.getPlaying()) {
             btnPlayPause.setImageResource(R.drawable.ic_pause_black_24dp);
-        } else{
+        } else {
             btnPlayPause.setImageResource(R.drawable.ic_play_arrow_black_24dp);
         }
 
@@ -500,10 +561,12 @@ public class MainActivity extends AppCompatActivity
 
     public void shuffleOn() {
         yTplayerService.queueHandler.shuffleOn();
+        btnShuffle.setColorFilter(Color.GREEN, PorterDuff.Mode.SRC_ATOP);
     }
 
     public void shuffleOff() {
         yTplayerService.queueHandler.shuffleOff();
+        btnShuffle.clearColorFilter();
     }
 
     @Override
@@ -516,8 +579,12 @@ public class MainActivity extends AppCompatActivity
         yTplayerService.queueHandler.removeFromQueue(url);
     }
 
-    public boolean youtubeFragNotLaunched() {
-        return youtubeFragLaunched = false;
+    public boolean youtubePlayerLaunched() {
+        return youtubePlayerLaunched;
+    }
+
+    public void youtubePlayerStopped() {
+        youtubePlayerLaunched = false;
     }
 
     void checkPermission() {
@@ -541,7 +608,6 @@ public class MainActivity extends AppCompatActivity
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE},
                         MY_PERMISSIONS_REQUEST_READWRITE_EXTERNAL_STORAGE);
-
                 // MY_PERMISSIONS_REQUEST_READWRITE_EXTERNAL_STORAGE is an
                 // app-defined int constant. The callback method gets the
                 // result of the request.
@@ -573,46 +639,14 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    public void downloadFile(String uRl, String saveName) {
-        File direct = new File(Environment.getExternalStorageDirectory()
-                + "/OSTthumbnails");
-
-        if (!direct.exists()) {
-            direct.mkdirs();
-        }
-        String saveString = direct.getAbsolutePath() + "/" + saveName + ".jpg";
-        System.out.println(saveString);
-        if(!UtilMeths.doesFileExist(saveString)) {
-            DownloadManager mgr = (DownloadManager) this.getSystemService(Context.DOWNLOAD_SERVICE);
-
-            Uri downloadUri = Uri.parse(uRl);
-            DownloadManager.Request request = new DownloadManager.Request(
-                    downloadUri);
-
-            request.setAllowedNetworkTypes(
-                    DownloadManager.Request.NETWORK_WIFI
-                            | DownloadManager.Request.NETWORK_MOBILE)
-                    .setAllowedOverRoaming(false).setTitle(uRl)
-                    .setDescription("Downloading thumbnails")
-                    .setDestinationInExternalPublicDir("/OSTthumbnails", saveName + ".jpg");
-
-            mgr.enqueue(request);
-        }
-    }
-
-    public void downloadThumbnail(String url){
-        downloadFile("http://img.youtube.com/vi/" + UtilMeths.urlToId(url) + "/2.jpg", UtilMeths.urlToId(url));
-    }
-
     @Override
-    public void onConfigurationChanged(Configuration newConfig){
+    public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         // Checks the orientation of the screen
         Boolean autoRotate = Settings.System.getInt(getContentResolver(), Settings.System.ACCELEROMETER_ROTATION, 0) == 1;
-        if (autoRotate){
+        if (autoRotate) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-        }
-        else{
+        } else {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
         /*DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -634,7 +668,7 @@ public class MainActivity extends AppCompatActivity
             // interact with the service.  Because we have bound to a explicit
             // service that we know is running in our own process, we can
             // cast its IBinder to a concrete class and directly access it.
-            yTplayerService = ((YTplayerService.LocalBinder)service).getService();
+            yTplayerService = ((YTplayerService.LocalBinder) service).getService();
             yTplayerService.registerBroadcastReceiver();
             // Tell the user about this for our demo.
             Toast.makeText(getApplicationContext(), "Connected", Toast.LENGTH_SHORT).show();
@@ -685,15 +719,15 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onStop() {
         super.onStop();
-        if(youtubeFragLaunched){
+        if (youtubePlayerLaunched) {
             yTplayerService.refresh();
         }
     }
 
     @Override
-    public void onStart(){
+    public void onStart() {
         super.onStart();
-        if(!youtubeFragLaunched) {
+        if (!youtubePlayerLaunched) {
             initPlayerService();
         }
     }
@@ -702,7 +736,7 @@ public class MainActivity extends AppCompatActivity
     protected void onNewIntent(Intent intent) {
         int ostId = intent.getIntExtra(getString(R.string.label_ost_of_the_day), -1);
 
-        if(ostId != -1){
+        if (ostId != -1) {
             initiatePlayer(db.getAllOsts(), ostId);
         }
 

@@ -55,7 +55,7 @@ class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper> implem
             viewWrapper.getShow().setText(ost.getShow());
             viewWrapper.getTags().setText(ost.getTags());
             File tnFile = new File(Environment.getExternalStorageDirectory()
-                    + "/OSTthumbnails/" + UtilMeths.urlToId(ost.getUrl()) + ".jpg");
+                    + "/OSTthumbnails/" + UtilMeths.INSTANCE.urlToId(ost.getUrl()) + ".jpg");
             Picasso.with(mContext)
                     .load(tnFile)
                     .placeholder(R.drawable.tranquility)
@@ -108,8 +108,7 @@ class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper> implem
     }
 
     @Override
-    public void shuffle(List<Ost> osts) {
-
+    public void shuffle(List<Ost> shuffeledList) {
     }
 
     class ViewWrapper extends RecyclerView.ViewHolder implements View.OnClickListener {

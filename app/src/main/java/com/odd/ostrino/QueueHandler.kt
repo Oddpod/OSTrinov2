@@ -36,7 +36,6 @@ data class QueueHandler(var ostList: List<Ost>, var startIndex : Int, var shuffl
     }
 
     fun initiateQueue(ostList: List<Ost>, startIndex: Int, shuffle: Boolean) {
-        //btnNext.setVisibility(View.VISIBLE);
         videoIds = ArrayList<String>()
         videoIds = UtilMeths.getVideoIdList(ostList)
         played = Stack<String>()
@@ -73,12 +72,13 @@ data class QueueHandler(var ostList: List<Ost>, var startIndex : Int, var shuffl
     fun shuffleOn() {
         val seed = System.nanoTime()
         Collections.shuffle(preQueue, Random(seed))
-        //notifyShuffle(ostQ)
+        val shuffledOstList : List<Ost> = ostList.subList(currPlayingIndex, -1)
+        Collections.shuffle(shuffledOstList, Random(seed))
+        notifyShuffle(shuffledOstList)
         shuffle = true
     }
 
     fun addToQueue(url: String) {
-        //btnNext.setVisibility(View.VISIBLE)
         queue.add(0, UtilMeths.urlToId(url))
     }
 
@@ -110,10 +110,6 @@ data class QueueHandler(var ostList: List<Ost>, var startIndex : Int, var shuffl
             played.push(currentlyPlaying)
             currentlyPlaying = preQueue.pop()
         }
-        if (preQueue.isEmpty()) {
-            //btnNext.setVisibility(View.INVISIBLE)
-        }
-        //btnPrevious.setVisibility(View.VISIBLE)
         notifyPlayerListeners(false)
         return currentlyPlaying
     }
@@ -130,9 +126,9 @@ data class QueueHandler(var ostList: List<Ost>, var startIndex : Int, var shuffl
         }
     }
 
-    fun notifyShuffle(ostList: List<Ost>) {
+    fun notifyShuffle(shuffledOstList : List<Ost>) {
         for (i in playerListeners!!.indices) {
-            playerListeners!![i].shuffle(ostList)
+            playerListeners!![i].shuffle(shuffledOstList)
         }
     }
 

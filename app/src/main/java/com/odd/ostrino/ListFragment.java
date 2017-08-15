@@ -1,7 +1,5 @@
 package com.odd.ostrino;
 
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
@@ -15,8 +13,6 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TableLayout;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import com.odd.ostrino.Listeners.PlayerListener;
 import com.odd.ostrino.Listeners.QueueListener;
 
@@ -36,9 +32,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
     private DBHandler dbHandler;
     private EditText filter;
     private String TAG = "OstInfo";
-    private String TAG2 = "Jojo";
     private String filterText;
-    private ImageButton btnShuffle;
     private CustomAdapter customAdapter;
     private ListView lvOst;
     boolean shuffleActivated, playerDocked;
@@ -127,7 +121,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
                                 boolean alreadyInDB = db.checkiIfOstInDB(ost);
                                 if (!alreadyInDB) {
                                     db.addNewOst(ost);
-                                    UtilMeths.downloadThumbnail(lineArray[3], getContext());
+                                    UtilMeths.INSTANCE.downloadThumbnail(lineArray[3], getContext());
                                 }
                             }
                         } catch (IOException e) {
@@ -163,21 +157,15 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
 
             @Override
             public void afterTextChanged(Editable s) {
-                filterText = filter.getText().toString();
-                filterText = filterText.toLowerCase();
-                if (filterText.equals("muda muda muda")) {
-                    FunnyJunk dialog = new FunnyJunk();
-                    dialog.show(getActivity().getFragmentManager(), TAG2);
-                }
+                filterText = s.toString().toLowerCase();
+                MemesKt.launchMeme(filterText, mainActivity);
                 customAdapter.filter(s.toString());
             }
         };
         filter.addTextChangedListener(textWatcher);
-        btnShuffle = (ImageButton)  rootView.findViewById(R.id.btnShuffle);
         ImageButton btnShufflePlay = (ImageButton) rootView.findViewById(R.id.btnShufflePlay);
         ImageButton btnAdd = (ImageButton)  rootView.findViewById(R.id.btnAdd);
 
-        btnShuffle.setOnClickListener(this);
         btnShufflePlay.setOnClickListener(this);
         btnAdd.setOnClickListener(this);
 
@@ -187,25 +175,6 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-
-            case R.id.btnShuffle:{
-                if(!mainActivity.youtubeFragNotLaunched()){
-                    Toast.makeText(getActivity(), "Player is not running", Toast.LENGTH_SHORT).show();
-                    break;
-                }
-                else if(shuffleActivated){
-                    shuffleActivated = false;
-                    mainActivity.shuffleOff();
-                    btnShuffle.clearColorFilter();
-                }
-                else{
-                    shuffleActivated = true;
-                    mainActivity.shuffleOn();
-                    btnShuffle.setColorFilter(Color.GREEN, PorterDuff.Mode.SRC_ATOP);
-                }
-                break;
-
-            }
             case R.id.btnShufflePlay:{
                 Random rnd = new Random();
                 currOstList = getCurrDispOstList();
@@ -214,7 +183,6 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
                 customAdapter.updateCurrentlyPlaying(rndPos);
                 refreshListView();
                 mainActivity.shuffleOn();
-                btnShuffle.setColorFilter(Color.GREEN, PorterDuff.Mode.SRC_ATOP);
                 shuffleActivated = true;
                 previouslyPlayed = rndPos;
                 break;

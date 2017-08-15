@@ -29,7 +29,7 @@ public class WidgetProvider extends AppWidgetProvider {
                     R.layout.widget_layout);
             remoteViews.setTextViewText(R.id.tvOstoftheDay, ost.getTitle());
             File tnFile = new File(Environment.getExternalStorageDirectory()
-                    + "/OSTthumbnails/" + UtilMeths.urlToId(ost.getUrl()) + ".jpg");
+                    + "/OSTthumbnails/" + UtilMeths.INSTANCE.urlToId(ost.getUrl()) + ".jpg");
             Picasso.with(context).load(tnFile).resize(500, 200).onlyScaleDown()
                     .into(remoteViews, R.id.widgetThumbnail, appWidgetIds);
 
