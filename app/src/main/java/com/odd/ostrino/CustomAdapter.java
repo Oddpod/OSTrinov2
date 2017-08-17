@@ -113,7 +113,12 @@ class CustomAdapter extends BaseAdapter implements PlayerListener {
     }
 
     @Override
-    public void shuffle(List<Ost> updatedList) {
+    public void shuffle(long seed) {
+    }
+
+    @Override
+    public void unShuffle(List<Ost> unShuffledList) {
+
     }
 
     void filter(String charText) {

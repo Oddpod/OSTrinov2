@@ -14,7 +14,6 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -48,23 +47,17 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
-import com.google.android.youtube.player.YouTubeApiServiceUtil;
 import com.google.android.youtube.player.YouTubePlayerSupportFragment;
-import com.google.android.youtube.player.YouTubeStandalonePlayer;
-import com.google.android.youtube.player.YouTubeThumbnailLoader;
 import com.odd.ostrino.Listeners.PlayerListener;
 import com.odd.ostrino.Listeners.QueueListener;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.List;
-
-import okhttp3.internal.Util;
 
 public class MainActivity extends AppCompatActivity
         implements AddScreen.AddScreenListener, FunnyJunk.YareYareListener,
@@ -671,7 +664,6 @@ public class MainActivity extends AppCompatActivity
             yTplayerService = ((YTplayerService.LocalBinder) service).getService();
             yTplayerService.registerBroadcastReceiver();
             // Tell the user about this for our demo.
-            Toast.makeText(getApplicationContext(), "Connected", Toast.LENGTH_SHORT).show();
         }
 
         public void onServiceDisconnected(ComponentName className) {
@@ -680,7 +672,6 @@ public class MainActivity extends AppCompatActivity
             // Because it is running in our same process, we should never
             // see this happen.
             mIsBound = false;
-            Toast.makeText(getApplicationContext(), "Disconnected", Toast.LENGTH_SHORT).show();
         }
     };
 

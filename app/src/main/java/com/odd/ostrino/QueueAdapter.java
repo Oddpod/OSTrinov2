@@ -16,7 +16,10 @@ import com.odd.ostrino.Listeners.QueueListener;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.Stack;
 
 class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper> implements PlayerListener {
@@ -27,6 +30,7 @@ class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper> implem
         private int queueAddPos;
         private OnItemClickListener onItemClickListener;
         private boolean emptyAdapter;
+        private int currPlayingIndex;
 
     public QueueAdapter(){
         this.emptyAdapter = true;
@@ -84,6 +88,7 @@ class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper> implem
 
     @Override
     public void updateCurrentlyPlaying(int newId) {
+        currPlayingIndex = newId;
     }
 
     @Override
@@ -108,7 +113,21 @@ class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper> implem
     }
 
     @Override
-    public void shuffle(List<Ost> shuffeledList) {
+    public void shuffle(long seed) {
+        Collections.shuffle(queue, new Random(seed));
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public void unShuffle(List<Ost> unShuffledList) {
+        queue = new Stack<>();
+        for(int i = unShuffledList.size() - 1; i >= 0; i--) {
+            if(i > currPlayingIndex){
+                queue.add(unShuffledList.get(i));
+            }else{
+                played.add(unShuffledList.get(i));
+            }
+        }
     }
 
     class ViewWrapper extends RecyclerView.ViewHolder implements View.OnClickListener {

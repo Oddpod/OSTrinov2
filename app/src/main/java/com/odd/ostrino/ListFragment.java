@@ -266,7 +266,12 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
     }
 
     @Override
-    public void shuffle(List<Ost> ostList) {
+    public void shuffle(long seed) {
+
+    }
+
+    @Override
+    public void unShuffle(List<Ost> unShuffledList) {
 
     }
 

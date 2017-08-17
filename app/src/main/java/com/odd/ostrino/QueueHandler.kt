@@ -67,14 +67,13 @@ data class QueueHandler(var ostList: List<Ost>, var startIndex : Int, var shuffl
             }
         }
         shuffle = false
+        notifyUnShuffle()
     }
 
     fun shuffleOn() {
         val seed = System.nanoTime()
         Collections.shuffle(preQueue, Random(seed))
-        val shuffledOstList : List<Ost> = ostList.subList(currPlayingIndex, -1)
-        Collections.shuffle(shuffledOstList, Random(seed))
-        notifyShuffle(shuffledOstList)
+        notifyShuffle(seed)
         shuffle = true
     }
 
@@ -95,10 +94,8 @@ data class QueueHandler(var ostList: List<Ost>, var startIndex : Int, var shuffl
         if (!played.isEmpty()) {
             preQueue.push(currentlyPlaying)
             currentlyPlaying = played.pop()
-        }else {
-            notifyPlayerListeners(true)
         }
-
+        notifyPlayerListeners(true)
         return currentlyPlaying
     }
 
@@ -115,20 +112,26 @@ data class QueueHandler(var ostList: List<Ost>, var startIndex : Int, var shuffl
     }
 
     fun notifyPlayerListeners(previous: Boolean) {
-        for (i in playerListeners!!.indices) {
-            playerListeners!![i].updateCurrentlyPlaying(videoIds.indexOf(currentlyPlaying))
+        for (i in playerListeners.indices) {
+            playerListeners[i].updateCurrentlyPlaying(videoIds.indexOf(currentlyPlaying))
             if (previous) {
-                playerListeners!![i].previous()
+                playerListeners[i].previous()
             } else {
-                playerListeners!![i].next()
+                playerListeners[i].next()
             }
 
         }
     }
 
-    fun notifyShuffle(shuffledOstList : List<Ost>) {
-        for (i in playerListeners!!.indices) {
-            playerListeners!![i].shuffle(shuffledOstList)
+    fun notifyShuffle(seed: Long) {
+        for (i in playerListeners.indices) {
+            playerListeners[i].shuffle(seed)
+        }
+    }
+
+    fun notifyUnShuffle(){
+        for (i in playerListeners.indices) {
+            playerListeners[i].unShuffle(ostList)
         }
     }
 

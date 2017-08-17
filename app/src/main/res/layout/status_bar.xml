@@ -2,7 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal" >
+    android:orientation="horizontal"
+    android:background="@color/colorPrimaryDark">
 
     <ImageView
         android:id="@+id/status_bar_album_art"
@@ -46,19 +47,25 @@
         android:id="@+id/status_bar_play"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:contentDescription="@string/cd_play" />
+        android:background="?android:attr/selectableItemBackground"
+        android:contentDescription="@string/cd_play"
+        android:scaleType="fitXY" />
 
     <ImageButton
         android:id="@+id/status_bar_next"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:background="?android:selectableItemBackground"
         android:contentDescription="@string/cd_next"
+        android:scaleType="fitXY"
         android:src="@drawable/apollo_holo_dark_next" />
 
     <ImageButton
         android:id="@+id/status_bar_collapse"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:background="?android:selectableItemBackground"
+        android:contentDescription="@string/cd_collapse"
         android:src="@drawable/apollo_holo_dark_notifiation_bar_collapse" />
 
 </LinearLayout>
