@@ -16,14 +16,13 @@ import com.odd.ostrino.Listeners.QueueListener;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.Stack;
 
 class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper> implements PlayerListener {
-        private Stack<Ost> played, queue;
+        private Stack<Ost> played, preQueued, queued;
         private Context mContext;
 
         private QueueListener queueListener;
@@ -37,8 +36,9 @@ class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper> implem
     }
 
     QueueAdapter(Context context, QueueListener queueListener) {
-            this.played = new Stack<>();
-            this.queue = new Stack<>();
+            played = new Stack<>();
+            preQueued = new Stack<>();
+            queued = new Stack<>();
             this.mContext = context;
             this.queueListener = queueListener;
         }
@@ -53,8 +53,15 @@ class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper> implem
 
         @Override
         public void onBindViewHolder(final ViewWrapper viewWrapper, final int position) {
-            final int invPos = queue.size() - (1 + position);
-            final Ost ost = queue.get(invPos);
+            int queuedSize = queued.size();
+            final int queuedInvPos = queuedSize - (1 + position);
+            final int invPos = preQueued.size() - (1 + position - queuedSize);
+            final Ost ost;
+            if(position < queuedSize){
+                ost = queued.get(queuedInvPos);
+            } else{
+                ost = preQueued.get(invPos);
+            }
             viewWrapper.getTitle().setText(ost.getTitle());
             viewWrapper.getShow().setText(ost.getShow());
             viewWrapper.getTags().setText(ost.getTags());
@@ -67,7 +74,11 @@ class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper> implem
             viewWrapper.getBtnOptions().setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    queue.remove(invPos);
+                    if(ost.equals(queued.get(queuedInvPos))){
+                        queued.remove(queuedInvPos);
+                    } else{
+                        preQueued.remove(invPos);
+                    }
                     queueListener.removeFromQueue(ost.getUrl());
                     notifyDataSetChanged();
                 }
@@ -82,7 +93,7 @@ class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper> implem
             if(emptyAdapter){
                 return 0;
             }else{
-                return queue.size();
+                return preQueued.size();
             }
         }
 
@@ -93,8 +104,12 @@ class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper> implem
 
     @Override
     public void next() {
-        if(!queue.isEmpty()) {
-            played.add(queue.pop());
+        if(!queued.isEmpty()){
+            played.add(queued.pop());
+            notifyDataSetChanged();
+        }
+        else if(!preQueued.isEmpty()){
+            played.add(preQueued.pop());
             notifyDataSetChanged();
         }
         if(queueAddPos != 0){
@@ -105,7 +120,7 @@ class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper> implem
     @Override
     public void previous() {
         if(!played.isEmpty()){
-            queue.add(played.pop());
+            preQueued.add(played.pop());
             notifyItemInserted(0);
             queueAddPos++;
         }
@@ -114,16 +129,16 @@ class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper> implem
 
     @Override
     public void shuffle(long seed) {
-        Collections.shuffle(queue, new Random(seed));
+        Collections.shuffle(preQueued, new Random(seed));
         notifyDataSetChanged();
     }
 
     @Override
     public void unShuffle(List<Ost> unShuffledList) {
-        queue = new Stack<>();
+        preQueued = new Stack<>();
         for(int i = unShuffledList.size() - 1; i >= 0; i--) {
             if(i > currPlayingIndex){
-                queue.add(unShuffledList.get(i));
+                preQueued.add(unShuffledList.get(i));
             }else{
                 played.add(unShuffledList.get(i));
             }
@@ -194,7 +209,8 @@ class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper> implem
     }
 
     void addToQueue(Ost ost){
-        queue.add(queue.size() - queueAddPos,ost);
+        //preQueued.add(preQueued.size() - queueAddPos,ost);
+        queued.add(queued.size() - queueAddPos, ost);
         queueAddPos++;
         notifyDataSetChanged();
     }
@@ -202,10 +218,10 @@ class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper> implem
     void initiateQueue(List<Ost> ostList, int startId){
         queueAddPos = 0;
         played = new Stack<>();
-        queue = new Stack<>();
+        preQueued = new Stack<>();
         for(int i = ostList.size() - 1; i >= 0; i--) {
             if(i > startId){
-                queue.add(ostList.get(i));
+                preQueued.add(ostList.get(i));
             }else{
                 played.add(ostList.get(i));
             }

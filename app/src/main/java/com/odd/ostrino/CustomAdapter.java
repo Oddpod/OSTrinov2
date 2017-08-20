@@ -139,6 +139,8 @@ class CustomAdapter extends BaseAdapter implements PlayerListener {
 
     void updateList(List<Ost> updatedList){
         ostList = updatedList;
+        filteredOstList.clear();
+        filteredOstList.addAll(updatedList);
         notifyDataSetChanged();
     }
 

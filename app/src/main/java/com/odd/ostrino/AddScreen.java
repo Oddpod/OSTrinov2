@@ -86,7 +86,7 @@ public class AddScreen extends DialogFragment {
         System.out.println(tagsArrayAdapter.toString());
 
         ArrayAdapter<String> tagsAdapter = new ArrayAdapter<>(getActivity(),
-                android.R.layout.simple_dropdown_item_1line, tagList);
+                android.R.layout.simple_spinner_dropdown_item, tagList);
 
         ArrayAdapter<String> showAdapter = new ArrayAdapter<>(getActivity(),
                 android.R.layout.simple_spinner_dropdown_item, showList);

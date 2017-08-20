@@ -107,11 +107,12 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
 
         val action = intent.action
 
-        if (action.equals(Constants.PLAY_ACTION, ignoreCase = true)) {
+        if(isScreenLocked()){
+            Toast.makeText(applicationContext, "Can't play while on LockScreen! :C", Toast.LENGTH_SHORT).show()
+        }
+        else if (action.equals(Constants.PLAY_ACTION, ignoreCase = true)) {
             pausePlay()
 
-        } else if (action.equals("", ignoreCase = true)) {
-            TODO()
         } else if (action.equals(Constants.PREV_ACTION, ignoreCase = true)) {
             playerPrevious()
             /*
@@ -129,20 +130,16 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
             //showNotification()
             Toast.makeText(this, "Service Started", Toast.LENGTH_SHORT).show()
         } else if (intent.action == Constants.PREV_ACTION) {
-            Toast.makeText(this, "Clicked Previous", Toast.LENGTH_SHORT).show()
             handleIntent(intent)
             Log.i(LOG_TAG, "Clicked Previous")
         } else if (intent.action == Constants.PLAY_ACTION) {
             handleIntent(intent)
-            Toast.makeText(this, "Clicked Play", Toast.LENGTH_SHORT).show()
             Log.i(LOG_TAG, "Clicked Play")
         } else if (intent.action == Constants.NEXT_ACTION) {
-            //Toast.makeText(this, "Clicked Next", Toast.LENGTH_SHORT).show()
             handleIntent(intent)
             Log.i(LOG_TAG, "Clicked Next")
         } else if (intent.action == Constants.STOPFOREGROUND_ACTION) {
             Log.i(LOG_TAG, "Received Stop Foreground Intent")
-            Toast.makeText(this, "Service Stopped", Toast.LENGTH_SHORT).show()
             ll.removeView(floatingPlayer)
             wm.removeView(ll)
             yPlayer.release()
@@ -210,9 +207,9 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
         bigViews.setOnClickPendingIntent(R.id.status_bar_collapse, pcloseIntent)
 
         views.setImageViewResource(R.id.status_bar_play,
-                R.drawable.apollo_holo_dark_pause)
+                R.drawable.ic_pause_black_24dp)
         bigViews.setImageViewResource(R.id.status_bar_play,
-                R.drawable.apollo_holo_dark_pause)
+                R.drawable.ic_pause_black_24dp)
 
         views.setTextViewText(R.id.status_bar_track_name, "Song Title")
         bigViews.setTextViewText(R.id.status_bar_track_name, "Song Title")
@@ -227,7 +224,7 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
         status = NotificationCompat.Builder(this)
                 .setCustomContentView(views)
                 .setCustomBigContentView(bigViews)
-                .setSmallIcon(R.drawable.ic_launcher)
+                .setSmallIcon(R.drawable.ic_stat_name)
                 .setContentIntent(pendingIntent)
         mNotifyMgr.notify(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, status.build())
         //startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, status)
@@ -424,9 +421,9 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
     }
 
     override fun onPlaying() {
-        Picasso.with(this).load(R.drawable.apollo_holo_dark_pause).into(bigViews,
+        Picasso.with(this).load(R.drawable.ic_pause_black_24dp).into(bigViews,
                 R.id.status_bar_play, Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, status.build())
-        Picasso.with(this).load(R.drawable.apollo_holo_dark_pause).into(views,
+        Picasso.with(this).load(R.drawable.ic_pause_black_24dp).into(views,
                 R.id.status_bar_play, Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, status.build())
         playing = true
         mainActivity.pausePlay()
@@ -436,9 +433,9 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
     }
 
     override fun onPaused() {
-        Picasso.with(this).load(R.drawable.apollo_holo_dark_play).into(bigViews,
+        Picasso.with(this).load(R.drawable.ic_play_arrow_black_24dp).into(bigViews,
                 R.id.status_bar_play, Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, status.build())
-        Picasso.with(this).load(R.drawable.apollo_holo_dark_play).into(views,
+        Picasso.with(this).load(R.drawable.ic_play_arrow_black_24dp).into(views,
                 R.id.status_bar_play, Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, status.build())
         playing = false
         mainActivity.pausePlay()
@@ -482,5 +479,10 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
         }
 
         applicationContext.registerReceiver(screenOnOffReceiver, theFilter)
+    }
+
+    fun isScreenLocked(): Boolean{
+        val myKM = applicationContext.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+        return myKM.inKeyguardRestrictedInputMode()
     }
 }

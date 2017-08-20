@@ -2,7 +2,7 @@
 <RelativeLayout android:id="@+id/notificationbg" android:layout_width="match_parent"
     android:layout_height="120dip"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:background="@color/colorPrimaryDark">
+    android:background="@color/colorPrimary">
 
     <ImageView
         android:id="@+id/status_bar_album_art"
@@ -38,7 +38,7 @@
             android:contentDescription="@string/cd_previous"
             android:padding="10.0dip"
             android:scaleType="fitCenter"
-            android:src="@drawable/apollo_holo_dark_prev" />
+            android:src="@drawable/ic_skip_previous_black_24dp" />
 
         <ImageButton
             android:id="@+id/status_bar_play"
@@ -49,7 +49,7 @@
             android:contentDescription="@string/cd_play"
             android:padding="10.0dip"
             android:scaleType="fitCenter"
-            android:src="@drawable/apollo_holo_dark_play" />
+            android:src="@drawable/ic_play_arrow_black_24dp" />
 
         <ImageButton
             android:id="@+id/status_bar_next"
@@ -60,7 +60,7 @@
             android:contentDescription="@string/cd_next"
             android:padding="10.0dip"
             android:scaleType="fitCenter"
-            android:src="@drawable/apollo_holo_dark_next" />
+            android:src="@drawable/ic_skip_next_black_24dp" />
     </LinearLayout>
     <ImageView
         android:background="?android:dividerHorizontal"

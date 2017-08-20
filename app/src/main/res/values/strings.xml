@@ -34,6 +34,7 @@
                                     © 2017 Odd Harald Sjursen Sande \n
                                     This app uses the following open source libraries:</string>
     <string name="label_filter">Filter</string>
+    <string name="label_search">Search</string>
     <string name="label_empty_list_import">"Empty List :C, start adding some Osts or click this text to load Osts from assets"</string>
 
     <string name="menu_import">Import OSTs</string>

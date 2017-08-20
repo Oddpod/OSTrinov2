@@ -182,11 +182,14 @@ public class MainActivity extends AppCompatActivity
         }
         if (searchView != null) {
             searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+            searchView.setQueryHint("Filter");
 
             queryTextListener = new SearchView.OnQueryTextListener() {
                 @Override
                 public boolean onQueryTextChange(String newText) {
                     Log.i("onQueryTextChange", newText);
+                    listFragment.getCustomAdapter().filter(newText);
+                    MemesKt.launchMeme(newText, MainActivity.this);
 
                     return true;
                 }
@@ -475,9 +478,6 @@ public class MainActivity extends AppCompatActivity
     public void initiatePlayer(List<Ost> ostList, int startid) {
         queueAdapter.initiateQueue(ostList, startid);
 
-        if (!mIsBound) {
-            initPlayerService();
-        }
         if (!youtubePlayerLaunched) {
             rlContent.removeView(floatingPlayer);
             youtubePlayerLaunched = true;
@@ -663,6 +663,7 @@ public class MainActivity extends AppCompatActivity
             // cast its IBinder to a concrete class and directly access it.
             yTplayerService = ((YTplayerService.LocalBinder) service).getService();
             yTplayerService.registerBroadcastReceiver();
+            startWidgetOst();
             // Tell the user about this for our demo.
         }
 
@@ -732,5 +733,13 @@ public class MainActivity extends AppCompatActivity
         }
 
         super.onNewIntent(intent);
+    }
+
+    void startWidgetOst(){
+        Intent widgetIntent = getIntent();
+        int startId = widgetIntent.getIntExtra(getString(R.string.label_ost_of_the_day), -1);
+        if(startId != -1){
+            initiatePlayer(db.getAllOsts(), startId);
+        }
     }
 }

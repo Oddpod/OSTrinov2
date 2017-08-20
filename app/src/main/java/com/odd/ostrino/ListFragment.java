@@ -157,7 +157,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
 
             @Override
             public void afterTextChanged(Editable s) {
-                filterText = s.toString().toLowerCase();
+                filterText = s.toString();
                 MemesKt.launchMeme(filterText, mainActivity);
                 customAdapter.filter(s.toString());
             }
@@ -279,7 +279,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         editedOst = false;
         allOsts = dbHandler.getAllOsts();
         currOstList = getCurrDispOstList();
-        customAdapter.updateList(currOstList);
+        customAdapter.updateList(allOsts);
     }
 
     public AddScreen getDialog(){
