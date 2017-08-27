@@ -1,4 +1,4 @@
-package com.odd.ostrino;
+package com.odd.ostrinov2;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -22,8 +22,7 @@ public class ServerDBHandler{
         private ResultSet startConnectiontoDatabaseAndQuery(String sql) throws SQLException {
             Connection myConn = DriverManager.getConnection(url, user, password);
             Statement myStat = myConn.createStatement();
-            ResultSet myRsi = myStat.executeQuery(sql);
-            return myRsi;
+            return myStat.executeQuery(sql);
         }
 
         public void saveOsts(List<Ost> Osts) throws SQLException {

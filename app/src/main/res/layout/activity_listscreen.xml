@@ -44,7 +44,7 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="end"
                 android:contentDescription="@string/label_add"
-                app:srcCompat="@drawable/ic_add_black_24dp" />
+                app:srcCompat="@drawable/ic_library_add_black_24dp" />
         </TableRow>
 
     </TableLayout>

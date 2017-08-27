@@ -1,4 +1,4 @@
-package com.odd.ostrino
+package com.odd.ostrinov2
 
 import android.app.*
 import android.content.BroadcastReceiver
@@ -15,11 +15,13 @@ import android.widget.*
 import com.google.android.youtube.player.YouTubeInitializationResult
 import com.google.android.youtube.player.YouTubePlayer
 import com.google.android.youtube.player.YouTubePlayerSupportFragment
-import com.odd.ostrino.Listeners.PlayerListener
+import com.odd.ostrinov2.Listeners.PlayerListener
 import com.squareup.picasso.Picasso
 import java.io.File
 import android.app.KeyguardManager
 import android.content.IntentFilter
+
+
 
 class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
         YouTubePlayer.PlayerStateChangeListener,
@@ -29,13 +31,14 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
     private val binder = LocalBinder()
     lateinit var queueHandler: QueueHandler
     lateinit var wm: WindowManager
-    lateinit private var ll: LinearLayout
+    lateinit private var rl: RelativeLayout
     lateinit private var floatingPlayer: FrameLayout
     private var floatingPlayerInitialized: Boolean = false
     var playing: Boolean = false
     var repeat: Boolean = false
     private var stoppedTime: Int = 0
     private var outsideActivity: Boolean = false
+    private var playerExpanded: Boolean = false
     lateinit private var mainActivity: MainActivity
     lateinit var views: RemoteViews
     lateinit var bigViews: RemoteViews
@@ -43,17 +46,16 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
     private var userPaused: Boolean = false
 
     private val smallWindowParams = WindowManager.LayoutParams(
-            800,
+            WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.TYPE_PHONE,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT)
-    private val largePParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            LinearLayout.LayoutParams.WRAP_CONTENT)
+    private val largePParams = RelativeLayout.LayoutParams(
+            RelativeLayout.LayoutParams.MATCH_PARENT,
+            RelativeLayout.LayoutParams.WRAP_CONTENT)
 
-    private val smallPParams = LinearLayout.LayoutParams(400,
-            800)
+    private lateinit var smallPParams : RelativeLayout.LayoutParams
     private val largeWindowParams = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
@@ -122,13 +124,14 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
             }*/
         } else if (action.equals(Constants.NEXT_ACTION, ignoreCase = true)) {
             playerNext()
+        } else if(action.equals(Constants.EXPANDMINIMIZE_PLAYER, ignoreCase = true)){
+            expandMinimizePlayer()
         }
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         if (intent.action == Constants.STARTFOREGROUND_ACTION) {
             //showNotification()
-            Toast.makeText(this, "Service Started", Toast.LENGTH_SHORT).show()
         } else if (intent.action == Constants.PREV_ACTION) {
             handleIntent(intent)
             Log.i(LOG_TAG, "Clicked Previous")
@@ -138,10 +141,13 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
         } else if (intent.action == Constants.NEXT_ACTION) {
             handleIntent(intent)
             Log.i(LOG_TAG, "Clicked Next")
-        } else if (intent.action == Constants.STOPFOREGROUND_ACTION) {
+        } else if(intent.action == Constants.EXPANDMINIMIZE_PLAYER) {
+            handleIntent(intent)
+            Log.i(LOG_TAG, "Expand")
+        }else if (intent.action == Constants.STOPFOREGROUND_ACTION) {
             Log.i(LOG_TAG, "Received Stop Foreground Intent")
-            ll.removeView(floatingPlayer)
-            wm.removeView(ll)
+            rl.removeView(floatingPlayer)
+            wm.removeView(rl)
             yPlayer.release()
             mainActivity.doUnbindService()
             mainActivity.youtubePlayerStopped()
@@ -165,9 +171,6 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
         views.setViewVisibility(R.id.status_bar_icon, View.VISIBLE)
         views.setViewVisibility(R.id.status_bar_album_art, View.GONE)
 
-        bigViews.setImageViewBitmap(R.id.status_bar_album_art,
-                Constants.getDefaultAlbumArt(this))
-
         val notificationIntent = Intent(this, MainActivity::class.java)
         notificationIntent.action = Constants.MAIN_ACTION
         notificationIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -188,6 +191,11 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
         nextIntent.action = Constants.NEXT_ACTION
         val pnextIntent = PendingIntent.getService(this, 0,
                 nextIntent, 0)
+
+        val expandIntent = Intent(this, YTplayerService::class.java)
+        expandIntent.action = Constants.EXPANDMINIMIZE_PLAYER
+        val pExpandIntent = PendingIntent.getService(this, 0, expandIntent, 0)
+        bigViews.setOnClickPendingIntent(R.id.status_bar_maximize, pExpandIntent)
 
         val closeIntent = Intent(this, YTplayerService::class.java)
         closeIntent.action = Constants.STOPFOREGROUND_ACTION
@@ -245,12 +253,6 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
         updateNotInfo()
     }
 
-    fun resetPlayerListeners(playerListeners: Array<PlayerListener>) {
-        queueHandler.playerListeners = playerListeners
-        queueHandler.notifyPlayerListeners(false)
-    }
-
-
     fun refresh() {
         yTPlayerFrag.onResume()
         outsideActivity = true
@@ -261,7 +263,7 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
         }
     }
 
-    fun updateNotInfo() {
+    private fun updateNotInfo() {
         val ost: Ost = queueHandler.getCurrPlayingOst()
         val tnFile = File(Environment.getExternalStorageDirectory().toString()
                 + "/OSTthumbnails/" + UtilMeths.urlToId(ost.url) + ".jpg")
@@ -286,44 +288,33 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
             requestSystemAlertPermission(activity, 3)
         } else {
             wm = getSystemService(Context.WINDOW_SERVICE) as WindowManager
-            //val inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
             val params = smallWindowParams
             params.gravity = Gravity.TOP or Gravity.START
             params.x = 1
             params.y = 100
-
-            //WindowManager.LayoutParams.WRAP_CONTENT,
-            //      WindowManager.LayoutParams.WRAP_CONTENT,
 
             if (!floatingPlayerInitialized) {
                 floatingPlayer.visibility = View.VISIBLE
                 this.floatingPlayer = floatingPlayer
                 this.floatingPlayer
                 floatingPlayerInitialized = true
+                smallPParams = floatingPlayer.layoutParams as RelativeLayout.LayoutParams
             }
-            ll = LinearLayout(this) //inflater.inflate(R.layout.youtube_api, null);
-            val lp = LinearLayout.LayoutParams(400,
-                    800)
-            ll.setBackgroundColor(Color.argb(66, 255, 0, 0))
-            ll.layoutParams = lp
-
-            var playerExpanded = false
-            /*ll.setOnClickListener {
-                if (!playerExpanded) {
-                    ll.updateViewLayout(floatingPlayer, largePParams)
-                    wm.updateViewLayout(ll, largeWindowParams)
-                    playerExpanded = true
+            rl = this.mainActivity.layoutInflater.inflate(R.layout.youtube_api, null) as RelativeLayout
+            val toggleButton: ToggleButton = rl.findViewById(R.id.toggleButton) as ToggleButton
+            toggleButton.setOnCheckedChangeListener { _, isChecked ->
+                if (isChecked) {
+                    yPlayer.setPlayerStyle(YouTubePlayer.PlayerStyle.DEFAULT)
                 } else {
-                    ll.updateViewLayout(floatingPlayer, smallPParams)
-                    wm.updateViewLayout(ll, smallWindowParams)
-                    playerExpanded = false
+                    yPlayer.setPlayerStyle(YouTubePlayer.PlayerStyle.CHROMELESS)
                 }
+            }
+            rl.setBackgroundColor(Color.argb(66, 255, 0, 0))
 
-            }*/
-            ll.addView(floatingPlayer)
-            wm.addView(ll, params)
-            //ll.descendantFocusability = ViewGroup.FOCUS_BEFORE_DESCENDANTS
-            ll.setOnTouchListener(object : View.OnTouchListener {
+            rl.addView(floatingPlayer)
+            wm.addView(rl, params)
+            //rl.descendantFocusability = ViewGroup.FOCUS_BEFORE_DESCENDANTS
+            rl.setOnTouchListener(object : View.OnTouchListener {
 
                 private val updateParams = params
                 internal var X: Int = 0
@@ -345,7 +336,7 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
                             updateParams.x = (X + (event.rawX - touchedX)).toInt()
                             updateParams.y = (Y + (event.rawY - touchedY)).toInt()
 
-                            wm.updateViewLayout(ll, updateParams)
+                            wm.updateViewLayout(rl, updateParams)
                         }
 
                         MotionEvent.ACTION_MASK -> run {
@@ -360,6 +351,20 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
                 }
             })
 
+        }
+    }
+
+    private fun expandMinimizePlayer(){
+        if (!playerExpanded) {
+            Toast.makeText(applicationContext, "Expanding player", Toast.LENGTH_SHORT).show()
+            rl.updateViewLayout(floatingPlayer, largePParams)
+            wm.updateViewLayout(rl, largeWindowParams)
+            playerExpanded = true
+        } else {
+            Toast.makeText(applicationContext, "Minimizing player", Toast.LENGTH_SHORT).show()
+            rl.updateViewLayout(floatingPlayer, smallPParams)
+            wm.updateViewLayout(rl, smallWindowParams)
+            playerExpanded = false
         }
     }
 

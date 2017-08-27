@@ -1,4 +1,4 @@
-package com.odd.ostrino;
+package com.odd.ostrinov2;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -11,8 +11,8 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.odd.ostrino.Listeners.PlayerListener;
-import com.odd.ostrino.Listeners.QueueListener;
+import com.odd.ostrinov2.Listeners.PlayerListener;
+import com.odd.ostrinov2.Listeners.QueueListener;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;

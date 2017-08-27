@@ -1,6 +1,6 @@
-package com.odd.ostrino.Listeners;
+package com.odd.ostrinov2.Listeners;
 
-import com.odd.ostrino.Ost;
+import com.odd.ostrinov2.Ost;
 
 import java.util.List;
 

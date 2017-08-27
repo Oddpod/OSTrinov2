@@ -58,6 +58,7 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
+        android:background="?attr/selectableItemBackground"
         android:contentDescription="@android:string/ok"
-        app:srcCompat="@android:drawable/ic_input_add" />
+        app:srcCompat="@drawable/ic_playlist_add_black_24dp" />
 </RelativeLayout>

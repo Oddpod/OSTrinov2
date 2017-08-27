@@ -1,4 +1,4 @@
-package com.odd.ostrino;
+package com.odd.ostrinov2;
 
 import android.app.AlertDialog;
 import android.app.Dialog;

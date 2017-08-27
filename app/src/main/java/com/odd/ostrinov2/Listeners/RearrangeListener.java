@@ -1,4 +1,4 @@
-package com.odd.ostrino.Listeners;
+package com.odd.ostrinov2.Listeners;
 
 public interface RearrangeListener {
     void onGrab(int index);

@@ -36,6 +36,12 @@
     <string name="label_filter">Filter</string>
     <string name="label_search">Search</string>
     <string name="label_empty_list_import">"Empty List :C, start adding some Osts or click this text to load Osts from assets"</string>
+    <string name="label_youtube_controls">Youtube controls</string>
+
+    <string name="btn_text_view_controls_on">Ctrls on</string>
+    <string name="btn_text_view_controls_off">Ctrls off</string>
+    <string name="tv_expand_player">Expand Player</string>
+    <string name="tv_minimize_player">Minimize Player</string>
 
     <string name="menu_import">Import OSTs</string>
     <string name="menu_export">Exports OSTs</string>

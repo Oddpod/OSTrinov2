@@ -1,8 +1,7 @@
-package com.odd.ostrino
+package com.odd.ostrinov2
 
-import com.google.android.youtube.player.YouTubePlayer
 import java.util.*
-import com.odd.ostrino.Listeners.PlayerListener
+import com.odd.ostrinov2.Listeners.PlayerListener
 
 
 data class QueueHandler(var ostList: List<Ost>, var startIndex : Int, var shuffle

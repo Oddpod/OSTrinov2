@@ -1,4 +1,4 @@
-package com.odd.ostrino;
+package com.odd.ostrinov2;
 
 import android.Manifest;
 import android.app.SearchManager;
@@ -48,8 +48,8 @@ import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.google.android.youtube.player.YouTubePlayerSupportFragment;
-import com.odd.ostrino.Listeners.PlayerListener;
-import com.odd.ostrino.Listeners.QueueListener;
+import com.odd.ostrinov2.Listeners.PlayerListener;
+import com.odd.ostrinov2.Listeners.QueueListener;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -570,10 +570,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void removeFromQueue(String url) {
         yTplayerService.queueHandler.removeFromQueue(url);
-    }
-
-    public boolean youtubePlayerLaunched() {
-        return youtubePlayerLaunched;
     }
 
     public void youtubePlayerStopped() {

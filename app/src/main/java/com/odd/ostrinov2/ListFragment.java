@@ -1,4 +1,4 @@
-package com.odd.ostrino;
+package com.odd.ostrinov2;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -13,8 +13,8 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TableLayout;
 import android.widget.TextView;
-import com.odd.ostrino.Listeners.PlayerListener;
-import com.odd.ostrino.Listeners.QueueListener;
+import com.odd.ostrinov2.Listeners.PlayerListener;
+import com.odd.ostrinov2.Listeners.QueueListener;
 
 import java.io.BufferedReader;
 import java.io.IOException;

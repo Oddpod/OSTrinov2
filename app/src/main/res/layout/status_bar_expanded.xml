@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout android:id="@+id/notificationbg" android:layout_width="match_parent"
+<RelativeLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/notificationbg" android:layout_width="match_parent"
     android:layout_height="120dip"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:background="@color/colorPrimary">
@@ -71,7 +72,8 @@
         android:layout_above="@+id/buttons"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:contentDescription="@string/cd_divider" />
+        android:contentDescription="@string/cd_divider"
+        android:id="@+id/imageView" />
 
     <ImageButton
         android:id="@id/status_bar_collapse"
@@ -83,6 +85,7 @@
         android:background="?android:selectableItemBackground"
         android:contentDescription="@string/cd_collapse"
         android:padding="8.0dip"
+        android:scaleType="fitCenter"
         android:src="@drawable/apollo_holo_dark_notifiation_bar_collapse" />
     <LinearLayout
         android:layout_gravity="center_vertical"
@@ -126,4 +129,17 @@
             android:maxLines="1"
             />
     </LinearLayout>
-    </RelativeLayout>
+
+    <ImageButton
+        android:id="@+id/status_bar_maximize"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/widget_margin"
+        android:layout_above="@+id/buttons"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/status_bar_collapse"
+        android:layout_toEndOf="@+id/textarea"
+        android:layout_toRightOf="@+id/textarea"
+        app:srcCompat="@drawable/tranquility" />
+
+</RelativeLayout>

@@ -1,4 +1,4 @@
-package com.odd.ostrino;
+package com.odd.ostrinov2;
 
 import android.content.Context;
 import android.os.Environment;
@@ -9,9 +9,10 @@ import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.odd.ostrino.Listeners.PlayerListener;
-import com.odd.ostrino.Listeners.QueueListener;
+import com.odd.ostrinov2.Listeners.PlayerListener;
+import com.odd.ostrinov2.Listeners.QueueListener;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
@@ -54,7 +55,7 @@ class CustomAdapter extends BaseAdapter implements PlayerListener {
 
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
-        Ost ost = getItem(position);
+        final Ost ost = getItem(position);
         ViewHolder holder;
         if( convertView == null){
             convertView = mInflater.inflate(R.layout.custom_row, null);
@@ -82,6 +83,7 @@ class CustomAdapter extends BaseAdapter implements PlayerListener {
         holder.btnOptions.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Toast.makeText(mContext, ost.getTitle() + " added to queue", Toast.LENGTH_SHORT).show();
                 queueListener.addToQueue(position);
             }
         });
