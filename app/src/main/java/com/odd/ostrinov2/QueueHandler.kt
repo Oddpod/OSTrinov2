@@ -35,6 +35,7 @@ data class QueueHandler(var ostList: List<Ost>, var startIndex : Int, var shuffl
     }
 
     fun initiateQueue(ostList: List<Ost>, startIndex: Int, shuffle: Boolean) {
+        this.ostList = ostList
         videoIds = ArrayList<String>()
         videoIds = UtilMeths.getVideoIdList(ostList)
         played = Stack<String>()

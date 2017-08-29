@@ -279,7 +279,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
         editedOst = false;
         allOsts = dbHandler.getAllOsts();
         currOstList = getCurrDispOstList();
-        customAdapter.updateList(allOsts);
+        customAdapter.updateList(currOstList, allOsts);
     }
 
     public AddScreen getDialog(){

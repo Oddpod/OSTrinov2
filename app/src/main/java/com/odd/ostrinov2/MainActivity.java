@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity
     private ListFragment listFragment;
     private FrameLayout floatingPlayer;
     private RelativeLayout rlContent;
-    private boolean youtubePlayerLaunched = false, about = false;
+    private boolean youtubePlayerLaunched = false, about = false, addCanceled = true;
     private final static int MY_PERMISSIONS_REQUEST_READWRITE_EXTERNAL_STORAGE = 0;
     private QueueAdapter queueAdapter;
     private FragmentManager manager;
@@ -309,6 +309,7 @@ public class MainActivity extends AppCompatActivity
             db.updateOst(lastAddedOst);
             listFragment.refreshListView();
             UtilMeths.INSTANCE.downloadThumbnail(url, this);
+            addCanceled = false;
         } else if (!alreadyAdded) {
             if (!url.contains("https://")) {
                 Toast.makeText(this, "You have to put in a valid youtube link", Toast.LENGTH_SHORT).show();
@@ -317,6 +318,7 @@ public class MainActivity extends AppCompatActivity
                 Toast.makeText(getApplicationContext(), lastAddedOst.getTitle() + " added", Toast.LENGTH_SHORT).show();
                 listFragment.refreshListView();
                 UtilMeths.INSTANCE.downloadThumbnail(url, this);
+                addCanceled = false;
             }
         } else {
             Toast.makeText(this, lastAddedOst.getTitle() + " From " + lastAddedOst.getShow() + " has already been added", Toast.LENGTH_SHORT).show();
@@ -340,8 +342,13 @@ public class MainActivity extends AppCompatActivity
         String tags = fieldData[2];
         String url = fieldData[3];
 
-        unAddedOst = new Ost(title, show, tags, url);
-        listFragment.setUnAddedOst(unAddedOst);
+        if(addCanceled){
+            unAddedOst = new Ost(title, show, tags, url);
+            listFragment.setUnAddedOst(unAddedOst);
+        }
+        else{
+            addCanceled = true;
+        }
     }
 
     private void chooseFileImport() {
