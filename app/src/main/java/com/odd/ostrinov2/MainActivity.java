@@ -1,6 +1,7 @@
 package com.odd.ostrinov2;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.SearchManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -149,6 +150,9 @@ public class MainActivity extends AppCompatActivity
         youTubePlayerFragment = YouTubePlayerSupportFragment.newInstance();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.add(R.id.floatingPlayer, youTubePlayerFragment).commit();
+
+        Intent intent = getIntent();
+        addOstLink(intent);
     }
 
     @Override
@@ -727,9 +731,23 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    void addOstLink(Intent intent){
+        if (intent.getAction().equals(Intent.ACTION_SEND) && intent.getType().equals("text/plain")){
+            Bundle extras = intent.getExtras();
+            String link = extras.getString(Intent.EXTRA_TEXT);
+            Toast.makeText(this, "Added " + link + "to your OST library", Toast.LENGTH_SHORT).show();
+            db.addNewOst(new Ost("", "", "",  link));
+            UtilMeths.INSTANCE.downloadThumbnail(link, this);
+            Intent result = new Intent("com.example.RESULT_ACTION", Uri.parse("content://result_uri"));
+            setResult(Activity.RESULT_OK, result);
+            finish();
+        }
+    }
+
     @Override
     protected void onNewIntent(Intent intent) {
         int ostId = intent.getIntExtra(getString(R.string.label_ost_of_the_day), -1);
+        addOstLink(intent);
 
         if (ostId != -1) {
             initiatePlayer(db.getAllOsts(), ostId);

@@ -69,7 +69,6 @@ class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper> implem
                     + "/OSTthumbnails/" + UtilMeths.INSTANCE.urlToId(ost.getUrl()) + ".jpg");
             Picasso.with(mContext)
                     .load(tnFile)
-                    .placeholder(R.drawable.tranquility)
                     .into(viewWrapper.getThumbnail());
             viewWrapper.getBtnOptions().setOnClickListener(new View.OnClickListener() {
                 @Override

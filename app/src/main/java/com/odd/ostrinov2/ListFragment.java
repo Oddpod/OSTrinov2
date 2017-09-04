@@ -26,7 +26,7 @@ import java.util.Random;
 public class ListFragment extends Fragment implements FunnyJunk.YareYareListener,
         View.OnClickListener, QueueListener, PlayerListener {
 
-    private boolean editedOst;
+    boolean editedOst;
     private int ostReplaceId, previouslyPlayed;
     private List<Ost> allOsts, currOstList;
     private DBHandler dbHandler;
@@ -36,7 +36,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
     private CustomAdapter customAdapter;
     private ListView lvOst;
     boolean shuffleActivated, playerDocked;
-    private AddScreen dialog;
+    AddScreen dialog;
     private Ost unAddedOst;
     private MainActivity mainActivity;
     TableLayout tlTop;
@@ -189,15 +189,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
             }
 
             case R.id.btnAdd:{
-                if(unAddedOst != null){
-                    dialog.setText(unAddedOst);
-                }else {
-                    dialog.setText(new Ost("", "", "", ""));
-                }
-                dialog.showDeleteButton(false);
-                dialog.show(getFragmentManager(), TAG);
-                dialog.setButtonText("Add");
-                editedOst = false;
+                addOst();
                 break;
             }
         }
@@ -288,6 +280,18 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
 
     public void setUnAddedOst(Ost ost){
         unAddedOst = ost;
+    }
+
+    public void addOst(){
+        if(unAddedOst != null){
+            dialog.setText(unAddedOst);
+        }else {
+            dialog.setText(new Ost("", "", "", ""));
+        }
+        dialog.showDeleteButton(false);
+        dialog.show(getFragmentManager(), TAG);
+        dialog.setButtonText("Add");
+        editedOst = false;
     }
 
 

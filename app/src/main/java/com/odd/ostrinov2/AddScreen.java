@@ -14,7 +14,6 @@ import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.MultiAutoCompleteTextView;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class AddScreen extends DialogFragment {
@@ -56,7 +55,6 @@ public class AddScreen extends DialogFragment {
         List<String> showList = dbHandler.getAllShows();
         List<String> tagList = dbHandler.getAllTags();
         String[] tagsArray = dbHandler.getAllTagsArray();
-        System.out.println(Arrays.asList(tagsArray));
 
         builder = new AlertDialog.Builder(getActivity());
 
@@ -83,7 +81,6 @@ public class AddScreen extends DialogFragment {
         }
         ArrayAdapter<String> tagsArrayAdapter = new ArrayAdapter<>(getContext(),
                 android.R.layout.simple_spinner_dropdown_item, tagsArray);
-        System.out.println(tagsArrayAdapter.toString());
 
         ArrayAdapter<String> tagsAdapter = new ArrayAdapter<>(getActivity(),
                 android.R.layout.simple_spinner_dropdown_item, tagList);
