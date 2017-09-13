@@ -50,7 +50,7 @@ class CustomAdapter extends BaseAdapter implements PlayerListener {
 
     @Override
     public long getItemId(int position) {
-        return position;
+        return ostList.get(position).getId();
     }
 
     @Override
@@ -75,7 +75,7 @@ class CustomAdapter extends BaseAdapter implements PlayerListener {
                 .load(tnFile)
                 .into(holder.thumbnail);
 
-        if (nowPlaying == position) {
+        if (nowPlaying == ost.getId()) {
             convertView.setBackgroundResource(R.drawable.greenrect);
         } else{
             convertView.setBackgroundResource(R.drawable.white);
@@ -103,6 +103,11 @@ class CustomAdapter extends BaseAdapter implements PlayerListener {
 
     @Override
     public void updateCurrentlyPlaying(int newId) {
+        nowPlaying = newId;
+        notifyDataSetChanged();
+    }
+
+    public void setCurrentlyPlaying(int newId){
         nowPlaying = newId;
     }
 

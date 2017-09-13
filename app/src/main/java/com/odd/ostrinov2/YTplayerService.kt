@@ -240,7 +240,7 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
 
     fun startQueue(ostList: List<Ost>, startIndex: Int, shuffle: Boolean,
                    playerListeners: Array<PlayerListener>, youTubePlayerFragment: YouTubePlayerSupportFragment) {
-        queueHandler = QueueHandler(ostList, startIndex, shuffle, playerListeners)
+        queueHandler = QueueHandler(ostList.toMutableList(), startIndex, shuffle, playerListeners)
         yTPlayerFrag = youTubePlayerFragment
         yTPlayerFrag.retainInstance = true
         yTPlayerFrag.initialize(Constants.API_TOKEN, this)
@@ -379,8 +379,12 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
     }
 
     fun playerNext() {
-        yPlayer.loadVideo(queueHandler.next()!!)
-        updateNotInfo()
+        if(queueHandler.hasNext()){
+            yPlayer.loadVideo(queueHandler.next()!!)
+            updateNotInfo()
+        }
+        else
+            yPlayer.pause()
     }
 
     fun playerPrevious() {
@@ -406,11 +410,7 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
         if (repeat) {
             yPlayer.seekToMillis(0)
         } else {
-            if (queueHandler.hasNext()) {
-                val next: String? = queueHandler.next()
-                yPlayer.loadVideo(next)
-            } else
-                yPlayer.pause()
+                playerNext()
         }
         mainActivity.seekBar.progress = 0
     }

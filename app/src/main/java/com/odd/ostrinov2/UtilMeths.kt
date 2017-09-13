@@ -23,7 +23,7 @@ internal object UtilMeths {
         return lineArray[1]
     }
 
-    fun getVideoIdList(ostList: List<Ost>): List<String> {
+    fun getVideoIdList(ostList: List<Ost>): MutableList<String> {
         val queueList = ArrayList<String>()
         for (ost in ostList) {
             queueList.add(urlToId(ost.url))

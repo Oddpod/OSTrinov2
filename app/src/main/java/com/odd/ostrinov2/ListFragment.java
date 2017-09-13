@@ -13,7 +13,6 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TableLayout;
 import android.widget.TextView;
-import com.odd.ostrinov2.Listeners.PlayerListener;
 import com.odd.ostrinov2.Listeners.QueueListener;
 
 import java.io.BufferedReader;
@@ -24,13 +23,12 @@ import java.util.List;
 import java.util.Random;
 
 public class ListFragment extends Fragment implements FunnyJunk.YareYareListener,
-        View.OnClickListener, QueueListener, PlayerListener {
+        View.OnClickListener, QueueListener {
 
     boolean editedOst;
     private int ostReplaceId, previouslyPlayed;
     private List<Ost> allOsts, currOstList;
     private DBHandler dbHandler;
-    private EditText filter;
     private String TAG = "OstInfo";
     private String filterText;
     private CustomAdapter customAdapter;
@@ -71,7 +69,8 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
                     getViewByPosition(previouslyPlayed, lvOst).setBackgroundResource(R.drawable.white);
                 }
                 view.setBackgroundResource(R.drawable.greenrect);
-                customAdapter.updateCurrentlyPlaying(position);
+                int updatePos = customAdapter.getItem(position).getId();
+                customAdapter.updateCurrentlyPlaying(updatePos);
                 previouslyPlayed = customAdapter.getNowPlaying();
             }
         });
@@ -142,7 +141,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
             lvOst.addHeaderView(tv);
         }
 
-        filter = (EditText) rootView.findViewById(R.id.edtFilter);
+        EditText filter = (EditText) rootView.findViewById(R.id.edtFilter);
         filterText = "";
         TextWatcher textWatcher = new TextWatcher() {
             @Override
@@ -239,32 +238,6 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
             final int childIndex = pos - firstListItemPosition;
             return listView.getChildAt(childIndex);
         }
-    }
-
-    public void updateCurrentlyPlaying(int newId){
-        getViewByPosition(newId, lvOst).setBackgroundResource(R.drawable.greenrect);
-        getViewByPosition(previouslyPlayed, lvOst).setBackgroundResource(R.drawable.white);
-        previouslyPlayed = newId;
-    }
-
-    @Override
-    public void next() {
-
-    }
-
-    @Override
-    public void previous() {
-
-    }
-
-    @Override
-    public void shuffle(long seed) {
-
-    }
-
-    @Override
-    public void unShuffle(List<Ost> unShuffledList) {
-
     }
 
     public void refreshListView(){

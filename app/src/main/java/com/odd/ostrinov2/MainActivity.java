@@ -473,7 +473,7 @@ public class MainActivity extends AppCompatActivity
         if (!youtubePlayerLaunched) {
             Toast.makeText(this, "You have to play something first", Toast.LENGTH_SHORT).show();
         } else {
-            yTplayerService.queueHandler.addToQueue(ost.getUrl());
+            yTplayerService.queueHandler.addToQueue(ost);
             queueAdapter.addToQueue(ost);
         }
 
@@ -492,10 +492,9 @@ public class MainActivity extends AppCompatActivity
         if (!youtubePlayerLaunched) {
             rlContent.removeView(floatingPlayer);
             youtubePlayerLaunched = true;
-            PlayerListener[] playerListeners = new PlayerListener[3];
+            PlayerListener[] playerListeners = new PlayerListener[2];
             playerListeners[0] = queueAdapter;
-            playerListeners[1] = listFragment;
-            playerListeners[2] = listFragment.getCustomAdapter();
+            playerListeners[1] = listFragment.getCustomAdapter();
             yTplayerService.showNotification();
             yTplayerService.startQueue(ostList, startid, shuffleActivated,
                     playerListeners, youTubePlayerFragment);

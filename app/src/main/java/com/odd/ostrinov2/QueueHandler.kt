@@ -4,13 +4,13 @@ import java.util.*
 import com.odd.ostrinov2.Listeners.PlayerListener
 
 
-data class QueueHandler(var ostList: List<Ost>, var startIndex : Int, var shuffle
+data class QueueHandler(var ostList: MutableList<Ost>, var startIndex : Int, var shuffle
 : Boolean, var playerListeners: Array<PlayerListener> ){
 
     private var preQueue: Stack<String>
     private var played: Stack<String>
     private var queue:Stack<String>
-    private var videoIds: List<String> = UtilMeths.getVideoIdList(ostList)
+    private var videoIds: MutableList<String> = UtilMeths.getVideoIdList(ostList)
     var currentlyPlaying : String
     private var playbackPosMilliSec: Int = 0
     private var currPlayingIndex:Int = 0
@@ -35,7 +35,7 @@ data class QueueHandler(var ostList: List<Ost>, var startIndex : Int, var shuffl
     }
 
     fun initiateQueue(ostList: List<Ost>, startIndex: Int, shuffle: Boolean) {
-        this.ostList = ostList
+        this.ostList = ostList.toMutableList()
         videoIds = ArrayList<String>()
         videoIds = UtilMeths.getVideoIdList(ostList)
         played = Stack<String>()
@@ -77,8 +77,12 @@ data class QueueHandler(var ostList: List<Ost>, var startIndex : Int, var shuffl
         shuffle = true
     }
 
-    fun addToQueue(url: String) {
-        queue.add(0, UtilMeths.urlToId(url))
+    fun addToQueue(ost: Ost) {
+        val videoId = UtilMeths.urlToId(ost.url)
+        queue.add(0, UtilMeths.urlToId(ost.url))
+        ostList.add(currPlayingIndex + 1, ost)
+        currPlayingIndex = videoIds.indexOf(currentlyPlaying)
+        videoIds.add(currPlayingIndex + 1, videoId)
     }
 
     fun removeFromQueue(url: String) {
@@ -112,8 +116,9 @@ data class QueueHandler(var ostList: List<Ost>, var startIndex : Int, var shuffl
     }
 
     fun notifyPlayerListeners(previous: Boolean) {
+        currPlayingIndex = videoIds.indexOf(currentlyPlaying)
         for (i in playerListeners.indices) {
-            playerListeners[i].updateCurrentlyPlaying(videoIds.indexOf(currentlyPlaying))
+            playerListeners[i].updateCurrentlyPlaying(ostList[currPlayingIndex].id)
             if (previous) {
                 playerListeners[i].previous()
             } else {
