@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity
     private ListFragment listFragment;
     private FrameLayout floatingPlayer;
     private RelativeLayout rlContent;
-    private boolean youtubePlayerLaunched = false, about = false, addCanceled = true;
+    private boolean youtubePlayerLaunched = false, about = false, addCanceled = true, ostFromWidget = false;
     private final static int MY_PERMISSIONS_REQUEST_READWRITE_EXTERNAL_STORAGE = 0;
     private QueueAdapter queueAdapter;
     private FragmentManager manager;
@@ -152,7 +152,12 @@ public class MainActivity extends AppCompatActivity
         transaction.add(R.id.floatingPlayer, youTubePlayerFragment).commit();
 
         Intent intent = getIntent();
-        addOstLink(intent);
+        int ostId = intent.getIntExtra(getString(R.string.label_ost_of_the_day), -1);
+        if (ostId != -1) {
+            ostFromWidget = true;
+        } else {
+            addOstLink(intent);
+        }
     }
 
     @Override
@@ -669,7 +674,9 @@ public class MainActivity extends AppCompatActivity
             // cast its IBinder to a concrete class and directly access it.
             yTplayerService = ((YTplayerService.LocalBinder) service).getService();
             yTplayerService.registerBroadcastReceiver();
-            startWidgetOst();
+            if(ostFromWidget){
+                startWidgetOst();
+            }
             // Tell the user about this for our demo.
         }
 
@@ -746,10 +753,12 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onNewIntent(Intent intent) {
         int ostId = intent.getIntExtra(getString(R.string.label_ost_of_the_day), -1);
-        addOstLink(intent);
+
 
         if (ostId != -1) {
             initiatePlayer(db.getAllOsts(), ostId);
+        }else{
+            addOstLink(intent);
         }
 
         super.onNewIntent(intent);

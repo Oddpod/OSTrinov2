@@ -28,12 +28,7 @@ class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper> implem
         private QueueListener queueListener;
         private int queueAddPos;
         private OnItemClickListener onItemClickListener;
-        private boolean emptyAdapter;
         private int currPlayingIndex;
-
-    public QueueAdapter(){
-        this.emptyAdapter = true;
-    }
 
     QueueAdapter(Context context, QueueListener queueListener) {
             played = new Stack<>();
@@ -89,11 +84,7 @@ class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper> implem
     }
         @Override
         public int getItemCount() {
-            if(emptyAdapter){
-                return 0;
-            }else{
-                return preQueued.size();
-            }
+            return preQueued.size();
         }
 
     @Override

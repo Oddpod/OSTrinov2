@@ -3,10 +3,7 @@
 /local.properties
 /.idea/workspace.xml
 /.idea/libraries
-.DS_Store
 /build
-/captures
-.externalNativeBuild
 .idea/compiler.xml
 .idea/copyright/
 .idea/gradle.xml
@@ -14,7 +11,6 @@
 .idea/modules.xml
 .idea/runConfigurations.xml
 .idea/vcs.xml
-.idea/inspectionProfiles/
 app/proguard-rules.pro
 app/src/androidTest/
 app/src/main/java/com/odd/ostrinov2/Constants.java
