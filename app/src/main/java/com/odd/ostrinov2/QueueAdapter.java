@@ -68,7 +68,7 @@ class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper> implem
             viewWrapper.getBtnOptions().setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(ost.equals(queued.get(queuedInvPos))){
+                    if(queuedInvPos > -1 && ost.equals(queued.get(queuedInvPos))){
                         queued.remove(queuedInvPos);
                     } else{
                         preQueued.remove(invPos);
