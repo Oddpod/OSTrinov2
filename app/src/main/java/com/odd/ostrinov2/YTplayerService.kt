@@ -20,12 +20,14 @@ import com.squareup.picasso.Picasso
 import java.io.File
 import android.app.KeyguardManager
 import android.content.IntentFilter
-
+import android.content.res.Configuration
+import com.google.android.youtube.player.YouTubePlayer.*
 
 
 class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
         YouTubePlayer.PlayerStateChangeListener,
         YouTubePlayer.PlaybackEventListener,
+        YouTubePlayer.OnFullscreenListener,
         SeekBar.OnSeekBarChangeListener {
 
     private val binder = LocalBinder()
@@ -62,6 +64,12 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
             WindowManager.LayoutParams.TYPE_PHONE,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT)
+    private val fullScreenParams = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.TYPE_PHONE,
+            WindowManager.LayoutParams.FLAG_FULLSCREEN,
+            PixelFormat.TRANSLUCENT)
 
     override fun onCreate() {
         super.onCreate()
@@ -95,12 +103,20 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
             yPlayer.loadVideo(queueHandler.currentlyPlaying)
             yPlayer.setPlayerStateChangeListener(this)
             yPlayer.setPlaybackEventListener(this)
+            yPlayer.setOnFullscreenListener(this)
+            yPlayer.addFullscreenControlFlag(FULLSCREEN_FLAG_CUSTOM_LAYOUT)
             mainActivity.seekBar.setOnSeekBarChangeListener(this)
         }
     }
 
     override fun onInitializationFailure(p0: YouTubePlayer.Provider?, p1: YouTubeInitializationResult?) {
         println("oops")
+    }
+
+    override fun onFullscreen(p0: Boolean) {
+
+        fullScreenParams.flags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+        wm.updateViewLayout(rl, fullScreenParams)
     }
 
     private fun handleIntent(intent: Intent?) {
@@ -359,11 +375,13 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
             Toast.makeText(applicationContext, "Expanding player", Toast.LENGTH_SHORT).show()
             rl.updateViewLayout(floatingPlayer, largePParams)
             wm.updateViewLayout(rl, largeWindowParams)
+            yPlayer.setShowFullscreenButton(true)
             playerExpanded = true
         } else {
             Toast.makeText(applicationContext, "Minimizing player", Toast.LENGTH_SHORT).show()
             rl.updateViewLayout(floatingPlayer, smallPParams)
             wm.updateViewLayout(rl, smallWindowParams)
+            yPlayer.setShowFullscreenButton(false)
             playerExpanded = false
         }
     }
