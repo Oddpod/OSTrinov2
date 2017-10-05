@@ -66,7 +66,7 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
             PixelFormat.TRANSLUCENT)
     private val fullScreenParams = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.TYPE_PHONE,
             WindowManager.LayoutParams.FLAG_FULLSCREEN,
             PixelFormat.TRANSLUCENT)
