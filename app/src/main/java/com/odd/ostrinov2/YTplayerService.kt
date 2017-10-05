@@ -20,7 +20,6 @@ import com.squareup.picasso.Picasso
 import java.io.File
 import android.app.KeyguardManager
 import android.content.IntentFilter
-import android.content.res.Configuration
 import com.google.android.youtube.player.YouTubePlayer.*
 
 
@@ -85,7 +84,7 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
         return binder
     }
 
-    private val LOG_TAG = "NotificationService"
+    private val NOT_LOG_TAG = "NotificationService"
     lateinit var yPlayer: YouTubePlayer
 
     override fun onInitializationSuccess(provider: YouTubePlayer.Provider?, player: YouTubePlayer?, wasRestored: Boolean) {
@@ -150,18 +149,18 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
             //showNotification()
         } else if (intent.action == Constants.PREV_ACTION) {
             handleIntent(intent)
-            Log.i(LOG_TAG, "Clicked Previous")
+            Log.i(NOT_LOG_TAG, "Clicked Previous")
         } else if (intent.action == Constants.PLAY_ACTION) {
             handleIntent(intent)
-            Log.i(LOG_TAG, "Clicked Play")
+            Log.i(NOT_LOG_TAG, "Clicked Play")
         } else if (intent.action == Constants.NEXT_ACTION) {
             handleIntent(intent)
-            Log.i(LOG_TAG, "Clicked Next")
+            Log.i(NOT_LOG_TAG, "Clicked Next")
         } else if(intent.action == Constants.EXPANDMINIMIZE_PLAYER) {
             handleIntent(intent)
-            Log.i(LOG_TAG, "Expand")
+            Log.i(NOT_LOG_TAG, "Expand")
         }else if (intent.action == Constants.STOPFOREGROUND_ACTION) {
-            Log.i(LOG_TAG, "Received Stop Foreground Intent")
+            Log.i(NOT_LOG_TAG, "Received Stop Foreground Intent")
             rl.removeView(floatingPlayer)
             wm.removeView(rl)
             yPlayer.release()

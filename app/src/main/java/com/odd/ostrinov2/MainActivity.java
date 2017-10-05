@@ -1,6 +1,5 @@
 package com.odd.ostrinov2;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.SearchManager;
 import android.content.ClipData;
@@ -16,16 +15,13 @@ import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.provider.Settings;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -51,13 +47,7 @@ import android.widget.Toast;
 import com.google.android.youtube.player.YouTubePlayerSupportFragment;
 import com.odd.ostrinov2.Listeners.PlayerListener;
 import com.odd.ostrinov2.Listeners.QueueListener;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
@@ -67,13 +57,11 @@ public class MainActivity extends AppCompatActivity
 
     private DBHandler db;
     private Ost unAddedOst;
-    private List<Ost> ostList;
     private int backPress;
     private ListFragment listFragment;
     private FrameLayout floatingPlayer;
     private RelativeLayout rlContent;
     private boolean youtubePlayerLaunched = false, about = false, addCanceled = true, ostFromWidget = false;
-    private final static int MY_PERMISSIONS_REQUEST_READWRITE_EXTERNAL_STORAGE = 0;
     private QueueAdapter queueAdapter;
     private FragmentManager manager;
     private YouTubePlayerSupportFragment youTubePlayerFragment;
@@ -262,12 +250,12 @@ public class MainActivity extends AppCompatActivity
             }
 
             case R.id.import_osts: {
-                chooseFileImport();
+                UtilMeths.INSTANCE.chooseFileImport(this);
                 break;
             }
 
             case R.id.export_osts: {
-                chooseFileExport();
+                UtilMeths.INSTANCE.chooseFileExport(this);
                 break;
             }
 
@@ -309,7 +297,7 @@ public class MainActivity extends AppCompatActivity
         String tags = entTags.getText().toString();
         String url = entUrl.getText().toString();
 
-        checkPermission();
+        PermissionHandlerKt.checkPermission(this);
         Ost lastAddedOst = new Ost(title, show, tags, url);
         lastAddedOst.setId(listFragment.getOstReplaceId());
         boolean alreadyAdded = db.checkiIfOstInDB(lastAddedOst);
@@ -360,114 +348,28 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void chooseFileImport() {
-        Intent intent;
-        if (Build.VERSION.SDK_INT < 19) {
-            intent = new Intent();
-            intent.setAction(Intent.ACTION_GET_CONTENT);
-            intent.setType("text/plain");
-            startActivityForResult(intent, 1);
-
-        } else {
-            intent = new Intent(Intent.ACTION_GET_CONTENT);
-            intent.setType("text/plain");
-            intent.addCategory(Intent.CATEGORY_OPENABLE);
-            try {
-                startActivityForResult(
-                        Intent.createChooser(intent, "Select a File to Upload"),
-                        1);
-            } catch (android.content.ActivityNotFoundException ex) {
-                // Potentially direct the user to the Market with a Dialog
-                Toast.makeText(getApplicationContext(), "Please install a File Manager.", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
-    private void chooseFileExport() {
-        Intent intent;
-        if (Build.VERSION.SDK_INT < 19) {
-            intent = new Intent();
-            intent.setAction(Intent.ACTION_GET_CONTENT);
-            intent.setType("text/plain");
-            startActivityForResult(intent, 2);
-        } else {
-            intent = new Intent();
-            intent.setAction(Intent.ACTION_CREATE_DOCUMENT);
-            intent.setType("text/plain");
-            startActivityForResult(intent, 2);
-        }
-    }
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        checkPermission();
+        PermissionHandlerKt.checkPermission(this);
         if (requestCode == 1 && resultCode == RESULT_OK) {
             Uri currFileURI = data.getData();
-            readFromFile(currFileURI);
+            IOHandler.INSTANCE.readFromFile(currFileURI, this);
             listFragment.refreshListView();
         }
         if (requestCode == 2 && resultCode == RESULT_OK) {
             Uri currFileURI = data.getData();
             try {
-                writeToFile(currFileURI);
+                IOHandler.INSTANCE.writeToFile(currFileURI, db.getAllOsts(), this);
                 listFragment.refreshListView();
 
             } catch (IOException e) {
-                System.out.println(" caught IOexception");
+                Log.i("OnActivityResult", " caught IOexception");
             }
         }
         if (requestCode == 3) {
             yTplayerService.launchFloater(floatingPlayer, this);
         }
         super.onActivityResult(requestCode, resultCode, data);
-    }
-
-    public void readFromFile(Uri uri) {
-        try {
-            InputStream is = getContentResolver().openInputStream(uri);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                Ost ost = new Ost();
-                String[] lineArray = line.split("; ");
-                if (lineArray.length < 4) {
-                    return;
-                }
-                ost.setTitle(lineArray[0]);
-                ost.setShow(lineArray[1]);
-                ost.setTags(lineArray[2]);
-                ost.setUrl(lineArray[3]);
-                boolean alreadyInDB = db.checkiIfOstInDB(ost);
-                if (!alreadyInDB) {
-                    db.addNewOst(ost);
-                    UtilMeths.INSTANCE.downloadThumbnail(lineArray[3], this);
-                }
-            }
-        } catch (IOException e) {
-            System.out.println("File not found");
-            e.printStackTrace();
-        }
-    }
-
-    public void writeToFile(Uri uri) throws IOException {
-        ostList = db.getAllOsts();
-        try {
-            OutputStream os = getContentResolver().openOutputStream(uri);
-            OutputStreamWriter osw = new OutputStreamWriter(os);
-            String line;
-            for (Ost ost : ostList) {
-
-                String title = ost.getTitle();
-                String show = ost.getShow();
-                String tags = ost.getTags();
-                String url = ost.getUrl();
-                line = title + "; " + show + "; " + tags + "; " + url + "; ";
-                osw.write(line + "\n");
-            }
-            osw.close();
-        } catch (IOException e) {
-            throw new IOException("File not found");
-        }
     }
 
     public AddScreen getDialog() {
@@ -528,15 +430,18 @@ public class MainActivity extends AppCompatActivity
                     }
                     break;
                 }
+
                 case R.id.btnPause: {
                     yTplayerService.pausePlay();
                     break;
                 }
+
                 case R.id.btnNext: {
                     yTplayerService.playerNext();
                     btnPlayPause.setImageResource(R.drawable.ic_pause_black_24dp);
                     break;
                 }
+
                 case R.id.btnPrevious: {
                     yTplayerService.playerPrevious();
                     btnPlayPause.setImageResource(R.drawable.ic_pause_black_24dp);
@@ -591,39 +496,11 @@ public class MainActivity extends AppCompatActivity
         youtubePlayerLaunched = false;
     }
 
-    void checkPermission() {
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-
-            // Should we show an explanation?
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    Manifest.permission.READ_CONTACTS)) {
-
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-
-            } else {
-
-                // No explanation needed, we can request the permission.
-
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        MY_PERMISSIONS_REQUEST_READWRITE_EXTERNAL_STORAGE);
-                // MY_PERMISSIONS_REQUEST_READWRITE_EXTERNAL_STORAGE is an
-                // app-defined int constant. The callback method gets the
-                // result of the request.
-            }
-        }
-    }
-
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
         switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_READWRITE_EXTERNAL_STORAGE: {
+            case Constants.MY_PERMISSIONS_REQUEST_READWRITE_EXTERNAL_STORAGE: {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -754,13 +631,11 @@ public class MainActivity extends AppCompatActivity
     protected void onNewIntent(Intent intent) {
         int ostId = intent.getIntExtra(getString(R.string.label_ost_of_the_day), -1);
 
-
         if (ostId != -1) {
             initiatePlayer(db.getAllOsts(), ostId);
         }else{
             addOstLink(intent);
         }
-
         super.onNewIntent(intent);
     }
 

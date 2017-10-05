@@ -1,9 +1,16 @@
 package com.odd.ostrinov2
 
+import android.Manifest
 import android.app.DownloadManager
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Environment
+import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat
+import android.widget.Toast
 
 import java.io.File
 import java.util.ArrayList
@@ -65,5 +72,44 @@ internal object UtilMeths {
     fun downloadThumbnail(url: String, context: Context) {
         val saveName = urlToId(url)
         downloadFile(context, "http://img.youtube.com/vi/$saveName/2.jpg", saveName)
+    }
+
+    fun chooseFileImport(mainActivity: MainActivity) {
+        val intent: Intent
+        if (Build.VERSION.SDK_INT < 19) {
+            intent = Intent()
+            intent.action = Intent.ACTION_GET_CONTENT
+            intent.type = "text/plain"
+            mainActivity.startActivityForResult(intent, 1)
+
+        } else {
+            intent = Intent(Intent.ACTION_GET_CONTENT)
+            intent.type = "text/plain"
+            intent.addCategory(Intent.CATEGORY_OPENABLE)
+            try {
+                mainActivity.startActivityForResult(
+                        Intent.createChooser(intent, "Select a File to Upload"),
+                        1)
+            } catch (ex: android.content.ActivityNotFoundException) {
+                // Potentially direct the user to the Market with a Dialog
+                Toast.makeText(mainActivity, "Please install a File Manager.", Toast.LENGTH_SHORT).show()
+            }
+
+        }
+    }
+
+    fun chooseFileExport(mainActivity: MainActivity) {
+        val intent: Intent
+        if (Build.VERSION.SDK_INT < 19) {
+            intent = Intent()
+            intent.action = Intent.ACTION_GET_CONTENT
+            intent.type = "text/plain"
+            mainActivity.startActivityForResult(intent, 2)
+        } else {
+            intent = Intent()
+            intent.action = Intent.ACTION_CREATE_DOCUMENT
+            intent.type = "text/plain"
+            mainActivity.startActivityForResult(intent, 2)
+        }
     }
 }
