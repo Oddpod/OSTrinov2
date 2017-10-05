@@ -8,16 +8,12 @@ import android.util.Log
 import android.content.Context
 import android.graphics.Color
 import android.graphics.PixelFormat
-import android.os.Environment
-import android.support.v4.app.NotificationCompat
 import android.view.*
 import android.widget.*
 import com.google.android.youtube.player.YouTubeInitializationResult
 import com.google.android.youtube.player.YouTubePlayer
 import com.google.android.youtube.player.YouTubePlayerSupportFragment
 import com.odd.ostrinov2.Listeners.PlayerListener
-import com.squareup.picasso.Picasso
-import java.io.File
 import android.app.KeyguardManager
 import android.content.IntentFilter
 import com.google.android.youtube.player.YouTubePlayer.*
@@ -41,10 +37,9 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
     private var outsideActivity: Boolean = false
     private var playerExpanded: Boolean = false
     lateinit private var mainActivity: MainActivity
-    lateinit var views: RemoteViews
-    lateinit var bigViews: RemoteViews
     lateinit var yTPlayerFrag: YouTubePlayerSupportFragment
     private var userPaused: Boolean = false
+    private lateinit var playerNotification: PlayerNotificationService
 
     private val smallWindowParams = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
@@ -84,7 +79,7 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
         return binder
     }
 
-    private val NOT_LOG_TAG = "NotificationService"
+    private val NOT_LOG_TAG = "YTplayerService"
     lateinit var yPlayer: YouTubePlayer
 
     override fun onInitializationSuccess(provider: YouTubePlayer.Provider?, player: YouTubePlayer?, wasRestored: Boolean) {
@@ -105,6 +100,9 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
             yPlayer.setOnFullscreenListener(this)
             yPlayer.addFullscreenControlFlag(FULLSCREEN_FLAG_CUSTOM_LAYOUT)
             mainActivity.seekBar.setOnSeekBarChangeListener(this)
+
+            playerNotification = PlayerNotificationService(this)
+            playerNotification.updateNotInfo(queueHandler.getCurrPlayingOst())
         }
     }
 
@@ -164,93 +162,12 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
             rl.removeView(floatingPlayer)
             wm.removeView(rl)
             yPlayer.release()
-            mainActivity.doUnbindService()
             mainActivity.youtubePlayerStopped()
-            mNotifyMgr.cancel(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE)
+            mainActivity.doUnbindService()
+            playerNotification.stopNotService()
             //stopSelf()
         }
         return Service.START_NOT_STICKY
-    }
-
-    lateinit var status: NotificationCompat.Builder
-    lateinit var mNotifyMgr: NotificationManager
-
-    fun showNotification() {
-        // Using RemoteViews to bind custom layouts into Notification
-        views = RemoteViews(packageName,
-                R.layout.status_bar)
-        bigViews = RemoteViews(packageName,
-                R.layout.status_bar_expanded)
-
-        // showing default album image
-        views.setViewVisibility(R.id.status_bar_icon, View.VISIBLE)
-        views.setViewVisibility(R.id.status_bar_album_art, View.GONE)
-
-        val notificationIntent = Intent(this, MainActivity::class.java)
-        notificationIntent.action = Constants.MAIN_ACTION
-        notificationIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        val pendingIntent = PendingIntent.getActivity(this, 0,
-                notificationIntent, 0)
-
-        val previousIntent = Intent(this, YTplayerService::class.java)
-        previousIntent.action = Constants.PREV_ACTION
-        val ppreviousIntent = PendingIntent.getService(this, 0,
-                previousIntent, 0)
-
-        val playIntent = Intent(this, YTplayerService::class.java)
-        playIntent.action = Constants.PLAY_ACTION
-        val pplayIntent = PendingIntent.getService(this, 0,
-                playIntent, 0)
-
-        val nextIntent = Intent(this, YTplayerService::class.java)
-        nextIntent.action = Constants.NEXT_ACTION
-        val pnextIntent = PendingIntent.getService(this, 0,
-                nextIntent, 0)
-
-        val expandIntent = Intent(this, YTplayerService::class.java)
-        expandIntent.action = Constants.EXPANDMINIMIZE_PLAYER
-        val pExpandIntent = PendingIntent.getService(this, 0, expandIntent, 0)
-        bigViews.setOnClickPendingIntent(R.id.status_bar_maximize, pExpandIntent)
-
-        val closeIntent = Intent(this, YTplayerService::class.java)
-        closeIntent.action = Constants.STOPFOREGROUND_ACTION
-        val pcloseIntent = PendingIntent.getService(this, 0,
-                closeIntent, 0)
-
-        views.setOnClickPendingIntent(R.id.status_bar_play, pplayIntent)
-        bigViews.setOnClickPendingIntent(R.id.status_bar_play, pplayIntent)
-
-        views.setOnClickPendingIntent(R.id.status_bar_next, pnextIntent)
-        bigViews.setOnClickPendingIntent(R.id.status_bar_next, pnextIntent)
-
-        views.setOnClickPendingIntent(R.id.status_bar_prev, ppreviousIntent)
-        bigViews.setOnClickPendingIntent(R.id.status_bar_prev, ppreviousIntent)
-
-        views.setOnClickPendingIntent(R.id.status_bar_collapse, pcloseIntent)
-        bigViews.setOnClickPendingIntent(R.id.status_bar_collapse, pcloseIntent)
-
-        views.setImageViewResource(R.id.status_bar_play,
-                R.drawable.ic_pause_black_24dp)
-        bigViews.setImageViewResource(R.id.status_bar_play,
-                R.drawable.ic_pause_black_24dp)
-
-        views.setTextViewText(R.id.status_bar_track_name, "Song Title")
-        bigViews.setTextViewText(R.id.status_bar_track_name, "Song Title")
-
-        views.setTextViewText(R.id.status_bar_artist_name, "Artist Name")
-        bigViews.setTextViewText(R.id.status_bar_artist_name, "Artist Name")
-
-        bigViews.setTextViewText(R.id.status_bar_album_name, "Album Name")
-
-        mNotifyMgr = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-
-        status = NotificationCompat.Builder(this)
-                .setCustomContentView(views)
-                .setCustomBigContentView(bigViews)
-                .setSmallIcon(R.drawable.ic_stat_name)
-                .setContentIntent(pendingIntent)
-        mNotifyMgr.notify(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, status.build())
-        //startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, status)
     }
 
     fun startQueue(ostList: List<Ost>, startIndex: Int, shuffle: Boolean,
@@ -259,13 +176,12 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
         yTPlayerFrag = youTubePlayerFragment
         yTPlayerFrag.retainInstance = true
         yTPlayerFrag.initialize(Constants.API_TOKEN, this)
-        updateNotInfo()
     }
 
     fun initiateQueue(ostList: List<Ost>, startIndex: Int, shuffle: Boolean) {
         queueHandler.initiateQueue(ostList, startIndex, shuffle)
         yPlayer.loadVideo(queueHandler.currentlyPlaying)
-        updateNotInfo()
+        playerNotification.updateNotInfo(queueHandler.getCurrPlayingOst())
     }
 
     fun refresh() {
@@ -276,25 +192,6 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
         } else {
             yPlayer.loadVideo(queueHandler.currentlyPlaying, stoppedTime)
         }
-    }
-
-    private fun updateNotInfo() {
-        val ost: Ost = queueHandler.getCurrPlayingOst()
-        val tnFile = File(Environment.getExternalStorageDirectory().toString()
-                + "/OSTthumbnails/" + UtilMeths.urlToId(ost.url) + ".jpg")
-        Picasso.with(this).load(tnFile).into(bigViews, R.id.status_bar_album_art,
-                Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, status.build())
-        views.setTextViewText(R.id.status_bar_track_name, ost.title)
-        bigViews.setTextViewText(R.id.status_bar_track_name, ost.title)
-
-        views.setTextViewText(R.id.status_bar_artist_name, ost.show)
-        bigViews.setTextViewText(R.id.status_bar_artist_name, ost.show)
-
-        bigViews.setTextViewText(R.id.status_bar_album_name, ost.tags)
-
-        status.setCustomContentView(views)
-        status.setCustomBigContentView(bigViews)
-        mNotifyMgr.notify(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, status.build())
     }
 
     fun launchFloater(floatingPlayer: FrameLayout, activity: MainActivity) {
@@ -398,7 +295,7 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
     fun playerNext() {
         if(queueHandler.hasNext()){
             yPlayer.loadVideo(queueHandler.next()!!)
-            updateNotInfo()
+            playerNotification.updateNotInfo(queueHandler.getCurrPlayingOst())
         }
         else
             yPlayer.pause()
@@ -406,7 +303,7 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
 
     fun playerPrevious() {
         yPlayer.loadVideo(queueHandler.previous()!!)
-        updateNotInfo()
+        playerNotification.updateNotInfo(queueHandler.getCurrPlayingOst())
     }
 
     override fun onAdStarted() {
@@ -443,11 +340,12 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
     }
 
     override fun onPlaying() {
-        Picasso.with(this).load(R.drawable.ic_pause_black_24dp).into(bigViews,
+        /*Picasso.with(this).load(R.drawable.ic_pause_black_24dp).into(bigViews,
                 R.id.status_bar_play, Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, status.build())
         Picasso.with(this).load(R.drawable.ic_pause_black_24dp).into(views,
-                R.id.status_bar_play, Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, status.build())
+                R.id.status_bar_play, Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, status.build())*/
         playing = true
+        playerNotification.updateNotButtons(playing)
         mainActivity.pausePlay()
     }
 
@@ -455,11 +353,12 @@ class YTplayerService : Service(), YouTubePlayer.OnInitializedListener,
     }
 
     override fun onPaused() {
-        Picasso.with(this).load(R.drawable.ic_play_arrow_black_24dp).into(bigViews,
+        /*Picasso.with(this).load(R.drawable.ic_play_arrow_black_24dp).into(bigViews,
                 R.id.status_bar_play, Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, status.build())
         Picasso.with(this).load(R.drawable.ic_play_arrow_black_24dp).into(views,
-                R.id.status_bar_play, Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, status.build())
+                R.id.status_bar_play, Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, status.build())*/
         playing = false
+        playerNotification.updateNotButtons(playing)
         mainActivity.pausePlay()
         stoppedTime = yPlayer.currentTimeMillis
     }

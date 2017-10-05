@@ -84,19 +84,6 @@ public class MainActivity extends AppCompatActivity
         unAddedOst = null;
         rlContent = (RelativeLayout) findViewById(R.id.rlContent);
 
-        final int interval = 1000; // 1 Second
-        runnable = new Runnable() {
-            public void run() {
-                if (youtubePlayerLaunched && yTplayerService.getPlaying()) {
-                    seekBar.setProgress(yTplayerService.yPlayer.getCurrentTimeMillis());
-                }
-                handler.postDelayed(runnable, interval);
-            }
-        };
-
-        handler.postAtTime(runnable, System.currentTimeMillis() + interval);
-        handler.postDelayed(runnable, interval);
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -397,12 +384,13 @@ public class MainActivity extends AppCompatActivity
         queueAdapter.initiateQueue(ostList, startid);
 
         if (!youtubePlayerLaunched) {
+            initiateSeekbarTimer();
             rlContent.removeView(floatingPlayer);
             youtubePlayerLaunched = true;
             PlayerListener[] playerListeners = new PlayerListener[2];
             playerListeners[0] = queueAdapter;
             playerListeners[1] = listFragment.getCustomAdapter();
-            yTplayerService.showNotification();
+            //yTplayerService.showNotification();
             yTplayerService.startQueue(ostList, startid, shuffleActivated,
                     playerListeners, youTubePlayerFragment);
             yTplayerService.launchFloater(floatingPlayer, this);
@@ -494,6 +482,7 @@ public class MainActivity extends AppCompatActivity
 
     public void youtubePlayerStopped() {
         youtubePlayerLaunched = false;
+        handler.removeCallbacks(runnable);
     }
 
     @Override
@@ -645,5 +634,20 @@ public class MainActivity extends AppCompatActivity
         if(startId != -1){
             initiatePlayer(db.getAllOsts(), startId);
         }
+    }
+
+    void initiateSeekbarTimer(){
+        final int interval = 1000; // 1 Second
+        runnable = new Runnable() {
+            public void run() {
+                if (youtubePlayerLaunched && yTplayerService.getPlaying()) {
+                    seekBar.setProgress(yTplayerService.yPlayer.getCurrentTimeMillis());
+                }
+                handler.postDelayed(runnable, interval);
+            }
+        };
+
+        handler.postAtTime(runnable, System.currentTimeMillis() + interval);
+        handler.postDelayed(runnable, interval);
     }
 }
