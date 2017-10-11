@@ -1,7 +1,8 @@
-package com.odd.ostrinov2
+package com.odd.ostrinov2.tools
 
+import com.odd.ostrinov2.Ost
 import java.util.*
-import com.odd.ostrinov2.Listeners.PlayerListener
+import com.odd.ostrinov2.listeners.PlayerListener
 
 
 data class QueueHandler(var ostList: MutableList<Ost>, var startIndex : Int, var shuffle
@@ -140,7 +141,7 @@ data class QueueHandler(var ostList: MutableList<Ost>, var startIndex : Int, var
         }
     }
 
-    fun getCurrPlayingOst() : Ost{
+    fun getCurrPlayingOst() : Ost {
         return ostList.get(videoIds.indexOf(currentlyPlaying))
     }
 

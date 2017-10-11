@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.os.Environment;
 import android.widget.RemoteViews;
 
+import com.odd.ostrinov2.tools.DBHandler;
+import com.odd.ostrinov2.tools.UtilMeths;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;

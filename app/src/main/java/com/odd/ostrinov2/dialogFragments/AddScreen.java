@@ -1,4 +1,4 @@
-package com.odd.ostrinov2;
+package com.odd.ostrinov2.dialogFragments;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -13,6 +13,10 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.MultiAutoCompleteTextView;
+
+import com.odd.ostrinov2.Ost;
+import com.odd.ostrinov2.R;
+import com.odd.ostrinov2.tools.DBHandler;
 
 import java.util.List;
 
@@ -30,7 +34,7 @@ public class AddScreen extends DialogFragment {
     private boolean showDeleteButton = false;
 
 
-    interface AddScreenListener {
+    public interface AddScreenListener {
 
         void onSaveButtonClick(DialogFragment dialog);
 
@@ -54,7 +58,6 @@ public class AddScreen extends DialogFragment {
         DBHandler dbHandler = new DBHandler(getActivity());
         List<String> showList = dbHandler.getAllShows();
         List<String> tagList = dbHandler.getAllTags();
-        String[] tagsArray = dbHandler.getAllTagsArray();
 
         builder = new AlertDialog.Builder(getActivity());
 
@@ -79,8 +82,6 @@ public class AddScreen extends DialogFragment {
                 }
             });
         }
-        ArrayAdapter<String> tagsArrayAdapter = new ArrayAdapter<>(getContext(),
-                android.R.layout.simple_spinner_dropdown_item, tagsArray);
 
         ArrayAdapter<String> tagsAdapter = new ArrayAdapter<>(getActivity(),
                 android.R.layout.simple_spinner_dropdown_item, tagList);
@@ -112,6 +113,17 @@ public class AddScreen extends DialogFragment {
         show = ost.getShow();
         tags = ost.getTags();
         url = ost.getUrl();
+    }
+
+    public void setEditing(Ost ost, boolean editing){
+        setText(ost);
+        if(editing){
+            buttonText = "Save";
+            showDeleteButton(true);
+        } else{
+            buttonText = "Add";
+            showDeleteButton(false);
+        }
     }
 
     public void setButtonText(String text) {

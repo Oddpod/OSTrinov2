@@ -1,4 +1,4 @@
-package com.odd.ostrinov2
+package com.odd.ostrinov2.dialogFragments
 
 import android.app.AlertDialog
 import android.app.Dialog
@@ -8,18 +8,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 
-import kotlinx.android.synthetic.main.ultra_timer.*
 import android.os.CountDownTimer
+import com.odd.ostrinov2.R
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.ultra_timer.view.*
-import java.text.DateFormat
-import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
-import javax.xml.datatype.DatatypeConstants.MINUTES
-import javax.xml.datatype.DatatypeConstants.HOURS
-import javax.xml.datatype.DatatypeConstants.DAYS
-import kotlin.concurrent.timer
 
 
 class CountDown : DialogFragment() {

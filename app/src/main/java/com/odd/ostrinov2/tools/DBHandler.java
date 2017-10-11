@@ -1,4 +1,4 @@
-package com.odd.ostrinov2;
+package com.odd.ostrinov2.tools;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -6,17 +6,19 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import com.odd.ostrinov2.Ost;
+
 import java.util.ArrayList;
 import java.util.List;
 
-class DBHandler extends SQLiteOpenHelper {
+public class DBHandler extends SQLiteOpenHelper {
 
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "ostdb", OST_TABLE = "ostTable", SHOW_TABLE = "showTable", TAGS_TABLE = "tagsTable";
 
     private static final String KEY_ID = "ostid", KEY_TITLE = "title", KEY_SHOW = "show", KEY_TAGS = "tags", KEY_URL = "url", KEY_TAG = "tag";
 
-    DBHandler(Context context){
+    public DBHandler(Context context){
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         ostList = new ArrayList<>();
         showList = new ArrayList<>();
@@ -58,7 +60,7 @@ class DBHandler extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    void addNewOst(Ost newOst){
+    public void addNewOst(Ost newOst){
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
@@ -100,7 +102,7 @@ class DBHandler extends SQLiteOpenHelper {
         System.out.println("added new tag");
     }
 
-     void emptyTable(){
+     public void emptyTable(){
         //Truncate does not work in sqllite
         SQLiteDatabase db = this.getWritableDatabase();
         String TRUNCATE_TABLE = "DROP TABLE " + OST_TABLE + "";
@@ -115,14 +117,14 @@ class DBHandler extends SQLiteOpenHelper {
         db.execSQL(CREATE_OST_TABLE);
     }
 
-    boolean deleteOst(int delID){
+    public boolean deleteOst(int delID){
 
         SQLiteDatabase db = this.getWritableDatabase();
 
         return db.delete(OST_TABLE, KEY_ID + "=" + delID, null) > 0;
     }
 
-    List<Ost> getAllOsts(){
+    public List<Ost> getAllOsts(){
 
         List<Ost> ostList = new ArrayList<>();
 
@@ -148,7 +150,7 @@ class DBHandler extends SQLiteOpenHelper {
         return ostList;
     }
 
-    Ost getOst(int id){
+    public Ost getOst(int id){
 
         Ost ost = new Ost();
         String selectQuery = "SELECT " + KEY_ID + "," + KEY_TITLE + "," + KEY_SHOW + "," + KEY_TAGS + "," + KEY_URL
@@ -170,7 +172,7 @@ class DBHandler extends SQLiteOpenHelper {
         return ost;
     }
 
-    void updateOst(Ost ost){
+    public void updateOst(Ost ost){
 
         ContentValues values = new ContentValues();
 
@@ -187,7 +189,7 @@ class DBHandler extends SQLiteOpenHelper {
         db.replace(OST_TABLE, null, values);
     }
 
-    boolean checkiIfOstInDB(Ost ost) {
+    public boolean checkiIfOstInDB(Ost ost) {
         ostList = getAllOsts();
         String ostString = ost.toString().toLowerCase();
         for (Ost ostFromDB : ostList){
@@ -222,7 +224,7 @@ class DBHandler extends SQLiteOpenHelper {
     }
 
 
-    List<String> getAllShows(){
+    public List<String> getAllShows(){
 
         List<String> showList = new ArrayList<>();
 
@@ -241,7 +243,7 @@ class DBHandler extends SQLiteOpenHelper {
         return showList;
     }
 
-    List<String> getAllTags(){
+    public List<String> getAllTags(){
         List<String> tagsTable = new ArrayList<>();
 
         String selectQuery = "SELECT * FROM " + TAGS_TABLE;
@@ -272,27 +274,7 @@ class DBHandler extends SQLiteOpenHelper {
         }
     }
 
-    String[] getAllTagsArray(){
-
-        String selectQuery = "SELECT * FROM " + TAGS_TABLE;
-
-        SQLiteDatabase db = this.getWritableDatabase();
-        Cursor cursor = db.rawQuery(selectQuery, null);
-        String[] tagsTable = new String[1000];
-        int i = 0;
-        if(cursor.moveToFirst()){
-            do{
-                System.out.println(cursor.getString(1) + i);
-                tagsTable[i] = cursor.getString(1);
-                i++;
-
-            }while(cursor.moveToNext());
-        }
-        cursor.close();
-        return tagsTable;
-    }
-
-    void reCreateTagsAndShowTables(){
+    public void reCreateTagsAndShowTables(){
         SQLiteDatabase db = this.getWritableDatabase();
         String TRUNCATE_TABLE = "DROP TABLE " + TAGS_TABLE + "";
         db.execSQL(TRUNCATE_TABLE);

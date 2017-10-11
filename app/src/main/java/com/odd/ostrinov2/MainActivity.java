@@ -45,8 +45,15 @@ import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.google.android.youtube.player.YouTubePlayerSupportFragment;
-import com.odd.ostrinov2.Listeners.PlayerListener;
-import com.odd.ostrinov2.Listeners.QueueListener;
+import com.odd.ostrinov2.dialogFragments.AddScreen;
+import com.odd.ostrinov2.dialogFragments.FunnyJunk;
+import com.odd.ostrinov2.listeners.PlayerListener;
+import com.odd.ostrinov2.listeners.QueueListener;
+import com.odd.ostrinov2.tools.DBHandler;
+import com.odd.ostrinov2.tools.IOHandler;
+import com.odd.ostrinov2.tools.PermissionHandlerKt;
+import com.odd.ostrinov2.tools.UtilMeths;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -65,11 +72,11 @@ public class MainActivity extends AppCompatActivity
     private QueueAdapter queueAdapter;
     private FragmentManager manager;
     private YouTubePlayerSupportFragment youTubePlayerFragment;
-    private Boolean mIsBound = false, shuffleActivated = false, repeat = false;
+    private Boolean mIsBound = false, shuffleActivated = false, repeat = false, playing = false;
     private YTplayerService yTplayerService;
     private ImageButton btnRepeat, btnPlayPause, btnShuffle;
-    SeekBar seekBar;
-    private Runnable runnable;
+    private SeekBar seekBar;
+    private Runnable seekbarUpdater;
     private Handler handler = new Handler();
     private SearchView searchView = null;
     private SearchView.OnQueryTextListener queryTextListener;
@@ -219,7 +226,7 @@ public class MainActivity extends AppCompatActivity
                 if (!youtubePlayerLaunched) {
                     Toast.makeText(this, "Nothing is playing", Toast.LENGTH_SHORT).show();
                 } else {
-                    Ost ost = yTplayerService.queueHandler.getCurrPlayingOst();
+                    Ost ost = yTplayerService.getQueueHandler().getCurrPlayingOst();
                     ClipData clip = ClipData.newPlainText("Ost url", ost.getUrl());
                     clipboard.setPrimaryClip(clip);
                     Toast.makeText(this, "Link Copied to Clipboard", Toast.LENGTH_SHORT).show();
@@ -367,7 +374,7 @@ public class MainActivity extends AppCompatActivity
         if (!youtubePlayerLaunched) {
             Toast.makeText(this, "You have to play something first", Toast.LENGTH_SHORT).show();
         } else {
-            yTplayerService.queueHandler.addToQueue(ost);
+            yTplayerService.getQueueHandler().addToQueue(ost);
             queueAdapter.addToQueue(ost);
         }
 
@@ -390,10 +397,9 @@ public class MainActivity extends AppCompatActivity
             PlayerListener[] playerListeners = new PlayerListener[2];
             playerListeners[0] = queueAdapter;
             playerListeners[1] = listFragment.getCustomAdapter();
-            //yTplayerService.showNotification();
+            yTplayerService.launchFloater(floatingPlayer, this);
             yTplayerService.startQueue(ostList, startid, shuffleActivated,
                     playerListeners, youTubePlayerFragment);
-            yTplayerService.launchFloater(floatingPlayer, this);
         } else {
             yTplayerService.initiateQueue(ostList, startid, shuffleActivated);
         }
@@ -408,11 +414,11 @@ public class MainActivity extends AppCompatActivity
             switch (id) {
                 case R.id.btnRepeat:{
                     if(!repeat){
-                        yTplayerService.setRepeat(true);
+                        yTplayerService.setRepeating(true);
                         btnRepeat.setColorFilter(Color.GREEN, PorterDuff.Mode.SRC_ATOP);
                         repeat = true;
                     }else{
-                        yTplayerService.setRepeat(false);
+                        yTplayerService.setRepeating(false);
                         btnRepeat.clearColorFilter();
                         repeat = false;
                     }
@@ -426,13 +432,11 @@ public class MainActivity extends AppCompatActivity
 
                 case R.id.btnNext: {
                     yTplayerService.playerNext();
-                    btnPlayPause.setImageResource(R.drawable.ic_pause_black_24dp);
                     break;
                 }
 
                 case R.id.btnPrevious: {
                     yTplayerService.playerPrevious();
-                    btnPlayPause.setImageResource(R.drawable.ic_pause_black_24dp);
                     break;
                 }
 
@@ -451,8 +455,9 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    public void pausePlay() {
-        if (yTplayerService.getPlaying()) {
+    public void pausePlay(Boolean playing) {
+        this.playing = playing;
+        if (playing) {
             btnPlayPause.setImageResource(R.drawable.ic_pause_black_24dp);
         } else {
             btnPlayPause.setImageResource(R.drawable.ic_play_arrow_black_24dp);
@@ -461,12 +466,14 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void shuffleOn() {
-        yTplayerService.queueHandler.shuffleOn();
+        yTplayerService.getQueueHandler().shuffleOn();
+        shuffleActivated = true;
         btnShuffle.setColorFilter(Color.GREEN, PorterDuff.Mode.SRC_ATOP);
     }
 
     public void shuffleOff() {
-        yTplayerService.queueHandler.shuffleOff();
+        shuffleActivated = false;
+        yTplayerService.getQueueHandler().shuffleOff();
         btnShuffle.clearColorFilter();
     }
 
@@ -477,12 +484,12 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void removeFromQueue(String url) {
-        yTplayerService.queueHandler.removeFromQueue(url);
+        yTplayerService.getQueueHandler().removeFromQueue(url);
     }
 
     public void youtubePlayerStopped() {
         youtubePlayerLaunched = false;
-        handler.removeCallbacks(runnable);
+        handler.removeCallbacks(seekbarUpdater);
     }
 
     @Override
@@ -565,7 +572,7 @@ public class MainActivity extends AppCompatActivity
         //mCallbackText.setText("Binding.");
     }
 
-    void doUnbindService() {
+    public void doUnbindService() {
         if (mIsBound) {
             // If we have received the service, and hence registered with
             // it, then now is the time to unregister.
@@ -593,13 +600,18 @@ public class MainActivity extends AppCompatActivity
         if (youtubePlayerLaunched) {
             yTplayerService.refresh();
         }
+        handler.removeCallbacks(seekbarUpdater);
+        doUnbindService();
     }
 
     @Override
     public void onStart() {
         super.onStart();
+        doBindService();
         if (!youtubePlayerLaunched) {
             initPlayerService();
+        } else{
+            handler.postDelayed(seekbarUpdater, 1000);
         }
     }
 
@@ -638,16 +650,24 @@ public class MainActivity extends AppCompatActivity
 
     void initiateSeekbarTimer(){
         final int interval = 1000; // 1 Second
-        runnable = new Runnable() {
+        seekbarUpdater = new Runnable() {
             public void run() {
-                if (youtubePlayerLaunched && yTplayerService.getPlaying()) {
-                    seekBar.setProgress(yTplayerService.yPlayer.getCurrentTimeMillis());
+                if (youtubePlayerLaunched && playing) {
+                    seekBar.setProgress(yTplayerService.getPlayer().getCurrentTimeMillis());
                 }
-                handler.postDelayed(runnable, interval);
+                handler.postDelayed(seekbarUpdater, interval);
             }
         };
 
-        handler.postAtTime(runnable, System.currentTimeMillis() + interval);
-        handler.postDelayed(runnable, interval);
+        handler.postAtTime(seekbarUpdater, System.currentTimeMillis() + interval);
+        handler.postDelayed(seekbarUpdater, interval);
+    }
+
+    public void setSeekBarProgress(int progress){
+        seekBar.setProgress(progress);
+    }
+
+    public SeekBar getSeekBar(){
+        return seekBar;
     }
 }

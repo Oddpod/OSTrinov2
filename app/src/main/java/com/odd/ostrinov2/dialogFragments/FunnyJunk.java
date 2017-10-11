@@ -1,4 +1,4 @@
-package com.odd.ostrinov2;
+package com.odd.ostrinov2.dialogFragments;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
+
+import com.odd.ostrinov2.R;
 
 public class FunnyJunk extends DialogFragment{
 
@@ -17,7 +19,7 @@ public class FunnyJunk extends DialogFragment{
 
     public FunnyJunk(){}
 
-        interface YareYareListener {
+        public interface YareYareListener {
         }
 
         YareYareListener yareyareListener;

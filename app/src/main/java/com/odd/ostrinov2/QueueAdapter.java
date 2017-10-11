@@ -11,8 +11,9 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.odd.ostrinov2.Listeners.PlayerListener;
-import com.odd.ostrinov2.Listeners.QueueListener;
+import com.odd.ostrinov2.listeners.PlayerListener;
+import com.odd.ostrinov2.listeners.QueueListener;
+import com.odd.ostrinov2.tools.UtilMeths;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;

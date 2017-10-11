@@ -1,4 +1,6 @@
-package com.odd.ostrinov2;
+package com.odd.ostrinov2.tools;
+
+import com.odd.ostrinov2.Ost;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

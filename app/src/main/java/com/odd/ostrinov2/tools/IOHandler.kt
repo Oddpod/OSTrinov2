@@ -1,7 +1,8 @@
-package com.odd.ostrinov2
+package com.odd.ostrinov2.tools
 
 import android.content.Context
 import android.net.Uri
+import com.odd.ostrinov2.Ost
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader

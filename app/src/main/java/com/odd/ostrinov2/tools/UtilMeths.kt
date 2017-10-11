@@ -1,16 +1,14 @@
-package com.odd.ostrinov2
+package com.odd.ostrinov2.tools
 
-import android.Manifest
 import android.app.DownloadManager
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
-import android.support.v4.app.ActivityCompat
-import android.support.v4.content.ContextCompat
 import android.widget.Toast
+import com.odd.ostrinov2.MainActivity
+import com.odd.ostrinov2.Ost
 
 import java.io.File
 import java.util.ArrayList
@@ -52,7 +50,7 @@ internal object UtilMeths {
         }
         val saveString = direct.absolutePath + "/" + saveName + ".jpg"
         println(saveString)
-        if (!UtilMeths.doesFileExist(saveString)) {
+        if (!doesFileExist(saveString)) {
             val mgr = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
 
             val downloadUri = Uri.parse(uRl)

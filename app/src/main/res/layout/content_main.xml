@@ -56,12 +56,12 @@
                 android:id="@+id/btnPause"
                 android:layout_width="@dimen/player_button_size_large"
                 android:layout_height="match_parent"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
                 android:background="?android:attr/selectableItemBackground"
                 android:contentDescription="@string/cd_next"
                 android:scaleType="fitXY"
-                app:srcCompat="@drawable/ic_pause_black_24dp"
-                android:layout_alignParentTop="true"
-                android:layout_centerHorizontal="true" />
+                app:srcCompat="@drawable/ic_play_arrow_black_24dp" />
 
             <ImageButton
                 android:id="@+id/btnNext"

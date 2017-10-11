@@ -8,6 +8,7 @@ import android.os.Environment
 import android.support.v4.app.NotificationCompat
 import android.view.View
 import android.widget.RemoteViews
+import com.odd.ostrinov2.tools.UtilMeths
 import com.squareup.picasso.Picasso
 import java.io.File
 
@@ -17,7 +18,6 @@ class PlayerNotificationService(private val service: YTplayerService) {
     private val packageName = service.packageName
     private var status: NotificationCompat.Builder
     private var mNotifyMgr: NotificationManager
-
 
     init{
         // Using RemoteViews to bind custom layouts into Notification
@@ -60,6 +60,9 @@ class PlayerNotificationService(private val service: YTplayerService) {
         closeIntent.action = Constants.STOPFOREGROUND_ACTION
         val pcloseIntent = PendingIntent.getService(service, 0,
                 closeIntent, 0)
+
+        views.setOnClickPendingIntent(R.id.status_bar_album_art, pendingIntent)
+        bigViews.setOnClickPendingIntent(R.id.status_bar_album_art, pendingIntent)
 
         views.setOnClickPendingIntent(R.id.status_bar_play, pplayIntent)
         bigViews.setOnClickPendingIntent(R.id.status_bar_play, pplayIntent)

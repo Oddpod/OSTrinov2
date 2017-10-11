@@ -2,18 +2,16 @@ package com.odd.ostrinov2;
 
 public class Ost {
     private String title, show, tags, url;
-    private boolean isPlaying;
 
     private int id;
 
-    Ost(){}
+    public Ost(){}
 
-    Ost(String title, String show, String tags, String url) {
+    public Ost(String title, String show, String tags, String url) {
         this.title = title;
         this.show = show;
         this.tags = tags;
         this.url = url;
-        isPlaying = false;
     }
 
     @Override
@@ -24,11 +22,11 @@ public class Ost {
                 '}';
     }
 
-    String getTags() {
+    public String getTags() {
         return tags;
     }
 
-    void setTags(String tags) {
+    public void setTags(String tags) {
         this.tags = tags;
     }
 
@@ -55,22 +53,14 @@ public class Ost {
         this.id = id;
     }
 
-    String getUrl() {
+    public String getUrl() {
         return url;
     }
-    void setUrl(String url){
+    public void setUrl(String url){
         this.url = url;
     }
 
     String getSearchString(){
         return title + ", " + show + ", " + tags;
-    }
-
-    public void setPlaying(boolean playing) {
-        isPlaying = playing;
-    }
-
-    public boolean isPlaying(){
-        return  isPlaying;
     }
 }

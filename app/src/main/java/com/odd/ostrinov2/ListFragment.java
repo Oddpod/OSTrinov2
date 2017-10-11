@@ -13,7 +13,12 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TableLayout;
 import android.widget.TextView;
-import com.odd.ostrinov2.Listeners.QueueListener;
+
+import com.odd.ostrinov2.dialogFragments.AddScreen;
+import com.odd.ostrinov2.dialogFragments.FunnyJunk;
+import com.odd.ostrinov2.listeners.QueueListener;
+import com.odd.ostrinov2.tools.DBHandler;
+import com.odd.ostrinov2.tools.UtilMeths;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -82,10 +87,8 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
                 Ost ost = getCurrDispOstList().get(position);
                 dialog.show(getFragmentManager(), TAG);
                 ostReplaceId = ost.getId();
-                dialog.setText(ost);
-                dialog.setButtonText("Save");
-                dialog.showDeleteButton(true);
                 editedOst = true;
+                dialog.setEditing(ost, editedOst);
                 return true;
             }
         });
@@ -179,8 +182,7 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
                 currOstList = getCurrDispOstList();
                 int rndPos = rnd.nextInt(currOstList.size());
                 mainActivity.initiatePlayer(currOstList, rndPos);
-                customAdapter.updateCurrentlyPlaying(rndPos);
-                refreshListView();
+                customAdapter.updateCurrentlyPlaying(currOstList.get(rndPos).getId());
                 mainActivity.shuffleOn();
                 shuffleActivated = true;
                 previouslyPlayed = rndPos;
@@ -257,13 +259,11 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
 
     public void addOst(){
         if(unAddedOst != null){
-            dialog.setText(unAddedOst);
+            dialog.setEditing(unAddedOst, false);
         }else {
-            dialog.setText(new Ost("", "", "", ""));
+            dialog.setEditing(new Ost("", "", "", ""), false);
         }
-        dialog.showDeleteButton(false);
         dialog.show(getFragmentManager(), TAG);
-        dialog.setButtonText("Add");
         editedOst = false;
     }
 
