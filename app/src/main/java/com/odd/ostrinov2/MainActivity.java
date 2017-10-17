@@ -49,10 +49,12 @@ import com.odd.ostrinov2.dialogFragments.AddScreen;
 import com.odd.ostrinov2.dialogFragments.FunnyJunk;
 import com.odd.ostrinov2.listeners.PlayerListener;
 import com.odd.ostrinov2.listeners.QueueListener;
+import com.odd.ostrinov2.tools.AppWidgetAlarm;
 import com.odd.ostrinov2.tools.DBHandler;
 import com.odd.ostrinov2.tools.IOHandler;
 import com.odd.ostrinov2.tools.PermissionHandlerKt;
 import com.odd.ostrinov2.tools.UtilMeths;
+import com.odd.ostrinov2.tools.YoutubeShare;
 
 import java.io.IOException;
 import java.util.List;
@@ -140,6 +142,7 @@ public class MainActivity extends AppCompatActivity
         } else {
             addOstLink(intent);
         }
+        new AppWidgetAlarm(this).startAlarm();
     }
 
     @Override
@@ -501,18 +504,12 @@ public class MainActivity extends AppCompatActivity
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
 
                 } else {
 
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
                 }
                 return;
             }
-            // other 'case' lines to check for other
-            // permissions this app might request
         }
     }
 
@@ -619,14 +616,16 @@ public class MainActivity extends AppCompatActivity
         if (intent.getAction().equals(Intent.ACTION_SEND) && intent.getType().equals("text/plain")){
             Bundle extras = intent.getExtras();
             String link = extras.getString(Intent.EXTRA_TEXT);
+            new YoutubeShare(this, link, db);
             Toast.makeText(this, "Added " + link + "to your OST library", Toast.LENGTH_SHORT).show();
-            db.addNewOst(new Ost("", "", "",  link));
             UtilMeths.INSTANCE.downloadThumbnail(link, this);
             Intent result = new Intent("com.example.RESULT_ACTION", Uri.parse("content://result_uri"));
             setResult(Activity.RESULT_OK, result);
             finish();
         }
     }
+
+
 
     @Override
     protected void onNewIntent(Intent intent) {

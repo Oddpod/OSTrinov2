@@ -266,6 +266,9 @@ public class DBHandler extends SQLiteOpenHelper {
             addNewShow(show);
         }
 
+        if(tagString.endsWith(",")){
+            tagString = tagString.substring(0, tagString.length() -1);
+        }
         String [] tags = tagString.split(", ");
         for(String tag : tags) {
             if (!checkIfTagInDB(tag)) {

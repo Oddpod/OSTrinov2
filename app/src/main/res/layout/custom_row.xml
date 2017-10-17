@@ -20,13 +20,13 @@
         android:id="@+id/tvTitle"
         android:layout_width="50dp"
         android:layout_height="20dp"
-        android:layout_above="@+id/tvShow"
         android:layout_alignParentTop="true"
         android:layout_toEndOf="@id/ivThumbnail"
         android:layout_toLeftOf="@+id/tvTags"
         android:layout_toRightOf="@+id/ivThumbnail"
         android:layout_toStartOf="@+id/tvTags"
         android:paddingTop="1dp"
+        android:background="@null"
         android:textAppearance="@style/TextAppearance.AppCompat.Widget.TextView.SpinnerItem" />
 
     <TextView
@@ -39,6 +39,7 @@
         android:layout_toRightOf="@+id/ivThumbnail"
         android:layout_toStartOf="@+id/tvTags"
         android:paddingBottom="1dp"
+        android:background="@null"
         android:textAppearance="@android:style/TextAppearance.Holo.Small" />
 
     <TextView
@@ -49,6 +50,7 @@
         android:layout_toLeftOf="@+id/btnOptions"
         android:layout_toStartOf="@id/btnOptions"
         android:padding="1dp"
+        android:background="@null"
         android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 
     <ImageButton
