@@ -232,7 +232,7 @@ class YTplayerService : Service(),
             Toast.makeText(applicationContext, "Expanding player", Toast.LENGTH_SHORT).show()
             rl.updateViewLayout(floatingPlayer, largePParams)
             wm.updateViewLayout(rl, largeWindowParams)
-            yPlayer.setShowFullscreenButton(true)
+            yPlayerHandler.yPlayer.setShowFullscreenButton(true)
             playerExpanded = true
         } else {
             Toast.makeText(applicationContext, "Minimizing player", Toast.LENGTH_SHORT).show()
