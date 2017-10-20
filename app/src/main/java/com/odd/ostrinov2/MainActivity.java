@@ -49,7 +49,6 @@ import com.odd.ostrinov2.dialogFragments.AddScreen;
 import com.odd.ostrinov2.dialogFragments.FunnyJunk;
 import com.odd.ostrinov2.listeners.PlayerListener;
 import com.odd.ostrinov2.listeners.QueueListener;
-import com.odd.ostrinov2.tools.AppWidgetAlarm;
 import com.odd.ostrinov2.tools.DBHandler;
 import com.odd.ostrinov2.tools.IOHandler;
 import com.odd.ostrinov2.tools.PermissionHandlerKt;
@@ -142,7 +141,7 @@ public class MainActivity extends AppCompatActivity
         } else {
             addOstLink(intent);
         }
-        new AppWidgetAlarm(this).startAlarm();
+        //new AppWidgetAlarm(this).startAlarm();
     }
 
     @Override
