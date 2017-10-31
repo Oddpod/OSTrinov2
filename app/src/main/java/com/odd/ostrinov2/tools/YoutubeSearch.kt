@@ -13,14 +13,29 @@ import org.json.JSONObject
 class YoutubeSearch(private val activity: Activity, private val searchQuery: String, var searchFragment: SearchFragment) {
 
     var resultList: MutableList<SearchAdapter.VideoObject>
+    var moreResults: MutableList<SearchAdapter.VideoObject>
+    var nextPagetoken: String
     val maxResults: Int
+    var loadNextPage: Boolean
 
     init {
-        maxResults = 10
+        maxResults = 20
         resultList = ArrayList()
+        moreResults = ArrayList()
+        loadNextPage = false
+        nextPagetoken = ""
         val youtubeGetInfo = YoutubeGetInfo()
         youtubeGetInfo.execute()
     }
+
+    fun getMoreSearchResults(){
+        loadNextPage = true
+        moreResults.clear()
+        val youtubeGetInfo = YoutubeGetInfo()
+        youtubeGetInfo.execute()
+    }
+
+
 
     private inner class YoutubeGetInfo : AsyncTask<Void, Void, Void>() {
 
@@ -30,20 +45,52 @@ class YoutubeSearch(private val activity: Activity, private val searchQuery: Str
 
         override fun doInBackground(vararg arg0: Void): Void? {
             val sh = HttpHandler()
-            val queryString = "https://www.googleapis.com/youtube/v3/search?q=" +
-                    searchQuery + "&type=video&part=snippet&maxResults=" + maxResults
-            val jsonUrl = ( queryString + "&key=" + Constants.YDATA_API_TOKEN)
+            if(loadNextPage){
+                println("Loading more results")
+                val queryString = "https://www.googleapis.com/youtube/v3/search?q=" +
+                        "$searchQuery&type=video&pagetoken=$nextPagetoken&part=" +
+                        "snippet&maxResults=$maxResults"
+                val jsonUrl = ( queryString + "&key=" + Constants.YDATA_API_TOKEN)
+                val jsonStr = sh.makeServiceCall(jsonUrl)
+                parseResponseItems(jsonStr)
+                return null
+            }else{
+                println("Searching first time")
+                val queryString = "https://www.googleapis.com/youtube/v3/search?q=" +
+                        "$searchQuery&type=video&part=snippet&maxResults=$maxResults"
+                val jsonUrl = ( queryString + "&key=" + Constants.YDATA_API_TOKEN)
 
-            // Making a request to url and getting response
-            val jsonStr = sh.makeServiceCall(jsonUrl)
+                // Making a request to url and getting response
+                val jsonStr = sh.makeServiceCall(jsonUrl)
 
-            //  Log.e(TAG, "Response from url: " + jsonStr);
+                //  Log.e(TAG, "Response from url: " + jsonStr);
+                parseResponseItems(jsonStr)
 
+                return null
+            }
+
+        }
+
+        override fun onPostExecute(result: Void?) {
+            super.onPostExecute(result)
+            if(loadNextPage){
+                searchFragment.addSearchResults(moreResults)
+                loadNextPage = false
+            } else{
+                println(resultList.toString())
+                searchFragment.updateSearchresult(resultList)
+            }
+
+
+        }
+
+        fun parseResponseItems(jsonStr : String?){
             if (jsonStr != null) {
-                var i = 0
                 try {
                     val jsonObj = JSONObject(jsonStr)
+                    nextPagetoken = jsonObj.getString("nextPageToken")
                     val items : JSONArray = jsonObj.getJSONArray("items")
+                    var i = 0
                     while (i < maxResults) {
                         val jsonItemObject = items.getJSONObject(i)
                         val videoId = jsonItemObject.getJSONObject("id").
@@ -52,7 +99,11 @@ class YoutubeSearch(private val activity: Activity, private val searchQuery: Str
                         val videoObject = SearchAdapter.VideoObject(snippet.
                                 getString("title"), snippet.getString("channelTitle"),
                                 UtilMeths.getThumbNailUrl(videoId), UtilMeths.idToUrl(videoId))
-                        resultList.add(videoObject)
+                        if(loadNextPage){
+                            moreResults.add(videoObject)
+                        } else{
+                            resultList.add(videoObject)
+                        }
                         i++
                     }
 
@@ -74,15 +125,7 @@ class YoutubeSearch(private val activity: Activity, private val searchQuery: Str
                             Toast.LENGTH_LONG)
                             .show()
                 }
-
             }
-
-            return null
-        }
-
-        override fun onPostExecute(result: Void?) {
-            super.onPostExecute(result)
-            searchFragment.updateSearchresult(resultList)
         }
     }
 }

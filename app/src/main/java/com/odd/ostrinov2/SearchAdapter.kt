@@ -67,4 +67,9 @@ public class SearchAdapter(private var searchResults: MutableList<VideoObject>,
 
     }
 
+    fun extendVideoObjects(videoObjects: MutableList<SearchAdapter.VideoObject>){
+        searchResults.addAll(videoObjects)
+        notifyDataSetChanged()
+    }
+
 }
