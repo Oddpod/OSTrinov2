@@ -126,10 +126,6 @@ public class AddScreen extends DialogFragment {
         }
     }
 
-    public void setButtonText(String text) {
-        buttonText = text;
-    }
-
     public String[] getFieldData() {
         String[] fields = new String[4];
         fields[0] = edTitle.getText().toString();

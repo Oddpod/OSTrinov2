@@ -1,6 +1,6 @@
 package com.odd.ostrinov2;
 
-public class Ost {
+public class Ost{
     private String title, show, tags, url;
 
     private int id;

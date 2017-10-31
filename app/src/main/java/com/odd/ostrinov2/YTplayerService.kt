@@ -29,7 +29,6 @@ class YTplayerService : Service(),
     lateinit private var rl: RelativeLayout
     lateinit private var floatingPlayer: FrameLayout
     private var floatingPlayerInitialized: Boolean = false
-    var repeat: Boolean = false
     private var outsideActivity: Boolean = false
     private var playerExpanded: Boolean = false
     lateinit private var mainActivity: MainActivity
@@ -271,7 +270,7 @@ class YTplayerService : Service(),
 
                 if (strAction == Intent.ACTION_SCREEN_OFF || strAction == Intent.ACTION_SCREEN_ON) {
                     if (myKM.inKeyguardRestrictedInputMode()) {
-                        yPlayer.pause()
+                        yPlayerHandler.yPlayer.pause()
                         println("Screen off " + "LOCKED")
                     } else {
                         println("Screen off " + "UNLOCKED")

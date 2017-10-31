@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.AsyncTask;
 import android.widget.Toast;
 
+import com.odd.ostrinov2.Constants;
 import com.odd.ostrinov2.Ost;
 
 import org.json.JSONException;
@@ -38,7 +39,8 @@ public class YoutubeShare {
         @Override
         protected Void doInBackground(final Void... arg0) {
             HttpHandler sh = new HttpHandler();
-            String jsonUrl = "https://www.youtube.com/oembed?format=json&amp;url=" + url;
+            String jsonUrl = "https://www.youtube.com/oembed?format=json&amp;url=" + url
+                    + "&key=" + Constants.YDATA_API_TOKEN;
 
             // Making a request to url and getting response
             String jsonStr = sh.makeServiceCall(jsonUrl);

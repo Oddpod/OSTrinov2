@@ -19,11 +19,6 @@ public class FunnyJunk extends DialogFragment{
 
     public FunnyJunk(){}
 
-        public interface YareYareListener {
-        }
-
-        YareYareListener yareyareListener;
-
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState){
 

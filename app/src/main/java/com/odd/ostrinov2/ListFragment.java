@@ -15,7 +15,6 @@ import android.widget.TableLayout;
 import android.widget.TextView;
 
 import com.odd.ostrinov2.dialogFragments.AddScreen;
-import com.odd.ostrinov2.dialogFragments.FunnyJunk;
 import com.odd.ostrinov2.listeners.QueueListener;
 import com.odd.ostrinov2.tools.DBHandler;
 import com.odd.ostrinov2.tools.UtilMeths;
@@ -27,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class ListFragment extends Fragment implements FunnyJunk.YareYareListener,
+public class ListFragment extends Fragment implements
         View.OnClickListener, QueueListener {
 
     boolean editedOst;
@@ -153,8 +152,6 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                String filterString = s.toString();
-                customAdapter.filter(filterString);
             }
 
             @Override
@@ -165,9 +162,11 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
             }
         };
         filter.addTextChangedListener(textWatcher);
+        ImageButton btnSort = (ImageButton) rootView.findViewById(R.id.btnSort);
         ImageButton btnShufflePlay = (ImageButton) rootView.findViewById(R.id.btnShufflePlay);
         ImageButton btnAdd = (ImageButton)  rootView.findViewById(R.id.btnAdd);
 
+        btnSort.setOnClickListener(this);
         btnShufflePlay.setOnClickListener(this);
         btnAdd.setOnClickListener(this);
 
@@ -191,6 +190,11 @@ public class ListFragment extends Fragment implements FunnyJunk.YareYareListener
 
             case R.id.btnAdd:{
                 addOst();
+                break;
+            }
+
+            case R.id.btnSort:{
+                customAdapter.sort(1);
                 break;
             }
         }

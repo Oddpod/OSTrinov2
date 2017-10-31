@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:background="@drawable/white"
+    android:descendantFocusability="blocksDescendants"
+    android:orientation="horizontal"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/ivThumbnail"
+        android:layout_width="120dp"
+        android:layout_height="@dimen/search_row_height"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:contentDescription="@android:string/yes" />
+
+    <TextView
+        android:id="@+id/tvVideoTitle"
+        android:layout_width="50dp"
+        android:layout_height="60dp"
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@id/ivThumbnail"
+        android:layout_toLeftOf="@+id/btnOptions"
+        android:layout_toRightOf="@+id/ivThumbnail"
+        android:layout_toStartOf="@+id/btnOptions"
+        android:background="@null"
+        android:ellipsize="end"
+        android:paddingTop="5dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Widget.TextView.SpinnerItem" />
+
+    <TextView
+        android:id="@+id/tvViews"
+        android:layout_width="50dp"
+        android:layout_height="30dp"
+        android:layout_alignBottom="@+id/ivThumbnail"
+        android:layout_toEndOf="@id/ivThumbnail"
+        android:layout_toLeftOf="@+id/btnOptions"
+        android:layout_toRightOf="@+id/ivThumbnail"
+        android:layout_toStartOf="@+id/btnOptions"
+        android:background="@null"
+        android:paddingBottom="1dp"
+        android:textAppearance="@android:style/TextAppearance.Holo.Small" />
+
+    <ImageButton
+        android:id="@+id/btnOptions"
+        android:layout_width="50dp"
+        android:layout_height="@dimen/search_row_height"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:background="?attr/selectableItemBackground"
+        android:contentDescription="@android:string/ok"
+        app:srcCompat="@drawable/ic_playlist_add_black_24dp" />
+
+</RelativeLayout>

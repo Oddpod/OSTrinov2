@@ -22,11 +22,15 @@ internal object UtilMeths {
             lineArray = lineArray[0].split("=".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         } else if (url.contains("be/")) {
             lineArray = url.split("be/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-        } else {
+        } else if(url.contains("=")){
             lineArray = url.split("=".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        } else{
+            return url
         }
         return lineArray[1]
     }
+
+    fun idToUrl(videoId: String): String = "https://www.youtube.com/watch?v=$videoId"
 
     fun getVideoIdList(ostList: List<Ost>): MutableList<String> {
         val queueList = ArrayList<String>()
@@ -71,6 +75,8 @@ internal object UtilMeths {
         val saveName = urlToId(url)
         downloadFile(context, "http://img.youtube.com/vi/$saveName/2.jpg", saveName)
     }
+
+    fun getThumbNailUrl(videoId: String): String = "https://i.ytimg.com/vi/$videoId/mqdefault.jpg"
 
     fun chooseFileImport(mainActivity: MainActivity) {
         val intent: Intent

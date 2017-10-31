@@ -18,13 +18,16 @@ import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
 class CustomAdapter extends BaseAdapter implements PlayerListener {
 
-    private List<Ost> filteredOstList, ostList;
+    private List<Ost> filteredOstList, ostList, unsortedOstList;
     private Context mContext;
+    private int prevSortedMode;
     private LayoutInflater mInflater;
     private QueueListener queueListener;
     private int nowPlaying = -1;
@@ -35,6 +38,8 @@ class CustomAdapter extends BaseAdapter implements PlayerListener {
         ostList.addAll(ostListin);
         filteredOstList = new ArrayList<>();
         filteredOstList.addAll(ostListin);
+        unsortedOstList = new ArrayList<>();
+        unsortedOstList.addAll(ostListin);
         queueListener = ql;
         mInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
@@ -60,12 +65,7 @@ class CustomAdapter extends BaseAdapter implements PlayerListener {
         ViewHolder holder;
         if( convertView == null){
             convertView = mInflater.inflate(R.layout.custom_row, null);
-            holder = new ViewHolder();
-            holder.tvTitle = (TextView) convertView.findViewById(R.id.tvTitle);
-            holder.tvShow = (TextView) convertView.findViewById(R.id.tvShow);
-            holder.tvTags = (TextView) convertView.findViewById(R.id.tvTags);
-            holder.thumbnail = (ImageView) convertView.findViewById(R.id.ivThumbnail);
-            holder.btnOptions = (ImageButton) convertView.findViewById(R.id.btnOptions);
+            holder = new ViewHolder(convertView);
             convertView.setTag(holder);
         } else{
             holder = (ViewHolder) convertView.getTag();
@@ -100,6 +100,14 @@ class CustomAdapter extends BaseAdapter implements PlayerListener {
         TextView tvTitle, tvShow, tvTags;
         ImageButton btnOptions;
         ImageView thumbnail;
+
+        ViewHolder(View convertView){
+            tvTitle = (TextView) convertView.findViewById(R.id.tvTitle);
+            tvShow = (TextView) convertView.findViewById(R.id.tvShow);
+            tvTags = (TextView) convertView.findViewById(R.id.tvTags);
+            thumbnail = (ImageView) convertView.findViewById(R.id.ivThumbnail);
+            btnOptions = (ImageButton) convertView.findViewById(R.id.btnOptions);
+        }
     }
 
     @Override
@@ -142,6 +150,34 @@ class CustomAdapter extends BaseAdapter implements PlayerListener {
                 }
             }
         }
+        notifyDataSetChanged();
+    }
+
+    void sort(int mode){
+        if(prevSortedMode == mode){
+            unSort();
+            return;
+        }
+        prevSortedMode = mode;
+        switch (mode){
+            case 1:{
+                if (ostList.size() > 0 ){
+                    Collections.sort(ostList, new Comparator<Ost>() {
+                        @Override
+                        public int compare(final Ost ost1, final Ost ost2) {
+                            return ost1.getTitle().compareTo(ost2.getTitle());
+                        }
+                    });
+                }
+                notifyDataSetChanged();
+                break;
+            }
+        }
+    }
+
+    private void unSort(){
+        ostList.clear();
+        ostList.addAll(unsortedOstList);
         notifyDataSetChanged();
     }
 

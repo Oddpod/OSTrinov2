@@ -8,6 +8,7 @@
     <dimen name="text_size_medium">16sp</dimen>
     <dimen name="text_size_large">18sp</dimen>
 
+    <dimen name="search_row_height">90dp</dimen>
 
     <dimen name="player_button_size_large">40dp</dimen>
 

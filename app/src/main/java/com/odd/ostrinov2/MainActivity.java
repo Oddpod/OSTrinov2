@@ -59,7 +59,7 @@ import java.io.IOException;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
-        implements AddScreen.AddScreenListener, FunnyJunk.YareYareListener,
+        implements AddScreen.AddScreenListener,
         DialogInterface.OnDismissListener, QueueListener,
         View.OnClickListener {
 
@@ -67,6 +67,7 @@ public class MainActivity extends AppCompatActivity
     private Ost unAddedOst;
     private int backPress;
     private ListFragment listFragment;
+    private SearchFragment searchFragment;
     private FrameLayout floatingPlayer;
     private RelativeLayout rlContent;
     private boolean youtubePlayerLaunched = false, about = false, addCanceled = true, ostFromWidget = false;
@@ -130,6 +131,9 @@ public class MainActivity extends AppCompatActivity
                 .replace(R.id.rlListContainer, listFragment)
                 .addToBackStack("list")
                 .commit();
+
+        searchFragment = new SearchFragment();
+        searchFragment.setMainActivity(this);
         youTubePlayerFragment = YouTubePlayerSupportFragment.newInstance();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.add(R.id.floatingPlayer, youTubePlayerFragment).commit();
@@ -141,7 +145,6 @@ public class MainActivity extends AppCompatActivity
         } else {
             addOstLink(intent);
         }
-        //new AppWidgetAlarm(this).startAlarm();
     }
 
     @Override
@@ -166,9 +169,9 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
-        MenuItem searchItem = menu.findItem(R.id.action_search);
+        final MenuItem searchItem = menu.findItem(R.id.action_search);
 
-        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        final SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
 
         if (searchItem != null) {
             searchView = (SearchView) searchItem.getActionView();
@@ -181,8 +184,8 @@ public class MainActivity extends AppCompatActivity
                 @Override
                 public boolean onQueryTextChange(String newText) {
                     Log.i("onQueryTextChange", newText);
-                    listFragment.getCustomAdapter().filter(newText);
-                    MemesKt.launchMeme(newText, MainActivity.this);
+                    /*listFragment.getCustomAdapter().filter(newText);
+                    MemesKt.launchMeme(newText, MainActivity.this);*/
 
                     return true;
                 }
@@ -190,6 +193,12 @@ public class MainActivity extends AppCompatActivity
                 @Override
                 public boolean onQueryTextSubmit(String query) {
                     Log.i("onQueryTextSubmit", query);
+                    manager.beginTransaction()
+                            .replace(R.id.rlListContainer, searchFragment)
+                            .addToBackStack("search")
+                            .commit();
+                    searchFragment.performSearch(query);
+                    about = true;
 
                     return true;
                 }
@@ -522,10 +531,6 @@ public class MainActivity extends AppCompatActivity
         } else {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
-        /*DisplayMetrics displayMetrics = new DisplayMetrics();
-        this.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int height = displayMetrics.heightPixels;
-        int width = displayMetrics.widthPixels;*/
     }
 
     void startService() {

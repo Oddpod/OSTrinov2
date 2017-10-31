@@ -51,6 +51,7 @@
     <string name="app_version_number">1.0</string>
     <string name="menu_settings">Settings</string>
 
+    <string name="cd_sort">Sort button</string>
     <string name="cd_divider">Divider view</string>
     <string name="cd_thumbnail">Thumbnail</string>
     <string name="cd_collapse">Close Player</string>
