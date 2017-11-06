@@ -60,10 +60,7 @@
     <string name="cd_play">Play and pause</string>
     <string name="cd_next">Skip forwards</string>
 
-    <string-array name="spinner_options">
-        <item>     </item> <!-- Spinner is dumb-->
-        <item id="addToQueue">Add to queue</item>
-        <item id="addToLibrary">Add to Library</item>
-        <item>Array Item Three</item>
-    </string-array>
+    <!-- Options on resulting video in search -->
+    <string name="chooser_add_to_queue">Add to Queue</string>
+    <string name="chooser_add_to_library">Add to Library</string>
 </resources>

@@ -116,4 +116,34 @@ internal object UtilMeths {
             mainActivity.startActivityForResult(intent, 2)
         }
     }
+
+    fun parseAddOst(title: String, db: DBHandler, url: String) {
+        var titleUC = title
+        val shows = db.allShows
+        val titleLC = titleUC.toLowerCase()
+        var ostShow = ""
+        for (show in shows) {
+            println("Title: $titleLC show: $show")
+            if (show.contains("(")) {
+                println("show contains (")
+                val lineArray = show.split("\\(".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+                val showOriginal = lineArray[0]
+                val showEnglish = lineArray[1].replace(")", "").trim { it <= ' ' }
+                println("show: $showOriginal showEnglish: $showEnglish")
+                if (titleLC.contains(showOriginal.toLowerCase()) || titleLC.contains(showEnglish.toLowerCase())) {
+                    println("setting to show: " + showOriginal)
+                    ostShow = showOriginal
+                    if (titleLC.contains(showOriginal.toLowerCase())) {
+                        titleUC = titleUC.replace(showOriginal, "").replace("-", "").trim { it <= ' ' }
+                    } else {
+                        titleUC = titleUC.replace(showEnglish, "").replace("-", "").trim { it <= ' ' }
+                    }
+                }
+            } else if (titleLC.contains(show.toLowerCase()) && show != "") {
+                ostShow = show
+                titleUC = titleUC.replace(show, "").replace("-", "").trim { it <= ' ' }
+            }
+        }
+        db.addNewOst(Ost(titleUC, ostShow, "", url))
+    }
 }

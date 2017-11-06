@@ -15,6 +15,8 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
+        android:paddingEnd="5dp"
+        android:paddingRight="5dp"
         android:contentDescription="@android:string/yes" />
 
     <TextView
@@ -28,8 +30,6 @@
         android:layout_toStartOf="@+id/btnOptions"
         android:background="@null"
         android:ellipsize="end"
-        android:paddingLeft="5dp"
-        android:paddingStart="5dp"
         android:paddingTop="5dp"
         android:textAppearance="@style/TextAppearance.AppCompat.Widget.TextView.SpinnerItem" />
 
@@ -44,8 +44,6 @@
         android:layout_toRightOf="@+id/ivThumbnail"
         android:background="@null"
         android:paddingBottom="5dp"
-        android:paddingLeft="5dp"
-        android:paddingStart="5dp"
         android:textAppearance="@android:style/TextAppearance.Holo.Small" />
 
     <ImageButton
@@ -55,19 +53,7 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
+        android:paddingTop="5dp"
         android:background="?attr/selectableItemBackground"
         app:srcCompat="@drawable/ic_more_vert_black_24dp" />
-
-    <Spinner
-        android:id="@+id/spinOptions"
-        android:layout_width="@dimen/player_button_size_large"
-        android:layout_height="40dp"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="12dp"
-        android:entries="@array/spinner_options"
-        android:spinnerMode="dropdown"
-        android:visibility="gone" />
-
 </RelativeLayout>
