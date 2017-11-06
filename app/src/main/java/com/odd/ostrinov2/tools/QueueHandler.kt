@@ -13,7 +13,6 @@ data class QueueHandler(var ostList: MutableList<Ost>, var startIndex : Int, var
     private var queue:Stack<String>
     private var videoIds: MutableList<String> = UtilMeths.getVideoIdList(ostList)
     var currentlyPlaying : String
-    private var playbackPosMilliSec: Int = 0
     private var currPlayingIndex:Int = 0
 
     init{

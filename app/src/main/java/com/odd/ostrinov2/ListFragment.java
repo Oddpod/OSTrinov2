@@ -30,7 +30,7 @@ public class ListFragment extends Fragment implements
         View.OnClickListener, QueueListener {
 
     boolean editedOst;
-    private int ostReplaceId, previouslyPlayed;
+    private int ostReplaceId, ostReplacePos, previouslyPlayed;
     private List<Ost> allOsts, currOstList;
     private DBHandler dbHandler;
     private String TAG = "OstInfo";
@@ -69,10 +69,10 @@ public class ListFragment extends Fragment implements
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 currOstList = getCurrDispOstList();
                 mainActivity.initiatePlayer(currOstList, position);
-                if(previouslyPlayed >= 0 && previouslyPlayed < currOstList.size()){
+                /*if(previouslyPlayed >= 0 && previouslyPlayed < currOstList.size()){
                     getViewByPosition(previouslyPlayed, lvOst).setBackgroundResource(R.drawable.white);
                 }
-                view.setBackgroundResource(R.drawable.greenrect);
+                view.setBackgroundResource(R.drawable.greenrect);*/
                 int updatePos = customAdapter.getItem(position).getId();
                 customAdapter.updateCurrentlyPlaying(updatePos);
                 previouslyPlayed = customAdapter.getNowPlaying();
@@ -82,10 +82,10 @@ public class ListFragment extends Fragment implements
         lvOst.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                currOstList = getCurrDispOstList();
-                Ost ost = getCurrDispOstList().get(position);
+                Ost ost = customAdapter.getItem(position);
                 dialog.show(getFragmentManager(), TAG);
                 ostReplaceId = ost.getId();
+                ostReplacePos = position;
                 editedOst = true;
                 dialog.setEditing(ost, editedOst);
                 return true;
@@ -204,11 +204,19 @@ public class ListFragment extends Fragment implements
         return ostReplaceId;
     }
 
+    public int getOstReplacePos(){
+        return  ostReplacePos;
+    }
+
     public boolean isEditedOst(){
         return editedOst;
     }
 
     public List<Ost> getCurrDispOstList(){
+        return customAdapter.getOstList();
+    }
+
+    public List<Ost> getCurrDispOstListFromSearch(){
         if(filterText.equals("")){
             return allOsts;
         }
@@ -249,8 +257,7 @@ public class ListFragment extends Fragment implements
     public void refreshListView(){
         editedOst = false;
         allOsts = dbHandler.getAllOsts();
-        currOstList = getCurrDispOstList();
-        customAdapter.updateList(currOstList, allOsts);
+        customAdapter.updateList(allOsts);
     }
 
     public AddScreen getDialog(){

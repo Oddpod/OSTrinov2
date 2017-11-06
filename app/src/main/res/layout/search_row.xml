@@ -28,9 +28,9 @@
         android:layout_toStartOf="@+id/btnOptions"
         android:background="@null"
         android:ellipsize="end"
-        android:paddingTop="5dp"
         android:paddingLeft="5dp"
         android:paddingStart="5dp"
+        android:paddingTop="5dp"
         android:textAppearance="@style/TextAppearance.AppCompat.Widget.TextView.SpinnerItem" />
 
     <TextView
@@ -38,10 +38,10 @@
         android:layout_width="50dp"
         android:layout_height="30dp"
         android:layout_alignBottom="@+id/ivThumbnail"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
         android:layout_toEndOf="@id/ivThumbnail"
-        android:layout_toLeftOf="@+id/btnOptions"
         android:layout_toRightOf="@+id/ivThumbnail"
-        android:layout_toStartOf="@+id/btnOptions"
         android:background="@null"
         android:paddingBottom="5dp"
         android:paddingLeft="5dp"
@@ -50,13 +50,24 @@
 
     <ImageButton
         android:id="@+id/btnOptions"
-        android:layout_width="50dp"
-        android:layout_height="@dimen/search_row_height"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
         android:background="?attr/selectableItemBackground"
-        android:contentDescription="@android:string/ok"
-        app:srcCompat="@drawable/ic_playlist_add_black_24dp" />
+        app:srcCompat="@drawable/ic_more_vert_black_24dp" />
+
+    <Spinner
+        android:id="@+id/spinOptions"
+        android:layout_width="@dimen/player_button_size_large"
+        android:layout_height="40dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="12dp"
+        android:entries="@array/spinner_options"
+        android:spinnerMode="dropdown"
+        android:visibility="gone" />
 
 </RelativeLayout>

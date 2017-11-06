@@ -52,9 +52,7 @@ public class YoutubeShare {
                     JSONObject jsonObj = new JSONObject(jsonStr);
                     System.out.println(jsonObj);
                     youtube = jsonObj.get("title").toString();
-                    String[] titlenShow = parseOst(youtube);
-
-                    db.addNewOst(new Ost(titlenShow[0], titlenShow[1], "",  url));
+                    parseOst(youtube, db);
 
                 } catch (final JSONException e) {
                     // Log.e(TAG, "Json parsing error: " + e.getMessage());
@@ -91,7 +89,7 @@ public class YoutubeShare {
             super.onPostExecute(result);
         }
 
-        private String[] parseOst(String title){
+        private void parseOst(String title, DBHandler db){
             List<String> shows = db.getAllShows();
             String lcTitle = youtube.toLowerCase();
             String ostShow = "";
@@ -119,7 +117,7 @@ public class YoutubeShare {
                     title = title.replace(show, "").replace("-", "").trim();
                 }
             }
-            return new String[]{title, ostShow};
+            db.addNewOst(new Ost(title, ostShow, "",  url));
         }
     }
 }

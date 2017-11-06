@@ -75,7 +75,6 @@ class YTplayerService : Service(),
     }
 
     private val NOT_LOG_TAG = "YTplayerService"
-    lateinit var yPlayer: YouTubePlayer
 
     override fun onFullscreen(p0: Boolean) {
 
@@ -237,7 +236,7 @@ class YTplayerService : Service(),
             Toast.makeText(applicationContext, "Minimizing player", Toast.LENGTH_SHORT).show()
             rl.updateViewLayout(floatingPlayer, smallPParams)
             wm.updateViewLayout(rl, smallWindowParams)
-            yPlayer.setShowFullscreenButton(false)
+            yPlayerHandler.yPlayer.setShowFullscreenButton(false)
             playerExpanded = false
         }
     }

@@ -59,4 +59,11 @@
     <string name="cd_previous">Skip backwards</string>
     <string name="cd_play">Play and pause</string>
     <string name="cd_next">Skip forwards</string>
+
+    <string-array name="spinner_options">
+        <item>     </item> <!-- Spinner is dumb-->
+        <item id="addToQueue">Add to queue</item>
+        <item id="addToLibrary">Add to Library</item>
+        <item>Array Item Three</item>
+    </string-array>
 </resources>

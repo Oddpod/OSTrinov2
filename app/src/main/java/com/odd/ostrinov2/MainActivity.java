@@ -46,7 +46,6 @@ import android.widget.Toast;
 
 import com.google.android.youtube.player.YouTubePlayerSupportFragment;
 import com.odd.ostrinov2.dialogFragments.AddScreen;
-import com.odd.ostrinov2.dialogFragments.FunnyJunk;
 import com.odd.ostrinov2.listeners.PlayerListener;
 import com.odd.ostrinov2.listeners.QueueListener;
 import com.odd.ostrinov2.tools.DBHandler;
@@ -331,6 +330,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onDeleteButtonClick(DialogFragment dialog) {
         db.deleteOst(listFragment.getOstReplaceId());
+        listFragment.getCustomAdapter().removeOst(listFragment.getOstReplacePos());
         listFragment.refreshListView();
         Toast.makeText(this, "Deleted " + listFragment.getDialog().getFieldData()[0], Toast.LENGTH_SHORT).show();
     }

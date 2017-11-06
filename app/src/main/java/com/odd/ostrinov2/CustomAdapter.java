@@ -27,10 +27,11 @@ class CustomAdapter extends BaseAdapter implements PlayerListener {
 
     private List<Ost> filteredOstList, ostList, unsortedOstList;
     private Context mContext;
-    private int prevSortedMode;
+    private int prevSortedMode = 0;
     private LayoutInflater mInflater;
     private QueueListener queueListener;
     private int nowPlaying = -1;
+    private String lastQuery = "";
 
     CustomAdapter(Context context, List<Ost> ostListin, QueueListener ql) {
         mContext = context;
@@ -116,10 +117,6 @@ class CustomAdapter extends BaseAdapter implements PlayerListener {
         notifyDataSetChanged();
     }
 
-    public void setCurrentlyPlaying(int newId){
-        nowPlaying = newId;
-    }
-
     @Override
     public void next() {
     }
@@ -138,14 +135,14 @@ class CustomAdapter extends BaseAdapter implements PlayerListener {
     }
 
     void filter(String charText) {
-        charText = charText.toLowerCase(Locale.getDefault());
+        lastQuery = charText.toLowerCase(Locale.getDefault());
         ostList.clear();
-        if (charText.length() == 0) {
+        if (lastQuery.length() == 0) {
             ostList.addAll(filteredOstList);
         }
         else{
             for (Ost ost : filteredOstList) {
-                if (ost.getSearchString().toLowerCase(Locale.getDefault()).contains(charText)) {
+                if (ost.getSearchString().toLowerCase(Locale.getDefault()).contains(lastQuery)) {
                     ostList.add(ost);
                 }
             }
@@ -156,9 +153,17 @@ class CustomAdapter extends BaseAdapter implements PlayerListener {
     void sort(int mode){
         if(prevSortedMode == mode){
             unSort();
+            prevSortedMode = 0;
             return;
         }
         prevSortedMode = mode;
+        sortInternal(mode);
+    }
+
+    private void sortInternal(int mode){
+        if(mode == 0){
+            return;
+        }
         switch (mode){
             case 1:{
                 if (ostList.size() > 0 ){
@@ -172,24 +177,35 @@ class CustomAdapter extends BaseAdapter implements PlayerListener {
                 notifyDataSetChanged();
                 break;
             }
+            default: break;
         }
     }
 
     private void unSort(){
         ostList.clear();
-        ostList.addAll(unsortedOstList);
-        notifyDataSetChanged();
+        filter(lastQuery);
     }
 
-    void updateList(List<Ost> currDispList, List<Ost> updatedList){
-        ostList = currDispList;
+    void updateList(List<Ost> updatedList){
         filteredOstList.clear();
         filteredOstList.addAll(updatedList);
-        notifyDataSetChanged();
+        filter(lastQuery);
+        sortInternal(prevSortedMode);
     }
 
     int getNowPlaying(){
         return nowPlaying;
+    }
+
+    List<Ost> getOstList(){
+        return ostList;
+    }
+    public void removeOst(int pos){
+        Ost item = getItem(pos);
+        System.out.println(item.toString());
+        ostList.remove(pos);
+        filteredOstList.remove(item);
+        unsortedOstList.remove(item);
     }
 
     Ost getNowPlayingOst(){
