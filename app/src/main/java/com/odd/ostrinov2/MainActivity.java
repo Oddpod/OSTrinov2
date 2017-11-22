@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -19,6 +20,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -62,6 +65,7 @@ public class MainActivity extends AppCompatActivity
         DialogInterface.OnDismissListener, QueueListener,
         View.OnClickListener {
 
+    private final static String PREFS_NAME= "Saved queue";
     private DBHandler db;
     private Ost unAddedOst;
     private int backPress;
@@ -73,7 +77,8 @@ public class MainActivity extends AppCompatActivity
     private QueueAdapter queueAdapter;
     private FragmentManager manager;
     private YouTubePlayerSupportFragment youTubePlayerFragment;
-    private Boolean mIsBound = false, shuffleActivated = false, repeat = false, playing = false;
+    private Boolean mIsBound = false, shuffleActivated = false, repeat = false, playing = false,
+                lastSessionLoaded = false;
     private YTplayerService yTplayerService;
     private ImageButton btnRepeat, btnPlayPause, btnShuffle;
     private SeekBar seekBar;
@@ -81,6 +86,8 @@ public class MainActivity extends AppCompatActivity
     private Handler handler = new Handler();
     private SearchView searchView = null;
     private SearchView.OnQueryTextListener queryTextListener;
+    private BottomNavigationView bottomNavigationView;
+    private String lastQuery = "Pokemon Ost";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,7 +109,7 @@ public class MainActivity extends AppCompatActivity
 
         btnRepeat = (ImageButton) findViewById(R.id.btnRepeat);
         btnPlayPause = (ImageButton) findViewById(R.id.btnPause);
-        ImageButton btnNext = (ImageButton) findViewById(R.id.btnNext);
+        final ImageButton btnNext = (ImageButton) findViewById(R.id.btnNext);
         ImageButton btnPrevious = (ImageButton) findViewById(R.id.btnPrevious);
         btnShuffle = (ImageButton) findViewById(R.id.btnShuffle);
 
@@ -125,6 +132,7 @@ public class MainActivity extends AppCompatActivity
 
         listFragment = new ListFragment();
         listFragment.setMainAcitivity(this);
+        listFragment.setRetainInstance(true);
         manager = getSupportFragmentManager();
         manager.beginTransaction()
                 .replace(R.id.rlListContainer, listFragment)
@@ -136,6 +144,36 @@ public class MainActivity extends AppCompatActivity
         youTubePlayerFragment = YouTubePlayerSupportFragment.newInstance();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.add(R.id.floatingPlayer, youTubePlayerFragment).commit();
+
+        bottomNavigationView = (BottomNavigationView) findViewById(R.id.bnvFrag);
+        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                item.setChecked(true);
+                switch (item.getItemId()){
+                    case R.id.nav_barLibrary:{
+                        manager.beginTransaction()
+                                .replace(R.id.rlListContainer, listFragment)
+                                .addToBackStack("list")
+                                .commit();
+                        break;
+                    }
+                    case R.id.nav_barSearch:{
+                        manager.beginTransaction()
+                                .replace(R.id.rlListContainer, searchFragment)
+                                .addToBackStack("search")
+                                .commit();
+                        searchFragment.performSearch(lastQuery);
+                        break;
+                    }
+                    case R.id.nav_barPlaylist:{
+                        Toast.makeText(getApplicationContext(), "Not implemented", Toast.LENGTH_SHORT).show();
+                        break;
+                    }
+                }
+                return false;
+            }
+        });
 
         Intent intent = getIntent();
         int ostId = intent.getIntExtra(getString(R.string.label_ost_of_the_day), -1);
@@ -198,6 +236,7 @@ public class MainActivity extends AppCompatActivity
                             .commit();
                     searchFragment.performSearch(query);
                     about = true;
+                    lastQuery = query;
 
                     return true;
                 }
@@ -550,6 +589,8 @@ public class MainActivity extends AppCompatActivity
             yTplayerService.registerBroadcastReceiver();
             if(ostFromWidget){
                 startWidgetOst();
+            } else if(!lastSessionLoaded) {
+                loadLastSession();
             }
             // Tell the user about this for our demo.
         }
@@ -600,9 +641,15 @@ public class MainActivity extends AppCompatActivity
         super.onStop();
         if (youtubePlayerLaunched) {
             yTplayerService.refresh();
+            saveSession();
         }
         handler.removeCallbacks(seekbarUpdater);
         doUnbindService();
+    }
+
+    @Override
+    public void onPause(){
+        super.onPause();
     }
 
     @Override
@@ -620,9 +667,8 @@ public class MainActivity extends AppCompatActivity
         if (intent.getAction().equals(Intent.ACTION_SEND) && intent.getType().equals("text/plain")){
             Bundle extras = intent.getExtras();
             String link = extras.getString(Intent.EXTRA_TEXT);
-            new YoutubeShare(this, link, db);
+            new YoutubeShare(this, link);
             Toast.makeText(this, "Added " + link + "to your OST library", Toast.LENGTH_SHORT).show();
-            UtilMeths.INSTANCE.downloadThumbnail(link, this);
             Intent result = new Intent("com.example.RESULT_ACTION", Uri.parse("content://result_uri"));
             setResult(Activity.RESULT_OK, result);
             finish();
@@ -672,5 +718,36 @@ public class MainActivity extends AppCompatActivity
 
     public SeekBar getSeekBar(){
         return seekBar;
+    }
+
+    private void loadLastSession(){
+        SharedPreferences lastSessionPrefs = getSharedPreferences(PREFS_NAME, 0);
+        String queueString = lastSessionPrefs.getString("lastSession", "");
+        int lastCurr = lastSessionPrefs.getInt("lastCurrPlaying", 0);
+        if(!queueString.equals("")){
+            System.out.println(queueString);
+            List<Ost> lastQueueList = UtilMeths.INSTANCE.buildOstListFromQueue(queueString, db);
+            initiatePlayer(lastQueueList, lastCurr);
+            yTplayerService.getPlayerHandler().loadLastSession(true);
+        }
+        lastSessionLoaded = true;
+    }
+
+    private void saveSession(){
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        SharedPreferences.Editor editor = settings.edit();
+        StringBuilder stringBuilder = new StringBuilder();
+        for (Ost ost: yTplayerService.getQueueHandler().getOstList()
+                ) {
+            stringBuilder.append(ost.getId()).append(",");
+        }
+        String idString = stringBuilder.toString();
+        editor.putString("lastSession", idString);
+        editor.putInt("lastCurrPlaying", yTplayerService.getQueueHandler().getCurrPlayingIndex());
+
+        // Commit the edits!
+        Boolean success = editor.commit();
+        String successString = success.toString();
+        Log.i("Wrote session", successString);
     }
 }

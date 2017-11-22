@@ -2,16 +2,13 @@ package com.odd.ostrinov2
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.support.v7.widget.AppCompatSpinner
 import android.support.v7.widget.RecyclerView
-import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import com.squareup.picasso.Picasso
-import com.odd.ostrinov2.tools.DBHandler
 import com.odd.ostrinov2.tools.UtilMeths
 
 public class SearchAdapter(private var searchResults: MutableList<VideoObject>,
@@ -44,7 +41,7 @@ public class SearchAdapter(private var searchResults: MutableList<VideoObject>,
                     when (item?.itemId) {
                         R.id.chooser_addToQueue -> mainActivity.addToQueue(Ost(video.title, "", "",
                                 video.url))
-                        R.id.chooser_addToLibrary -> UtilMeths.parseAddOst(video.title, DBHandler(mainActivity), video.url)
+                        R.id.chooser_addToLibrary -> UtilMeths.parseAddOst(video.title, mainActivity, video.url)
                     }
                     return true
                 }
@@ -60,23 +57,6 @@ public class SearchAdapter(private var searchResults: MutableList<VideoObject>,
             mainActivity.initiatePlayer(ostList, 0)
         }
     }
-
-    inner class MySpinner(context: Context, attrs: AttributeSet) : AppCompatSpinner(context,
-            attrs) {
-        internal var listener: OnItemSelectedListener? = null
-
-        override fun setSelection(position: Int) {
-            super.setSelection(position)
-            if (listener != null)
-                listener!!.onItemSelected(null, null, position, 0)
-        }
-
-        fun setOnItemSelectedEvenIfUnchangedListener(
-                listener: OnItemSelectedListener) {
-            this.listener = listener
-        }
-    }
-
     class ObjectViewWrapper(base: View) : RecyclerView.ViewHolder(base), View.OnClickListener {
 
         var tvVideoTitle: TextView

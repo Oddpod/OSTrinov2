@@ -16,12 +16,12 @@ data class QueueHandler(var ostList: MutableList<Ost>, var startIndex : Int, var
     private var currPlayingIndex:Int = 0
 
     init{
-        played = Stack<String>()
-        preQueue = Stack<String>()
-        queue = Stack<String>()
-        currentlyPlaying = videoIds.get(startIndex)
+        played = Stack()
+        preQueue = Stack()
+        queue = Stack()
+        currentlyPlaying = videoIds[startIndex]
         for (i in ostList.indices) {
-            val videoId = videoIds.get(i)
+            val videoId = videoIds[i]
             if (i < startIndex) {
                 played.add(videoId)
             } else if (i > startIndex) {
@@ -36,10 +36,10 @@ data class QueueHandler(var ostList: MutableList<Ost>, var startIndex : Int, var
 
     fun initiateQueue(ostList: List<Ost>, startIndex: Int, shuffle: Boolean) {
         this.ostList = ostList.toMutableList()
-        videoIds = ArrayList<String>()
+        videoIds = ArrayList()
         videoIds = UtilMeths.getVideoIdList(ostList)
-        played = Stack<String>()
-        preQueue = Stack<String>()
+        played = Stack()
+        preQueue = Stack()
         currentlyPlaying = videoIds[startIndex]
         for (i in ostList.indices) {
             val videoId = videoIds[i]
@@ -56,8 +56,8 @@ data class QueueHandler(var ostList: MutableList<Ost>, var startIndex : Int, var
 
     fun shuffleOff() {
         currPlayingIndex = videoIds.indexOf(currentlyPlaying)
-        played = Stack<String>()
-        preQueue = Stack<String>()
+        played = Stack()
+        preQueue = Stack()
         for (i in videoIds.indices) {
             val videoId = videoIds[i]
             if (i < currPlayingIndex) {
@@ -140,11 +140,9 @@ data class QueueHandler(var ostList: MutableList<Ost>, var startIndex : Int, var
         }
     }
 
-    fun getCurrPlayingOst() : Ost {
-        return ostList.get(videoIds.indexOf(currentlyPlaying))
-    }
+    fun getCurrPlayingOst() : Ost = ostList.get(videoIds.indexOf(currentlyPlaying))
 
-    fun hasNext(): Boolean{
-        return (!queue.isEmpty() || !preQueue.isEmpty())
-    }
+    fun getCurrPlayingIndex(): Int = videoIds.indexOf(currentlyPlaying)
+
+    fun hasNext(): Boolean = (!queue.isEmpty() || !preQueue.isEmpty())
 }

@@ -281,7 +281,7 @@ class YTplayerService : Service(),
         applicationContext.registerReceiver(screenOnOffReceiver, theFilter)
     }
 
-    fun isScreenLocked(): Boolean{
+    private fun isScreenLocked(): Boolean{
         val myKM = applicationContext.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
         return myKM.inKeyguardRestrictedInputMode()
     }
@@ -291,4 +291,6 @@ class YTplayerService : Service(),
     }
 
     fun getPlayer() : YouTubePlayer = yPlayerHandler.yPlayer
+
+    fun getPlayerHandler() : YoutubePlayerHandler = yPlayerHandler
 }

@@ -13,10 +13,8 @@ public class YoutubeShare {
 
     private String youtube, url;
     private Activity activity;
-    private DBHandler db;
 
-    public YoutubeShare(Activity activity, String url, DBHandler db){
-        this.db = db;
+    public YoutubeShare(Activity activity, String url){
         this.activity = activity;
         this.url = url;
         YoutubeGetInfo youtubeGetInfo = new YoutubeGetInfo();
@@ -49,7 +47,7 @@ public class YoutubeShare {
                     JSONObject jsonObj = new JSONObject(jsonStr);
                     System.out.println(jsonObj);
                     youtube = jsonObj.get("title").toString();
-                    UtilMeths.INSTANCE.parseAddOst(youtube, db, url);
+                    UtilMeths.INSTANCE.parseAddOst(youtube, activity, url);
 
                 } catch (final JSONException e) {
                     // Log.e(TAG, "Json parsing error: " + e.getMessage());

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/nav_barLibrary"
+        android:enabled="true"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/ic_library_music_white_24dp"
+        android:title="@string/nav_bar_library"/>
+    <item
+        android:id="@+id/nav_barSearch"
+        android:enabled="true"
+        app:showAsAction="always"
+        android:icon="@drawable/ic_search_white_24dp"
+        android:title="@string/nav_bar_search" />
+    <item
+        android:id="@+id/nav_barPlaylist"
+        android:enabled="true"
+        app:showAsAction="always"
+        android:icon="@drawable/ic_list_white_24dp"
+        android:title="@string/nav_bar_playlists"/>
+</menu>

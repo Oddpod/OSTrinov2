@@ -117,7 +117,8 @@ internal object UtilMeths {
         }
     }
 
-    fun parseAddOst(title: String, db: DBHandler, url: String) {
+    fun parseAddOst(title: String, context: Context, url: String) {
+        val db = DBHandler(context)
         var titleUC = title
         val shows = db.allShows
         val titleLC = titleUC.toLowerCase()
@@ -144,6 +145,14 @@ internal object UtilMeths {
                 titleUC = titleUC.replace(show, "").replace("-", "").trim { it <= ' ' }
             }
         }
+        downloadThumbnail(url, context)
         db.addNewOst(Ost(titleUC, ostShow, "", url))
+    }
+
+    fun buildOstListFromQueue(idString: String, dbHandler: DBHandler): MutableList<Ost>{
+        val idsArray = idString.trim(',').split(',')
+        val ostList: MutableList<Ost> = ArrayList(idsArray.size)
+        idsArray.forEach{ostList.add(dbHandler.getOst(it.toInt()))}
+        return ostList
     }
 }

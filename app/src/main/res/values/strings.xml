@@ -47,6 +47,10 @@
     <string name="menu_export">Exports OSTs</string>
     <string name="menu_hideSearchBar">Hide SearchBar</string>
 
+    <string name="nav_bar_library"> Library </string>
+    <string name="nav_bar_search"> Search </string>
+    <string name="nav_bar_playlists"> Playlists? </string>
+
     <!-- App name -->
     <string name="app_version_number">1.0</string>
     <string name="menu_settings">Settings</string>

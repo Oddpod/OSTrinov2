@@ -17,6 +17,7 @@ class YoutubePlayerHandler(private var playerNotification:
 
     var playing : Boolean
     var repeat: Boolean
+    var loadLastSession : Boolean
     private var stoppedTime : Int
     private var userPaused : Boolean
     lateinit var yPlayer: YouTubePlayer
@@ -25,6 +26,7 @@ class YoutubePlayerHandler(private var playerNotification:
         repeat = false
         stoppedTime = 0
         userPaused = false
+        loadLastSession = false
     }
 
     override fun onInitializationSuccess(provider: YouTubePlayer.Provider?, player: YouTubePlayer?, wasRestored: Boolean) {
@@ -39,8 +41,13 @@ class YoutubePlayerHandler(private var playerNotification:
                 add("4rxzGfRHwiE")
             }
             }*/
+            if(loadLastSession){
+                yPlayer.cueVideo(queueHandler.currentlyPlaying)
+                loadLastSession = false
+            } else{
+                yPlayer.loadVideo(queueHandler.currentlyPlaying)
+            }
 
-            yPlayer.loadVideo(queueHandler.currentlyPlaying)
             yPlayer.setPlayerStateChangeListener(this)
             yPlayer.setPlaybackEventListener(this)
             //yPlayer.setOnFullscreenListener(this)
@@ -163,4 +170,8 @@ class YoutubePlayerHandler(private var playerNotification:
     }
 
     fun getQueueHandler(): QueueHandler = queueHandler
+
+    fun loadLastSession(load: Boolean){
+        loadLastSession = load
+    }
 }
