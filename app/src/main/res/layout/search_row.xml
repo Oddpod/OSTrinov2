@@ -48,12 +48,13 @@
 
     <ImageButton
         android:id="@+id/btnOptions"
+        android:contentDescription="@string/cd_options"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
         android:paddingTop="5dp"
-        android:background="?attr/selectableItemBackground"
+        android:background="?android:attr/selectableItemBackground"
         app:srcCompat="@drawable/ic_more_vert_black_24dp" />
 </RelativeLayout>

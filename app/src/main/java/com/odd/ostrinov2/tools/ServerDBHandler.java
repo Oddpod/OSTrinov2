@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
-public class ServerDBHandler{
+class ServerDBHandler{
 
         private String url = "jdbc:mysql://10.22.44.163:3306/ostrinodb";
         private String user = "root";

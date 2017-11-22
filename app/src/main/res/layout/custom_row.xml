@@ -60,7 +60,7 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
-        android:background="?attr/selectableItemBackground"
+        android:background="?android:attr/selectableItemBackground"
         android:contentDescription="@android:string/ok"
         app:srcCompat="@drawable/ic_playlist_add_black_24dp" />
 </RelativeLayout>

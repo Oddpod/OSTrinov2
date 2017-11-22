@@ -85,8 +85,6 @@ public class MainActivity extends AppCompatActivity
     private Runnable seekbarUpdater;
     private Handler handler = new Handler();
     private SearchView searchView = null;
-    private SearchView.OnQueryTextListener queryTextListener;
-    private BottomNavigationView bottomNavigationView;
     private String lastQuery = "Pokemon Ost";
 
     @Override
@@ -145,7 +143,7 @@ public class MainActivity extends AppCompatActivity
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.add(R.id.floatingPlayer, youTubePlayerFragment).commit();
 
-        bottomNavigationView = (BottomNavigationView) findViewById(R.id.bnvFrag);
+        BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.bnvFrag);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -217,7 +215,7 @@ public class MainActivity extends AppCompatActivity
             searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
             searchView.setQueryHint("Filter");
 
-            queryTextListener = new SearchView.OnQueryTextListener() {
+            SearchView.OnQueryTextListener queryTextListener = new SearchView.OnQueryTextListener() {
                 @Override
                 public boolean onQueryTextChange(String newText) {
                     Log.i("onQueryTextChange", newText);
@@ -572,7 +570,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    void startService() {
+    private void startService() {
         Intent serviceIntent = new Intent(MainActivity.this, YTplayerService.class);
         serviceIntent.setAction(Constants.STARTFOREGROUND_ACTION);
         startService(serviceIntent);
@@ -604,7 +602,7 @@ public class MainActivity extends AppCompatActivity
         }
     };
 
-    void doBindService() {
+    private void doBindService() {
         // Establish a connection with the service.  We use an explicit
         // class name because there is no reason to be able to let other
         // applications replace our component.
@@ -663,7 +661,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    void addOstLink(Intent intent){
+    private void addOstLink(Intent intent){
         if (intent.getAction().equals(Intent.ACTION_SEND) && intent.getType().equals("text/plain")){
             Bundle extras = intent.getExtras();
             String link = extras.getString(Intent.EXTRA_TEXT);
@@ -697,7 +695,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    void initiateSeekbarTimer(){
+    private void initiateSeekbarTimer(){
         final int interval = 1000; // 1 Second
         seekbarUpdater = new Runnable() {
             public void run() {
