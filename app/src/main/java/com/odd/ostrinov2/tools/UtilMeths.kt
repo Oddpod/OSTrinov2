@@ -78,6 +78,9 @@ internal object UtilMeths {
 
     fun getThumbNailUrl(videoId: String): String = "https://i.ytimg.com/vi/$videoId/mqdefault.jpg"
 
+    fun getThumbnailLocal(url: String): File = File(Environment.getExternalStorageDirectory().toString()
+            + "/OSTthumbnails/" + urlToId(url) + ".jpg");
+
     fun chooseFileImport(mainActivity: MainActivity) {
         val intent: Intent
         if (Build.VERSION.SDK_INT < 19) {

@@ -128,6 +128,7 @@ class YTplayerService : Service(),
             rl.removeView(floatingPlayer)
             wm.removeView(rl)
             yPlayerHandler.stopPlayer()
+            mainActivity.saveSession()
             //stopSelf()
         }
         return Service.START_NOT_STICKY

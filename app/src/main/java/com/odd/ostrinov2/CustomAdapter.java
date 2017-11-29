@@ -71,8 +71,7 @@ class CustomAdapter extends BaseAdapter implements PlayerListener {
         } else{
             holder = (ViewHolder) convertView.getTag();
         }
-        File tnFile = new File(Environment.getExternalStorageDirectory()
-                + "/OSTthumbnails/" + UtilMeths.INSTANCE.urlToId(ost.getUrl()) + ".jpg");
+        File tnFile = UtilMeths.INSTANCE.getThumbnailLocal(ost.getUrl());
         Picasso.with(mContext)
                 .load(tnFile)
                 .into(holder.thumbnail);

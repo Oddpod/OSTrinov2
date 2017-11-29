@@ -47,6 +47,7 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
+import com.google.android.youtube.player.YouTubePlayer;
 import com.google.android.youtube.player.YouTubePlayerSupportFragment;
 import com.odd.ostrinov2.dialogFragments.AddScreen;
 import com.odd.ostrinov2.listeners.PlayerListener;
@@ -721,17 +722,19 @@ public class MainActivity extends AppCompatActivity
     private void loadLastSession(){
         SharedPreferences lastSessionPrefs = getSharedPreferences(PREFS_NAME, 0);
         String queueString = lastSessionPrefs.getString("lastSession", "");
+        int timestamp = lastSessionPrefs.getInt("timeStamp", 0);
         int lastCurr = lastSessionPrefs.getInt("lastCurrPlaying", 0);
+        int videoDuration = lastSessionPrefs.getInt("videoDuration", 0);
         if(!queueString.equals("")){
             System.out.println(queueString);
             List<Ost> lastQueueList = UtilMeths.INSTANCE.buildOstListFromQueue(queueString, db);
             initiatePlayer(lastQueueList, lastCurr);
-            yTplayerService.getPlayerHandler().loadLastSession(true);
+            yTplayerService.getPlayerHandler().loadLastSession(true, timestamp, videoDuration);
         }
         lastSessionLoaded = true;
     }
 
-    private void saveSession(){
+    public void saveSession(){
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         SharedPreferences.Editor editor = settings.edit();
         StringBuilder stringBuilder = new StringBuilder();
@@ -741,7 +744,10 @@ public class MainActivity extends AppCompatActivity
         }
         String idString = stringBuilder.toString();
         editor.putString("lastSession", idString);
+        YouTubePlayer youTubePlayer = yTplayerService.getPlayer();
         editor.putInt("lastCurrPlaying", yTplayerService.getQueueHandler().getCurrPlayingIndex());
+        editor.putInt("timeStamp", youTubePlayer.getCurrentTimeMillis());
+        editor.putInt("videoDuration", youTubePlayer.getDurationMillis());
 
         // Commit the edits!
         Boolean success = editor.commit();

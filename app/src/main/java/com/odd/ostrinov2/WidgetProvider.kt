@@ -29,8 +29,7 @@ class WidgetProvider : AppWidgetProvider() {
             val remoteViews = RemoteViews(context.packageName,
                     R.layout.widget_layout)
             remoteViews.setTextViewText(R.id.tvOstoftheDay, ostOfTheDay.title)
-            val tnFile = File(Environment.getExternalStorageDirectory().toString()
-                    + "/OSTthumbnails/" + UtilMeths.urlToId(ostOfTheDay.url) + ".jpg")
+            val tnFile = UtilMeths.getThumbNailUrl(ostOfTheDay.url)
             Picasso.with(context).load(tnFile).resize(500, 200).onlyScaleDown()
                     .into(remoteViews, R.id.widgetThumbnail, appWidgetIds)
 

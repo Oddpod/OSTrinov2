@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.Stack;
 
+import okhttp3.internal.Util;
+
 class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper> implements PlayerListener {
         private Stack<Ost> played, preQueued, queued;
         private Context mContext;
@@ -61,8 +63,7 @@ class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper> implem
             viewWrapper.getTitle().setText(ost.getTitle());
             viewWrapper.getShow().setText(ost.getShow());
             viewWrapper.getTags().setText(ost.getTags());
-            File tnFile = new File(Environment.getExternalStorageDirectory()
-                    + "/OSTthumbnails/" + UtilMeths.INSTANCE.urlToId(ost.getUrl()) + ".jpg");
+            File tnFile = UtilMeths.INSTANCE.getThumbnailLocal(ost.getUrl());
             Picasso.with(mContext)
                     .load(tnFile)
                     .into(viewWrapper.getThumbnail());

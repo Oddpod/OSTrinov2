@@ -21,12 +21,14 @@ class YoutubePlayerHandler(private var playerNotification:
     private var stoppedTime : Int
     private var userPaused : Boolean
     lateinit var yPlayer: YouTubePlayer
+    private var lastSessionTimeStamp: Int
     init{
         playing = false
         repeat = false
         stoppedTime = 0
         userPaused = false
         loadLastSession = false
+        lastSessionTimeStamp = 0
     }
 
     override fun onInitializationSuccess(provider: YouTubePlayer.Provider?, player: YouTubePlayer?, wasRestored: Boolean) {
@@ -42,8 +44,10 @@ class YoutubePlayerHandler(private var playerNotification:
             }
             }*/
             if(loadLastSession){
-                yPlayer.cueVideo(queueHandler.currentlyPlaying)
+                yPlayer.cueVideo(queueHandler.currentlyPlaying, lastSessionTimeStamp)
                 loadLastSession = false
+                userPaused = true
+
             } else{
                 yPlayer.loadVideo(queueHandler.currentlyPlaying)
             }
@@ -146,6 +150,7 @@ class YoutubePlayerHandler(private var playerNotification:
         queueHandler.initiateQueue(ostList, startIndex, shuffle)
         yPlayer.loadVideo(queueHandler.currentlyPlaying)
         playerNotification.updateNotInfo(queueHandler.getCurrPlayingOst())
+        userPaused = false
     }
 
     fun refresh(){
@@ -171,7 +176,12 @@ class YoutubePlayerHandler(private var playerNotification:
 
     fun getQueueHandler(): QueueHandler = queueHandler
 
-    fun loadLastSession(load: Boolean){
+    fun loadLastSession(load: Boolean, playbackPos: Int, duration: Int){
         loadLastSession = load
+        lastSessionTimeStamp = playbackPos
+        println(playbackPos.toString() + ", " + duration)
+        mainActivity.seekBar.max = duration
+        mainActivity.seekBar.progress = playbackPos
+
     }
 }
