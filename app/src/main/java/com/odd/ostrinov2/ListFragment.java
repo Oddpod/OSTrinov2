@@ -30,7 +30,7 @@ public class ListFragment extends Fragment implements
         View.OnClickListener, QueueListener {
 
     boolean editedOst;
-    private int ostReplaceId, ostReplacePos, previouslyPlayed;
+    private int ostReplaceId, ostReplacePos;
     private List<Ost> allOsts, currOstList;
     private DBHandler dbHandler;
     private String TAG = "OstInfo";
@@ -69,13 +69,6 @@ public class ListFragment extends Fragment implements
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 currOstList = getCurrDispOstList();
                 mainActivity.initiatePlayer(currOstList, position);
-                /*if(previouslyPlayed >= 0 && previouslyPlayed < currOstList.size()){
-                    getViewByPosition(previouslyPlayed, lvOst).setBackgroundResource(R.drawable.white);
-                }
-                view.setBackgroundResource(R.drawable.greenrect);*/
-                int updatePos = customAdapter.getItem(position).getId();
-                customAdapter.updateCurrentlyPlaying(updatePos);
-                previouslyPlayed = customAdapter.getNowPlaying();
             }
         });
 
@@ -87,7 +80,7 @@ public class ListFragment extends Fragment implements
                 ostReplaceId = ost.getId();
                 ostReplacePos = position;
                 editedOst = true;
-                dialog.setEditing(ost, editedOst);
+                dialog.setEditing(ost, true);
                 return true;
             }
         });
@@ -184,7 +177,6 @@ public class ListFragment extends Fragment implements
                 customAdapter.updateCurrentlyPlaying(currOstList.get(rndPos).getId());
                 mainActivity.shuffleOn();
                 shuffleActivated = true;
-                previouslyPlayed = rndPos;
                 break;
             }
 
@@ -216,21 +208,6 @@ public class ListFragment extends Fragment implements
         return customAdapter.getOstList();
     }
 
-    public List<Ost> getCurrDispOstListFromSearch(){
-        if(filterText.equals("")){
-            return allOsts;
-        }
-        List<Ost> currOsts = new ArrayList<>();
-        for( Ost ost : allOsts){
-            String ostString = ost.getTitle() + ", " + ost.getShow() + ", " + ost.getTags();
-            ostString = ostString.toLowerCase();
-            if(ostString.contains(filterText)){
-                currOsts.add(ost);
-            }
-        }
-        return currOsts;
-    }
-
     @Override
     public void addToQueue(int addId) {
         Ost ost = getCurrDispOstList().get(addId);
@@ -240,18 +217,6 @@ public class ListFragment extends Fragment implements
     @Override
     public void removeFromQueue(String url) {
 
-    }
-
-    public View getViewByPosition(int pos, ListView listView) {
-        final int firstListItemPosition = listView.getFirstVisiblePosition();
-        final int lastListItemPosition = firstListItemPosition + listView.getChildCount() - 1;
-
-        if (pos < firstListItemPosition || pos > lastListItemPosition ) {
-            return listView.getAdapter().getView(pos, null, listView);
-        } else {
-            final int childIndex = pos - firstListItemPosition;
-            return listView.getChildAt(childIndex);
-        }
     }
 
     public void refreshListView(){
