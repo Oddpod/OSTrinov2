@@ -77,6 +77,5 @@ class SearchFragment: Fragment() {
 
     fun performSearch( query: String){
             youtubeSearch = YoutubeSearch(mainActivity, query, this)
-
     }
 }

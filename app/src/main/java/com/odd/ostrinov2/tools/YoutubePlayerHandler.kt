@@ -47,6 +47,7 @@ class YoutubePlayerHandler(private var playerNotification:
                 yPlayer.cueVideo(queueHandler.currentlyPlaying, lastSessionTimeStamp)
                 loadLastSession = false
                 userPaused = true
+                lastSessionTimeStamp = 0
 
             } else{
                 yPlayer.loadVideo(queueHandler.currentlyPlaying)

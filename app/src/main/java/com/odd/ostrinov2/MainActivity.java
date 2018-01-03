@@ -343,7 +343,6 @@ public class MainActivity extends AppCompatActivity
         Ost lastAddedOst = new Ost(title, show, tags, url);
         lastAddedOst.setId(listFragment.getOstReplaceId());
         boolean alreadyAdded = db.checkiIfOstInDB(lastAddedOst);
-
         if (listFragment.isEditedOst()) {
             db.updateOst(lastAddedOst);
             listFragment.refreshListView();
@@ -436,8 +435,8 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    public void initiatePlayer(List<Ost> ostList, int startid) {
-        queueAdapter.initiateQueue(ostList, startid);
+    public void initiatePlayer(List<Ost> ostList, int startId) {
+        queueAdapter.initiateQueue(ostList, startId);
 
         if (!youtubePlayerLaunched) {
             initiateSeekbarTimer();
@@ -447,10 +446,10 @@ public class MainActivity extends AppCompatActivity
             playerListeners[0] = queueAdapter;
             playerListeners[1] = listFragment.getCustomAdapter();
             yTplayerService.launchFloater(floatingPlayer, this);
-            yTplayerService.startQueue(ostList, startid, shuffleActivated,
+            yTplayerService.startQueue(ostList, startId, shuffleActivated,
                     playerListeners, youTubePlayerFragment);
         } else {
-            yTplayerService.initiateQueue(ostList, startid, shuffleActivated);
+            yTplayerService.initiateQueue(ostList, startId, shuffleActivated);
         }
     }
 
@@ -726,7 +725,7 @@ public class MainActivity extends AppCompatActivity
         int lastCurr = lastSessionPrefs.getInt("lastCurrPlaying", 0);
         int videoDuration = lastSessionPrefs.getInt("videoDuration", 0);
         if(!queueString.equals("")){
-            System.out.println(queueString);
+            Log.d("lastQueue", queueString);
             List<Ost> lastQueueList = UtilMeths.INSTANCE.buildOstListFromQueue(queueString, db);
             initiatePlayer(lastQueueList, lastCurr);
             yTplayerService.getPlayerHandler().loadLastSession(true, timestamp, videoDuration);
@@ -740,12 +739,18 @@ public class MainActivity extends AppCompatActivity
         StringBuilder stringBuilder = new StringBuilder();
         for (Ost ost: yTplayerService.getQueueHandler().getOstList()
                 ) {
-            stringBuilder.append(ost.getId()).append(",");
+            if(ost.getId() == 0){ //appends the url of the ost since it has been added from search
+                stringBuilder.append(ost.getUrl()).append(",");
+            }
+            else{
+                stringBuilder.append(ost.getId()).append(",");
+            }
         }
         String idString = stringBuilder.toString();
         editor.putString("lastSession", idString);
         YouTubePlayer youTubePlayer = yTplayerService.getPlayer();
-        editor.putInt("lastCurrPlaying", yTplayerService.getQueueHandler().getCurrPlayingIndex());
+        int lastCurrentlyPlaying = yTplayerService.getQueueHandler().getCurrPlayingIndex();
+        editor.putInt("lastCurrPlaying", lastCurrentlyPlaying);
         editor.putInt("timeStamp", youTubePlayer.getCurrentTimeMillis());
         editor.putInt("videoDuration", youTubePlayer.getDurationMillis());
 

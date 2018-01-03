@@ -215,7 +215,7 @@ class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper> implem
             if(i > startId){
                 preQueued.add(ostList.get(i));
             }else{
-                played.add(ostList.get(i));
+                played.push(ostList.get(startId - i));
             }
         }
         notifyDataSetChanged();
