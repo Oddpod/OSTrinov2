@@ -34,13 +34,11 @@ internal object UtilMeths {
 
     fun getVideoIdList(ostList: List<Ost>): MutableList<String> {
         val queueList = ArrayList<String>()
-        for (ost in ostList) {
-            queueList.add(urlToId(ost.url))
-        }
+        ostList.forEach{queueList.add(urlToId(it.url))}
         return queueList
     }
 
-    fun doesFileExist(filePath: String): Boolean {
+    private fun doesFileExist(filePath: String): Boolean {
         val folder1 = File(filePath)
         return folder1.exists()
 
@@ -155,7 +153,13 @@ internal object UtilMeths {
     fun buildOstListFromQueue(idString: String, dbHandler: DBHandler): MutableList<Ost>{
         val idsArray = idString.trim(',').split(',')
         val ostList: MutableList<Ost> = ArrayList(idsArray.size)
-        idsArray.forEach{ostList.add(dbHandler.getOst(it.toInt()))}
+        idsArray.forEach{ var ost = dbHandler.getOst(it.toInt())
+            if(ost != null) {
+                ostList.add(dbHandler.getOst(it.toInt()))
+            }else if(!it.matches(Regex("[0-9]+"))){
+                ostList.add(Ost(null, null, null, idToUrl(it)))
+            }
+        }
         return ostList
     }
 }
