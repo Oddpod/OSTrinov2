@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import com.odd.ostrinov2.Ost;
 
@@ -49,7 +50,7 @@ public class DBHandler extends SQLiteOpenHelper {
                 + "tagid" + " INTEGER PRIMARY KEY,"
                 + KEY_TAG + " TEXT " + ")";
         db.execSQL(CREATE_TAGS_TABLE);
-        System.out.println("Created tables");
+        Log.i("DBHandlerOnCreate", "Created tables");
     }
 
     @Override
@@ -77,7 +78,7 @@ public class DBHandler extends SQLiteOpenHelper {
         //inserting Row
         db.insert(OST_TABLE, null, values);
         db.close();
-        System.out.println("row inserted");
+        Log.i("AddNewOst", "row inserted");
 
     }
 
@@ -88,7 +89,7 @@ public class DBHandler extends SQLiteOpenHelper {
 
         values.put(KEY_SHOW, newShow);
         db.insert(SHOW_TABLE, null, values);
-        System.out.println("added new show");
+        Log.i("AddNewShow","added new show");
 
     }
 
@@ -99,7 +100,7 @@ public class DBHandler extends SQLiteOpenHelper {
 
         values.put(KEY_TAG, newTag);
         db.insert(TAGS_TABLE, null, values);
-        System.out.println("added new tag");
+        Log.i("AddNewTag","added new tag");
     }
 
      public void emptyTable(){
@@ -155,21 +156,22 @@ public class DBHandler extends SQLiteOpenHelper {
         Ost ost = new Ost();
         String selectQuery = "SELECT " + KEY_ID + "," + KEY_TITLE + "," + KEY_SHOW + "," + KEY_TAGS + "," + KEY_URL
                 + " FROM " + OST_TABLE
-                + " WHERE " + KEY_ID + "=" + Integer.toString(id);
+                + " WHERE " + KEY_ID + " IS " + Integer.toString(id);
 
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
         if(cursor.moveToFirst()) {
-            do {
                 ost.setId(cursor.getInt(0));
                 ost.setTitle(cursor.getString(1));
                 ost.setShow(cursor.getString(2));
                 ost.setTags(cursor.getString(3));
                 ost.setUrl(cursor.getString(4));
-            }while(cursor.moveToNext());
+                cursor.close();
+                return ost;
+        }else {
+            Log.i("Retrieveerror", "empty cursor, no entry with id $id");
+            return null;
         }
-        cursor.close();
-        return ost;
     }
 
     public void updateOst(Ost ost){
