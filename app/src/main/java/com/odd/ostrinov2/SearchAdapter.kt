@@ -11,9 +11,10 @@ import android.widget.*
 import com.squareup.picasso.Picasso
 import com.odd.ostrinov2.tools.UtilMeths
 
-public class SearchAdapter(private var searchResults: MutableList<VideoObject>,
-                           private val mContext: Context, val mainActivity: MainActivity) :
+public class SearchAdapter(private val mContext: Context, val mainActivity: MainActivity) :
         RecyclerView.Adapter<SearchAdapter.ObjectViewWrapper>() {
+
+    private var searchResults: MutableList<VideoObject> = ArrayList(20)
 
 
     override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): ObjectViewWrapper {
@@ -30,7 +31,6 @@ public class SearchAdapter(private var searchResults: MutableList<VideoObject>,
 
     override fun onBindViewHolder(viewWrapper: ObjectViewWrapper, position: Int) {
         val video = searchResults[position]
-        var userClicked: Boolean
         viewWrapper.tvVideoTitle.text = video.title
         viewWrapper.tvViews.text = video.uploader
         viewWrapper.btnOptions.setOnClickListener {
@@ -79,7 +79,10 @@ public class SearchAdapter(private var searchResults: MutableList<VideoObject>,
 
     }
 
-    fun extendVideoObjects(videoObjects: MutableList<SearchAdapter.VideoObject>) {
+    fun updateVideoObjects(videoObjects: MutableList<SearchAdapter.VideoObject>, extend: Boolean) {
+        if(!extend){
+            searchResults.clear()
+        }
         searchResults.addAll(videoObjects)
         notifyDataSetChanged()
     }
