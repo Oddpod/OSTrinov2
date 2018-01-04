@@ -39,10 +39,6 @@ class YoutubeSearch(private val activity: Activity, private val searchQuery: Str
 
     private inner class YoutubeGetInfo : AsyncTask<Void, Void, Void>() {
 
-        override fun onPreExecute() {
-            super.onPreExecute()
-        }
-
         override fun doInBackground(vararg arg0: Void): Void? {
             val sh = HttpHandler()
             if(loadNextPage){

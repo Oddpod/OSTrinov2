@@ -11,7 +11,7 @@ import android.widget.*
 import com.squareup.picasso.Picasso
 import com.odd.ostrinov2.tools.UtilMeths
 
-public class SearchAdapter(private val mContext: Context, val mainActivity: MainActivity) :
+class SearchAdapter(private val mContext: Context, val mainActivity: MainActivity) :
         RecyclerView.Adapter<SearchAdapter.ObjectViewWrapper>() {
 
     private var searchResults: MutableList<VideoObject> = ArrayList(20)
