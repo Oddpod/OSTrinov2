@@ -41,10 +41,10 @@ class CountDown : DialogFragment() {
         Picasso.with(activity.applicationContext).load(Uri.parse(url)).into(dialogView.ivPokemon)
 
         val start_calendar = Calendar.getInstance()
-        val start_millis = start_calendar.getTimeInMillis() //get the start time in milliseconds
+        val start_millis = start_calendar.timeInMillis //get the start time in milliseconds
         val end_calendar = Calendar.getInstance()
         end_calendar.set(2017, 10, 17, 0, 0) // 10 = November, month start at 0 = January
-        val end_millis = end_calendar.getTimeInMillis() //get the end time in milliseconds
+        val end_millis = end_calendar.timeInMillis //get the end time in milliseconds
         val total_millis = end_millis - start_millis //total time in milliseconds
 
         //1000 = 1 second interval

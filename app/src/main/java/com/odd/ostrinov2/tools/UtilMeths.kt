@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.util.Log
 import android.widget.Toast
 import com.odd.ostrinov2.MainActivity
 import com.odd.ostrinov2.Ost
@@ -77,7 +78,7 @@ internal object UtilMeths {
     fun getThumbNailUrl(videoId: String): String = "https://i.ytimg.com/vi/$videoId/mqdefault.jpg"
 
     fun getThumbnailLocal(url: String): File = File(Environment.getExternalStorageDirectory().toString()
-            + "/OSTthumbnails/" + urlToId(url) + ".jpg");
+            + "/OSTthumbnails/" + urlToId(url) + ".jpg")
 
     fun chooseFileImport(mainActivity: MainActivity) {
         val intent: Intent
@@ -118,22 +119,18 @@ internal object UtilMeths {
         }
     }
 
-    fun parseAddOst(title: String, context: Context, url: String) {
+    fun parseAddOst(title: String, context: Context, url: String): Ost {
         val db = DBHandler(context)
         var titleUC = title
         val shows = db.allShows
         val titleLC = titleUC.toLowerCase()
         var ostShow = ""
         for (show in shows) {
-            println("Title: $titleLC show: $show")
             if (show.contains("(")) {
-                println("show contains (")
                 val lineArray = show.split("\\(".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
                 val showOriginal = lineArray[0]
                 val showEnglish = lineArray[1].replace(")", "").trim { it <= ' ' }
-                println("show: $showOriginal showEnglish: $showEnglish")
                 if (titleLC.contains(showOriginal.toLowerCase()) || titleLC.contains(showEnglish.toLowerCase())) {
-                    println("setting to show: " + showOriginal)
                     ostShow = showOriginal
                     if (titleLC.contains(showOriginal.toLowerCase())) {
                         titleUC = titleUC.replace(showOriginal, "").replace("-", "").trim { it <= ' ' }
@@ -147,7 +144,9 @@ internal object UtilMeths {
             }
         }
         downloadThumbnail(url, context)
-        db.addNewOst(Ost(titleUC, ostShow, "", url))
+        val parsedOst = Ost(titleUC, ostShow, "", url)
+        db.addNewOst(parsedOst)
+        return parsedOst
     }
 
     fun buildOstListFromQueue(idString: String, dbHandler: DBHandler): MutableList<Ost>{

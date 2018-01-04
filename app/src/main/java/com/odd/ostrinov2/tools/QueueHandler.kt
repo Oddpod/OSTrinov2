@@ -20,7 +20,7 @@ data class QueueHandler(var ostList: MutableList<Ost>, var startIndex : Int, var
         preQueue = Stack()
         queue = Stack()
         currentlyPlaying = videoIds[startIndex]
-        playerListeners.forEach { println(startIndex); it.updateCurrentlyPlaying(ostList[startIndex].id) }
+        playerListeners.forEach {it.updateCurrentlyPlaying(ostList[startIndex].id) }
         for (i in ostList.indices) {
             val videoId = videoIds[i]
             if (i < startIndex) {
@@ -42,7 +42,7 @@ data class QueueHandler(var ostList: MutableList<Ost>, var startIndex : Int, var
         played = Stack()
         preQueue = Stack()
         currentlyPlaying = videoIds[startIndex]
-        playerListeners.forEach { println(startIndex); it.updateCurrentlyPlaying(ostList[startIndex].id) }
+        playerListeners.forEach {it.updateCurrentlyPlaying(ostList[startIndex].id) }
         for (i in ostList.indices) {
             val videoId = videoIds[i]
             if (i < startIndex) {
