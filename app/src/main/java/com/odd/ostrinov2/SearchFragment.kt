@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,6 +21,7 @@ class SearchFragment: Fragment() {
     private var visibleItemCount:Int = 0
     private var firstVisibleItem: Int = 0
     private var totalItemCount:Int = 0
+    protected var isFromBackStack: Boolean = false
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState : Bundle?): View {
 
@@ -47,32 +47,30 @@ class SearchFragment: Fragment() {
                     }
                 }
                 if (!loading && totalItemCount - visibleItemCount <= firstVisibleItem + visibleThreshold) {
-                    // End has been reached
-
-                    Log.i("Yaeye!", "end called")
+                    // End of ListView has been reached
 
                     youtubeSearch.getMoreSearchResults()
-
                     loading = true
                 }
             }
         })
-
+        rvSearchResults.adapter = searchAdapter
 
         return rootView
     }
 
+    override fun onDestroyView() {
+        isFromBackStack = true
+        super.onDestroyView()
+    }
+
     fun setMainActivity(mainActivity: MainActivity){
         this.mainActivity = mainActivity
+        searchAdapter = SearchAdapter(mainActivity.applicationContext, mainActivity)
     }
 
-    fun addSearchResults(videoObjects: MutableList<SearchAdapter.VideoObject>){
-        searchAdapter.extendVideoObjects(videoObjects)
-    }
-
-    fun updateSearchresult(videoObjects: MutableList<SearchAdapter.VideoObject>){
-        searchAdapter =  SearchAdapter(videoObjects, mainActivity.applicationContext, mainActivity)
-        rvSearchResults.adapter = searchAdapter
+    fun updateSearchresult(videoObjects: MutableList<SearchAdapter.VideoObject>, extend: Boolean){
+        searchAdapter.updateVideoObjects(videoObjects, extend)
     }
 
     fun performSearch( query: String){

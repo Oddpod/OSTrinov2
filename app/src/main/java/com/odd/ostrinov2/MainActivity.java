@@ -140,6 +140,7 @@ public class MainActivity extends AppCompatActivity
 
         searchFragment = new SearchFragment();
         searchFragment.setMainActivity(this);
+        searchFragment.setRetainInstance(true);
         youTubePlayerFragment = YouTubePlayerSupportFragment.newInstance();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.add(R.id.floatingPlayer, youTubePlayerFragment).commit();
@@ -162,7 +163,9 @@ public class MainActivity extends AppCompatActivity
                                 .replace(R.id.rlListContainer, searchFragment)
                                 .addToBackStack("search")
                                 .commit();
-                        searchFragment.performSearch(lastQuery);
+                        if(!searchFragment.isFromBackStack()){
+                            searchFragment.performSearch(lastQuery);
+                        }
                         break;
                     }
                     case R.id.nav_barPlaylist:{
