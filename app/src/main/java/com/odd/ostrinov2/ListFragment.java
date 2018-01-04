@@ -48,7 +48,6 @@ public class ListFragment extends Fragment implements
         shuffleActivated = false;
         playerDocked = true;
         final View rootView = inflater.inflate(R.layout.activity_listscreen, container, false);
-        dbHandler = new DBHandler(getActivity());
         unAddedOst = null;
         dialog = new AddScreen();
         dialog.setAddScreenListener(mainActivity);
@@ -59,9 +58,6 @@ public class ListFragment extends Fragment implements
         lvOst.findViewById(R.id.btnOptions);
         lvOst.setDivider(null);
 
-        allOsts = dbHandler.getAllOsts();
-
-        customAdapter = new CustomAdapter(getContext(), allOsts, this);
         lvOst.setAdapter(customAdapter);
 
         lvOst.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -245,7 +241,11 @@ public class ListFragment extends Fragment implements
 
 
     public void setMainAcitivity(MainActivity mainAcitivity){
+
         this.mainActivity = mainAcitivity;
+        dbHandler = new DBHandler(mainAcitivity);
+        allOsts = dbHandler.getAllOsts();
+        customAdapter = new CustomAdapter(mainAcitivity.getApplicationContext(), allOsts, this);
     }
 
     public CustomAdapter getCustomAdapter() {

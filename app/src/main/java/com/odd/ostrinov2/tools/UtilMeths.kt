@@ -153,11 +153,11 @@ internal object UtilMeths {
     fun buildOstListFromQueue(idString: String, dbHandler: DBHandler): MutableList<Ost>{
         val idsArray = idString.trim(',').split(',')
         val ostList: MutableList<Ost> = ArrayList(idsArray.size)
-        idsArray.forEach{ var ost = dbHandler.getOst(it.toInt())
-            if(ost != null) {
+        idsArray.forEach{
+            if(!it.matches(Regex("[0-9]+"))) {
+                ostList.add(Ost(null, null, null, it))
+            }else{
                 ostList.add(dbHandler.getOst(it.toInt()))
-            }else if(!it.matches(Regex("[0-9]+"))){
-                ostList.add(Ost(null, null, null, idToUrl(it)))
             }
         }
         return ostList

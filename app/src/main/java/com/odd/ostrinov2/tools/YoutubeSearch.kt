@@ -48,7 +48,7 @@ class YoutubeSearch(private val activity: Activity, private val searchQuery: Str
             if(loadNextPage){
                 println("Loading more results")
                 val queryString = "https://www.googleapis.com/youtube/v3/search?q=" +
-                        "$searchQuery&type=video&pagetoken=$nextPagetoken&part=" +
+                        "$searchQuery&type=video&pageToken=$nextPagetoken&part=" +
                         "snippet&maxResults=$maxResults"
                 val jsonUrl = ( queryString + "&key=" + Constants.YDATA_API_TOKEN)
                 val jsonStr = sh.makeServiceCall(jsonUrl)
@@ -74,11 +74,10 @@ class YoutubeSearch(private val activity: Activity, private val searchQuery: Str
         override fun onPostExecute(result: Void?) {
             super.onPostExecute(result)
             if(loadNextPage){
-                searchFragment.addSearchResults(moreResults)
+                searchFragment.updateSearchresult(moreResults, extend = true)
                 loadNextPage = false
             } else{
-                println(resultList.toString())
-                searchFragment.updateSearchresult(resultList)
+                searchFragment.updateSearchresult(resultList, extend = false)
             }
 
 
@@ -89,6 +88,7 @@ class YoutubeSearch(private val activity: Activity, private val searchQuery: Str
                 try {
                     val jsonObj = JSONObject(jsonStr)
                     nextPagetoken = jsonObj.getString("nextPageToken")
+                    println(nextPagetoken)
                     val items : JSONArray = jsonObj.getJSONArray("items")
                     var i = 0
                     while (i < maxResults) {
