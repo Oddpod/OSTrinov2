@@ -6,7 +6,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
-import android.util.Log
 import android.widget.Toast
 import com.odd.ostrinov2.MainActivity
 import com.odd.ostrinov2.Ost
@@ -42,7 +41,6 @@ internal object UtilMeths {
     private fun doesFileExist(filePath: String): Boolean {
         val folder1 = File(filePath)
         return folder1.exists()
-
     }
 
     private fun downloadFile(context: Context, uRl: String, saveName: String) {
@@ -52,7 +50,6 @@ internal object UtilMeths {
             direct.mkdirs()
         }
         val saveString = direct.absolutePath + "/" + saveName + ".jpg"
-        println(saveString)
         if (!doesFileExist(saveString)) {
             val mgr = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
 
@@ -120,7 +117,7 @@ internal object UtilMeths {
     }
 
     fun parseAddOst(title: String, context: Context, url: String): Ost {
-        val db = DBHandler(context)
+        val db = MainActivity.getDbHandler()
         var titleUC = title
         val shows = db.allShows
         val titleLC = titleUC.toLowerCase()
@@ -155,7 +152,8 @@ internal object UtilMeths {
         idsArray.forEach{
             if(!it.matches(Regex("[0-9]+"))) {
                 ostList.add(Ost(null, null, null, it))
-            }else{
+            }else if(dbHandler.getOst(it.toInt()) != null){ //Ost might have gotten deleted
+                println(it)
                 ostList.add(dbHandler.getOst(it.toInt()))
             }
         }

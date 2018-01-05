@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity
         View.OnClickListener {
 
     private final static String PREFS_NAME= "Saved queue";
-    private DBHandler db;
+    private static DBHandler dbHandler;
     private Ost unAddedOst;
     private int backPress;
     private ListFragment listFragment;
@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        db = new DBHandler(this);
+        dbHandler = new DBHandler(this);
         unAddedOst = null;
         rlContent = (RelativeLayout) findViewById(R.id.rlContent);
 
@@ -305,13 +305,13 @@ public class MainActivity extends AppCompatActivity
             }
 
             case R.id.delete_allOsts: {
-                db.emptyTable();
+                dbHandler.emptyTable();
                 listFragment.refreshListView();
                 break;
             }
 
             case R.id.refresh_tagsTable: {
-                /*SQLiteDatabase sqLiteDatabase = db.getWritableDatabase();
+                /*SQLiteDatabase sqLiteDatabase = dbHandler.getWritableDatabase();
                 String CREATE_TAGS_TABLE = "CREATE TABLE " + "tagsTable" + "("
                         + "tagid" + " INTEGER PRIMARY KEY,"
                         + "tag" + " TEXT " + ")";
@@ -321,7 +321,7 @@ public class MainActivity extends AppCompatActivity
                         + "showid" + " INTEGER PRIMARY KEY,"
                         + "show" + " TEXT " + ")";
                 sqLiteDatabase.execSQL(CREATE_SHOW_TABLE);*/
-                db.reCreateTagsAndShowTables();
+                dbHandler.reCreateTagsAndShowTables();
                 break;
             }
             default:
@@ -345,9 +345,9 @@ public class MainActivity extends AppCompatActivity
         PermissionHandlerKt.checkPermission(this);
         Ost lastAddedOst = new Ost(title, show, tags, url);
         lastAddedOst.setId(listFragment.getOstReplaceId());
-        boolean alreadyAdded = db.checkiIfOstInDB(lastAddedOst);
+        boolean alreadyAdded = dbHandler.checkiIfOstInDB(lastAddedOst);
         if (listFragment.isEditedOst()) {
-            db.updateOst(lastAddedOst);
+            dbHandler.updateOst(lastAddedOst);
             listFragment.refreshListView();
             UtilMeths.INSTANCE.downloadThumbnail(url, this);
             addCanceled = false;
@@ -355,7 +355,7 @@ public class MainActivity extends AppCompatActivity
             if (!url.contains("https://")) {
                 Toast.makeText(this, "You have to put in a valid youtube link", Toast.LENGTH_SHORT).show();
             } else {
-                db.addNewOst(lastAddedOst);
+                dbHandler.addNewOst(lastAddedOst);
                 Toast.makeText(getApplicationContext(), lastAddedOst.getTitle() + " added", Toast.LENGTH_SHORT).show();
                 listFragment.refreshListView();
                 UtilMeths.INSTANCE.downloadThumbnail(url, this);
@@ -369,7 +369,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onDeleteButtonClick(DialogFragment dialog) {
-        db.deleteOst(listFragment.getOstReplaceId());
+        dbHandler.deleteOst(listFragment.getOstReplaceId());
         listFragment.getCustomAdapter().removeOst(listFragment.getOstReplacePos());
         listFragment.refreshListView();
         Toast.makeText(this, "Deleted " + listFragment.getDialog().getFieldData()[0], Toast.LENGTH_SHORT).show();
@@ -404,7 +404,7 @@ public class MainActivity extends AppCompatActivity
         if (requestCode == 2 && resultCode == RESULT_OK) {
             Uri currFileURI = data.getData();
             try {
-                IOHandler.INSTANCE.writeToFile(currFileURI, db.getAllOsts(), this);
+                IOHandler.INSTANCE.writeToFile(currFileURI, dbHandler.getAllOsts(), this);
                 listFragment.refreshListView();
 
             } catch (IOException e) {
@@ -494,11 +494,9 @@ public class MainActivity extends AppCompatActivity
                 case R.id.btnShuffle:{
                     if(shuffleActivated){
                         shuffleOff();
-                        shuffleActivated = false;
                     }
                     else{
                         shuffleOn();
-                        shuffleActivated = true;
                     }
                     break;
                 }
@@ -556,7 +554,6 @@ public class MainActivity extends AppCompatActivity
                 } else {
 
                 }
-                return;
             }
         }
     }
@@ -684,7 +681,7 @@ public class MainActivity extends AppCompatActivity
         int ostId = intent.getIntExtra(getString(R.string.label_ost_of_the_day), -1);
 
         if (ostId != -1) {
-            initiatePlayer(db.getAllOsts(), ostId);
+            initiatePlayer(dbHandler.getAllOsts(), ostId);
         }else{
             addOstLink(intent);
         }
@@ -695,7 +692,7 @@ public class MainActivity extends AppCompatActivity
         Intent widgetIntent = getIntent();
         int startId = widgetIntent.getIntExtra(getString(R.string.label_ost_of_the_day), -1);
         if(startId != -1){
-            initiatePlayer(db.getAllOsts(), startId);
+            initiatePlayer(dbHandler.getAllOsts(), startId);
         }
     }
 
@@ -730,7 +727,7 @@ public class MainActivity extends AppCompatActivity
         int videoDuration = lastSessionPrefs.getInt("videoDuration", 0);
         if(!queueString.equals("")){
             Log.d("lastQueue", queueString);
-            List<Ost> lastQueueList = UtilMeths.INSTANCE.buildOstListFromQueue(queueString, db);
+            List<Ost> lastQueueList = UtilMeths.INSTANCE.buildOstListFromQueue(queueString, dbHandler);
             initiatePlayer(lastQueueList, lastCurr);
             yTplayerService.getPlayerHandler().loadLastSession(true, timestamp, videoDuration);
         }
@@ -762,5 +759,9 @@ public class MainActivity extends AppCompatActivity
         Boolean success = editor.commit();
         String successString = success.toString();
         Log.i("Wrote session", successString);
+    }
+
+    public static DBHandler getDbHandler(){
+        return dbHandler;
     }
 }

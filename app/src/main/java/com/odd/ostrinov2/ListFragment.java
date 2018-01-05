@@ -22,7 +22,6 @@ import com.odd.ostrinov2.tools.UtilMeths;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -32,12 +31,11 @@ public class ListFragment extends Fragment implements
     boolean editedOst;
     private int ostReplaceId, ostReplacePos;
     private List<Ost> allOsts, currOstList;
-    private DBHandler dbHandler;
-    private String TAG = "OstInfo";
+    private final String TAG = "OstInfo";
     private String filterText;
     private CustomAdapter customAdapter;
     private ListView lvOst;
-    boolean shuffleActivated, playerDocked;
+    boolean playerDocked;
     AddScreen dialog;
     private Ost unAddedOst;
     private MainActivity mainActivity;
@@ -45,7 +43,6 @@ public class ListFragment extends Fragment implements
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        shuffleActivated = false;
         playerDocked = true;
         final View rootView = inflater.inflate(R.layout.activity_listscreen, container, false);
         unAddedOst = null;
@@ -90,7 +87,7 @@ public class ListFragment extends Fragment implements
             tv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                        DBHandler db = new DBHandler(getContext());
+                        DBHandler db = MainActivity.getDbHandler();
                         BufferedReader reader = null;
                         try {
                             reader = new BufferedReader(
@@ -170,9 +167,7 @@ public class ListFragment extends Fragment implements
                 currOstList = getCurrDispOstList();
                 int rndPos = rnd.nextInt(currOstList.size());
                 mainActivity.initiatePlayer(currOstList, rndPos);
-                customAdapter.updateCurrentlyPlaying(currOstList.get(rndPos).getId());
                 mainActivity.shuffleOn();
-                shuffleActivated = true;
                 break;
             }
 
@@ -217,7 +212,7 @@ public class ListFragment extends Fragment implements
 
     public void refreshListView(){
         editedOst = false;
-        allOsts = dbHandler.getAllOsts();
+        allOsts = MainActivity.getDbHandler().getAllOsts();
         customAdapter.updateList(allOsts);
     }
 
@@ -243,8 +238,7 @@ public class ListFragment extends Fragment implements
     public void setMainAcitivity(MainActivity mainAcitivity){
 
         this.mainActivity = mainAcitivity;
-        dbHandler = new DBHandler(mainAcitivity);
-        allOsts = dbHandler.getAllOsts();
+        allOsts = MainActivity.getDbHandler().getAllOsts();
         customAdapter = new CustomAdapter(mainAcitivity.getApplicationContext(), allOsts, this);
     }
 

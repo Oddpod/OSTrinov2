@@ -14,6 +14,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.MultiAutoCompleteTextView;
 
+import com.odd.ostrinov2.MainActivity;
 import com.odd.ostrinov2.Ost;
 import com.odd.ostrinov2.R;
 import com.odd.ostrinov2.tools.DBHandler;
@@ -55,7 +56,7 @@ public class AddScreen extends DialogFragment {
     @Override
     @NonNull
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        DBHandler dbHandler = new DBHandler(getActivity());
+        DBHandler dbHandler = MainActivity.getDbHandler();
         List<String> showList = dbHandler.getAllShows();
         List<String> tagList = dbHandler.getAllTags();
 
