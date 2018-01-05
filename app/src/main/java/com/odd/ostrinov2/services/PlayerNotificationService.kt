@@ -1,16 +1,18 @@
-package com.odd.ostrinov2
+package com.odd.ostrinov2.services
 
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
-import android.os.Environment
 import android.support.v4.app.NotificationCompat
 import android.view.View
 import android.widget.RemoteViews
+import com.odd.ostrinov2.Constants
+import com.odd.ostrinov2.MainActivity
+import com.odd.ostrinov2.Ost
+import com.odd.ostrinov2.R
 import com.odd.ostrinov2.tools.UtilMeths
 import com.squareup.picasso.Picasso
-import java.io.File
 
 class PlayerNotificationService(private val service: YTplayerService) {
     private var views: RemoteViews

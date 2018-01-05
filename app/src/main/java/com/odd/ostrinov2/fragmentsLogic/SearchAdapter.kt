@@ -1,4 +1,4 @@
-package com.odd.ostrinov2
+package com.odd.ostrinov2.fragmentsLogic
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -8,6 +8,9 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import com.odd.ostrinov2.MainActivity
+import com.odd.ostrinov2.Ost
+import com.odd.ostrinov2.R
 import com.squareup.picasso.Picasso
 import com.odd.ostrinov2.tools.UtilMeths
 
@@ -79,7 +82,7 @@ class SearchAdapter(private val mContext: Context, val mainActivity: MainActivit
 
     }
 
-    fun updateVideoObjects(videoObjects: MutableList<SearchAdapter.VideoObject>, extend: Boolean) {
+    fun updateVideoObjects(videoObjects: MutableList<VideoObject>, extend: Boolean) {
         if(!extend){
             searchResults.clear()
         }

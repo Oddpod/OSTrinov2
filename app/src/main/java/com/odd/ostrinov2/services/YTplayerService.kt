@@ -1,4 +1,4 @@
-package com.odd.ostrinov2
+package com.odd.ostrinov2.services
 
 import android.app.*
 import android.content.BroadcastReceiver
@@ -15,6 +15,10 @@ import com.google.android.youtube.player.YouTubePlayerSupportFragment
 import com.odd.ostrinov2.listeners.PlayerListener
 import android.app.KeyguardManager
 import android.content.IntentFilter
+import com.odd.ostrinov2.Constants
+import com.odd.ostrinov2.MainActivity
+import com.odd.ostrinov2.Ost
+import com.odd.ostrinov2.R
 import com.odd.ostrinov2.tools.QueueHandler
 import com.odd.ostrinov2.tools.YoutubePlayerHandler
 import com.odd.ostrinov2.tools.isSystemAlertPermissionGranted
@@ -70,9 +74,7 @@ class YTplayerService : Service(),
             get() = this@YTplayerService
     }
 
-    override fun onBind(intent: Intent): IBinder? {
-        return binder
-    }
+    override fun onBind(intent: Intent): IBinder? = binder
 
     private val NOT_LOG_TAG = "YTplayerService"
 

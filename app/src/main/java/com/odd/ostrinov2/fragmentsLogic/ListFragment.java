@@ -1,4 +1,4 @@
-package com.odd.ostrinov2;
+package com.odd.ostrinov2.fragmentsLogic;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -14,6 +14,10 @@ import android.widget.ListView;
 import android.widget.TableLayout;
 import android.widget.TextView;
 
+import com.odd.ostrinov2.MainActivity;
+import com.odd.ostrinov2.MemesKt;
+import com.odd.ostrinov2.Ost;
+import com.odd.ostrinov2.R;
 import com.odd.ostrinov2.dialogFragments.AddScreen;
 import com.odd.ostrinov2.listeners.QueueListener;
 import com.odd.ostrinov2.tools.DBHandler;
@@ -39,7 +43,7 @@ public class ListFragment extends Fragment implements
     AddScreen dialog;
     private Ost unAddedOst;
     private MainActivity mainActivity;
-    TableLayout tlTop;
+    public TableLayout tlTop;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -242,6 +246,9 @@ public class ListFragment extends Fragment implements
         customAdapter = new CustomAdapter(mainAcitivity.getApplicationContext(), allOsts, this);
     }
 
+    public void removeOst(int id){
+        customAdapter.removeOst(id);
+    }
     public CustomAdapter getCustomAdapter() {
         return customAdapter;
     }

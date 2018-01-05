@@ -1,4 +1,4 @@
-package com.odd.ostrinov2
+package com.odd.ostrinov2.fragmentsLogic
 
 import android.os.Bundle
 import android.support.v4.app.Fragment
@@ -7,6 +7,8 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.odd.ostrinov2.MainActivity
+import com.odd.ostrinov2.R
 import com.odd.ostrinov2.tools.YoutubeSearch
 
 class SearchFragment: Fragment() {
@@ -21,7 +23,7 @@ class SearchFragment: Fragment() {
     private var visibleItemCount:Int = 0
     private var firstVisibleItem: Int = 0
     private var totalItemCount:Int = 0
-    protected var isFromBackStack: Boolean = false
+    private var isFromBackStack: Boolean = false
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState : Bundle?): View {
 
@@ -76,4 +78,6 @@ class SearchFragment: Fragment() {
     fun performSearch( query: String){
             youtubeSearch = YoutubeSearch(mainActivity, query, this)
     }
+
+    fun isFromBackStack(): Boolean = isFromBackStack
 }

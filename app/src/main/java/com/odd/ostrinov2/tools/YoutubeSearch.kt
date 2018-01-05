@@ -4,8 +4,8 @@ import android.app.Activity
 import android.os.AsyncTask
 import android.widget.Toast
 import com.odd.ostrinov2.Constants
-import com.odd.ostrinov2.SearchAdapter
-import com.odd.ostrinov2.SearchFragment
+import com.odd.ostrinov2.fragmentsLogic.SearchAdapter
+import com.odd.ostrinov2.fragmentsLogic.SearchFragment
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -34,8 +34,6 @@ class YoutubeSearch(private val activity: Activity, private val searchQuery: Str
         val youtubeGetInfo = YoutubeGetInfo()
         youtubeGetInfo.execute()
     }
-
-
 
     private inner class YoutubeGetInfo : AsyncTask<Void, Void, Void>() {
 
@@ -75,8 +73,6 @@ class YoutubeSearch(private val activity: Activity, private val searchQuery: Str
             } else{
                 searchFragment.updateSearchresult(resultList, extend = false)
             }
-
-
         }
 
         fun parseResponseItems(jsonStr : String?){

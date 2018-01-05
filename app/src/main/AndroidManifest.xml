@@ -30,7 +30,7 @@
                 <data android:mimeType="text/plain"/>
             </intent-filter>
         </activity>
-        <service android:name="com.odd.ostrinov2.YTplayerService">
+        <service android:name="com.odd.ostrinov2.services.YTplayerService">
             </service>
         <receiver android:name="com.odd.ostrinov2.WidgetProvider" >
             <intent-filter>

@@ -5,11 +5,11 @@ import com.google.android.youtube.player.YouTubeInitializationResult
 import com.google.android.youtube.player.YouTubePlayer
 import com.odd.ostrinov2.MainActivity
 import com.odd.ostrinov2.Ost
-import com.odd.ostrinov2.PlayerNotificationService
+import com.odd.ostrinov2.services.PlayerNotificationService
 
 class YoutubePlayerHandler(private var playerNotification:
-                        PlayerNotificationService, private var queueHandler: QueueHandler,
-                                  private var mainActivity: MainActivity) :
+                           PlayerNotificationService, private var queueHandler: QueueHandler,
+                           private var mainActivity: MainActivity) :
         YouTubePlayer.PlaybackEventListener,
         YouTubePlayer.PlayerStateChangeListener,
         YouTubePlayer.OnInitializedListener,

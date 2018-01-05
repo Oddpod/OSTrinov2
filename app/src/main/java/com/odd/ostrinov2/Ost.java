@@ -60,7 +60,7 @@ public class Ost{
         this.url = url;
     }
 
-    String getSearchString(){
+    public String getSearchString(){
         return title + ", " + show + ", " + tags;
     }
 }
