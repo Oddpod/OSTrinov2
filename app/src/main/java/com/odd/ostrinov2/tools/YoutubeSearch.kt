@@ -35,8 +35,6 @@ class YoutubeSearch(private val activity: Activity, private val searchQuery: Str
         youtubeGetInfo.execute()
     }
 
-
-
     private inner class YoutubeGetInfo : AsyncTask<Void, Void, Void>() {
 
         override fun doInBackground(vararg arg0: Void): Void? {
@@ -75,8 +73,6 @@ class YoutubeSearch(private val activity: Activity, private val searchQuery: Str
             } else{
                 searchFragment.updateSearchresult(resultList, extend = false)
             }
-
-
         }
 
         fun parseResponseItems(jsonStr : String?){

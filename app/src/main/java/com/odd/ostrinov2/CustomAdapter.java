@@ -1,7 +1,6 @@
 package com.odd.ostrinov2;
 
 import android.content.Context;
-import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,7 +24,7 @@ import java.util.Locale;
 
 class CustomAdapter extends BaseAdapter implements PlayerListener {
 
-    private List<Ost> filteredOstList, ostList, unsortedOstList;
+    private List<Ost> filteredOstList, ostList;
     private Context mContext;
     private int prevSortedMode = 0;
     private LayoutInflater mInflater;
@@ -39,8 +38,6 @@ class CustomAdapter extends BaseAdapter implements PlayerListener {
         ostList.addAll(ostListin);
         filteredOstList = new ArrayList<>();
         filteredOstList.addAll(ostListin);
-        unsortedOstList = new ArrayList<>();
-        unsortedOstList.addAll(ostListin);
         queueListener = ql;
         mInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
@@ -204,7 +201,6 @@ class CustomAdapter extends BaseAdapter implements PlayerListener {
         System.out.println(item.toString());
         ostList.remove(pos);
         filteredOstList.remove(item);
-        unsortedOstList.remove(item);
     }
 
     Ost getNowPlayingOst(){

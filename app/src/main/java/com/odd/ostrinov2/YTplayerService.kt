@@ -70,9 +70,7 @@ class YTplayerService : Service(),
             get() = this@YTplayerService
     }
 
-    override fun onBind(intent: Intent): IBinder? {
-        return binder
-    }
+    override fun onBind(intent: Intent): IBinder? = binder
 
     private val NOT_LOG_TAG = "YTplayerService"
 

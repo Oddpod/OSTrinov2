@@ -2,7 +2,6 @@ package com.odd.ostrinov2;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.os.Environment;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,8 +20,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.Stack;
-
-import okhttp3.internal.Util;
 
 class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper> implements PlayerListener {
         private Stack<Ost> played, preQueued, queued;
