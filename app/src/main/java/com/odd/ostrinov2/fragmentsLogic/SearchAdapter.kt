@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
@@ -18,7 +17,6 @@ class SearchAdapter(private val mContext: Context, val mainActivity: MainActivit
         RecyclerView.Adapter<SearchAdapter.ObjectViewWrapper>() {
 
     private var searchResults: MutableList<VideoObject> = ArrayList(20)
-
 
     override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): ObjectViewWrapper {
         // create a new view
@@ -39,17 +37,15 @@ class SearchAdapter(private val mContext: Context, val mainActivity: MainActivit
         viewWrapper.btnOptions.setOnClickListener {
             val pum = PopupMenu(mainActivity, viewWrapper.btnOptions)
             pum.inflate(R.menu.btn_chooser_popup)
-            pum.setOnMenuItemClickListener(object: PopupMenu.OnMenuItemClickListener{
-                override fun onMenuItemClick(item: MenuItem?): Boolean {
-                    when (item?.itemId) {
-                        R.id.chooser_addToQueue -> mainActivity.addToQueue(Ost(video.title, "", "",
-                                video.url))
-                        R.id.chooser_addToLibrary -> UtilMeths.parseAddOst(video.title, mainActivity, video.url)
-                    }
-                    return true
+            pum.setOnMenuItemClickListener { item ->
+                when (item?.itemId) {
+                    R.id.chooser_addToQueue -> mainActivity.addToQueue(Ost(video.title, "", "",
+                            video.url))
+                    R.id.chooser_addToLibrary -> {UtilMeths.parseAddOst(video.title, mainActivity, video.url)
+                                                    mainActivity.listFragment.refreshListView()}
                 }
-
-            })
+                true
+            }
             pum.show()
         }
         Picasso.with(mContext)
