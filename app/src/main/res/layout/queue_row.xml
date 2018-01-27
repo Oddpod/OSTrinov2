@@ -40,7 +40,6 @@
         android:layout_toRightOf="@+id/ivThumbnail"
         android:layout_toStartOf="@+id/tvTags"
         android:paddingBottom="1dp"
-        android:text="njikbn"
         android:textAppearance="@android:style/TextAppearance.Holo.Small"
         android:textSize="12sp" />
 

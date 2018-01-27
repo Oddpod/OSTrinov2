@@ -200,7 +200,6 @@ class CustomAdapter extends BaseAdapter implements PlayerListener {
     }
     public void removeOst(int pos){
         Ost item = getItem(pos);
-        System.out.println(item.toString());
         ostList.remove(pos);
         filteredOstList.remove(item);
     }
