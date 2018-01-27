@@ -23,9 +23,11 @@ import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -52,18 +54,19 @@ import com.google.android.youtube.player.YouTubePlayerSupportFragment;
 import com.odd.ostrinov2.dialogFragments.AddScreen;
 import com.odd.ostrinov2.fragmentsLogic.AboutFragment;
 import com.odd.ostrinov2.fragmentsLogic.ListFragment;
-import com.odd.ostrinov2.QueueAdapter;
 import com.odd.ostrinov2.fragmentsLogic.SearchFragment;
 import com.odd.ostrinov2.listeners.PlayerListener;
 import com.odd.ostrinov2.listeners.QueueListener;
 import com.odd.ostrinov2.services.YTplayerService;
 import com.odd.ostrinov2.tools.DBHandler;
 import com.odd.ostrinov2.tools.IOHandler;
+import com.odd.ostrinov2.tools.PagerAdapter;
 import com.odd.ostrinov2.tools.PermissionHandlerKt;
 import com.odd.ostrinov2.tools.UtilMeths;
 import com.odd.ostrinov2.tools.YoutubeShare;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
@@ -91,7 +94,7 @@ public class MainActivity extends AppCompatActivity
     private Runnable seekbarUpdater;
     private Handler handler = new Handler();
     private SearchView searchView = null;
-    private String lastQuery = "Pokemon Ost";
+    private ViewPager fragPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +105,7 @@ public class MainActivity extends AppCompatActivity
         dbHandler = new DBHandler(this);
         unAddedOst = null;
         rlContent = (RelativeLayout) findViewById(R.id.rlContent);
+        fragPager = (ViewPager) findViewById(R.id.frag_pager);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -138,10 +142,6 @@ public class MainActivity extends AppCompatActivity
         listFragment.setMainAcitivity(this);
         listFragment.setRetainInstance(true);
         manager = getSupportFragmentManager();
-        manager.beginTransaction()
-                .replace(R.id.rlListContainer, listFragment)
-                .addToBackStack("list")
-                .commit();
 
         searchFragment = new SearchFragment();
         searchFragment.setMainActivity(this);
@@ -150,27 +150,18 @@ public class MainActivity extends AppCompatActivity
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.add(R.id.floatingPlayer, youTubePlayerFragment).commit();
 
-        BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.bnvFrag);
+        final BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.bnvFrag);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 item.setChecked(true);
                 switch (item.getItemId()){
                     case R.id.nav_barLibrary:{
-                        manager.beginTransaction()
-                                .replace(R.id.rlListContainer, listFragment)
-                                .addToBackStack("list")
-                                .commit();
+                        fragPager.setCurrentItem(0);
                         break;
                     }
                     case R.id.nav_barSearch:{
-                        manager.beginTransaction()
-                                .replace(R.id.rlListContainer, searchFragment)
-                                .addToBackStack("search")
-                                .commit();
-                        if(!searchFragment.isFromBackStack()){
-                            searchFragment.performSearch(lastQuery);
-                        }
+                        fragPager.setCurrentItem(1);
                         break;
                     }
                     case R.id.nav_barPlaylist:{
@@ -178,7 +169,35 @@ public class MainActivity extends AppCompatActivity
                         break;
                     }
                 }
+
                 return false;
+            }
+        });
+
+        List<Fragment> frags = new ArrayList<Fragment>(){{add(listFragment); add(searchFragment);}};
+        PagerAdapter adapter = new PagerAdapter(manager, frags);
+        fragPager.setAdapter(adapter);
+        fragPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            MenuItem prevMenuItem;
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                //
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                if(prevMenuItem != null){
+                    prevMenuItem.setChecked(false);
+                } else{
+                    bottomNavigationView.getMenu().getItem(0).setChecked(false);
+                }
+                prevMenuItem = bottomNavigationView.getMenu().getItem(position);
+                prevMenuItem.setChecked(true);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                //
             }
         });
 
@@ -222,28 +241,21 @@ public class MainActivity extends AppCompatActivity
         }
         if (searchView != null) {
             searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-            searchView.setQueryHint("Filter");
+            searchView.setQueryHint("Search");
 
             SearchView.OnQueryTextListener queryTextListener = new SearchView.OnQueryTextListener() {
                 @Override
                 public boolean onQueryTextChange(String newText) {
-                    Log.i("onQueryTextChange", newText);
-                    /*listFragment.getCustomAdapter().filter(newText);
-                    MemesKt.launchMeme(newText, MainActivity.this);*/
-
                     return true;
                 }
 
                 @Override
                 public boolean onQueryTextSubmit(String query) {
                     Log.i("onQueryTextSubmit", query);
-                    manager.beginTransaction()
-                            .replace(R.id.rlListContainer, searchFragment)
-                            .addToBackStack("search")
-                            .commit();
+                    fragPager.setCurrentItem(1);
                     searchFragment.performSearch(query);
                     about = true;
-                    lastQuery = query;
+                    //lastQuery = query;
 
                     return true;
                 }
@@ -270,7 +282,7 @@ public class MainActivity extends AppCompatActivity
             case R.id.action_about: {
                 AboutFragment aboutFragment = new AboutFragment();
                 manager.beginTransaction()
-                        .replace(R.id.rlListContainer, aboutFragment)
+                        .replace(R.id.frag_pager, aboutFragment)
                         .addToBackStack("about")
                         .commit();
                 about = true;
@@ -516,7 +528,6 @@ public class MainActivity extends AppCompatActivity
         } else {
             btnPlayPause.setImageResource(R.drawable.ic_play_arrow_black_24dp);
         }
-
     }
 
     public void shuffleOn() {
@@ -554,7 +565,6 @@ public class MainActivity extends AppCompatActivity
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
 
                 } else {
 
@@ -679,8 +689,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-
-
     @Override
     protected void onNewIntent(Intent intent) {
         int ostId = intent.getIntExtra(getString(R.string.label_ost_of_the_day), -1);
@@ -769,4 +777,6 @@ public class MainActivity extends AppCompatActivity
     public static DBHandler getDbHandler(){
         return dbHandler;
     }
+
+    public ListFragment getListFragment() {return listFragment;}
 }
