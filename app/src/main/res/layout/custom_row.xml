@@ -53,8 +53,9 @@
         android:background="@null"
         android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 
-    <ImageButton
+    <android.support.v7.widget.AppCompatImageButton
         android:id="@+id/btnOptions"
+        style="@style/Widget.AppCompat.ImageButton"
         android:layout_width="50dp"
         android:layout_height="40dp"
         android:layout_alignParentEnd="true"
@@ -63,4 +64,5 @@
         android:background="?android:attr/selectableItemBackground"
         android:contentDescription="@android:string/ok"
         app:srcCompat="@drawable/ic_playlist_add_black_24dp" />
+
 </RelativeLayout>
