@@ -11,6 +11,7 @@ import com.odd.ostrinov2.MainActivity
 import com.odd.ostrinov2.Ost
 
 import java.io.File
+import java.io.IOException
 import java.util.ArrayList
 
 internal object UtilMeths {
@@ -34,7 +35,7 @@ internal object UtilMeths {
 
     fun getVideoIdList(ostList: List<Ost>): MutableList<String> {
         val queueList = ArrayList<String>()
-        ostList.forEach{queueList.add(urlToId(it.url))}
+        ostList.forEach { queueList.add(urlToId(it.url)) }
         return queueList
     }
 
@@ -76,6 +77,18 @@ internal object UtilMeths {
 
     fun getThumbnailLocal(url: String): File = File(Environment.getExternalStorageDirectory().toString()
             + "/OSTthumbnails/" + urlToId(url) + ".jpg")
+
+    fun deleteThumbnail(url: String) {
+        val tnFile = getThumbnailLocal(url)
+        try {
+            tnFile.delete()
+        } catch (ex :NoSuchFileException) {
+            System.err.format("%s: no such" + " file or directory%n", tnFile.absolutePath)
+        } catch (exc : IOException) {
+            // File permission problems are caught here.
+            System.err.println(exc)
+        }
+    }
 
     fun chooseFileImport(mainActivity: MainActivity) {
         val intent: Intent
@@ -146,13 +159,13 @@ internal object UtilMeths {
         return parsedOst
     }
 
-    fun buildOstListFromQueue(idString: String, dbHandler: DBHandler): MutableList<Ost>{
+    fun buildOstListFromQueue(idString: String, dbHandler: DBHandler): MutableList<Ost> {
         val idsArray = idString.trim(',').split(',')
         val ostList: MutableList<Ost> = ArrayList(idsArray.size)
-        idsArray.forEach{
-            if(!it.matches(Regex("[0-9]+"))) {
+        idsArray.forEach {
+            if (!it.matches(Regex("[0-9]+"))) {
                 ostList.add(Ost(null, null, null, it))
-            }else if(dbHandler.getOst(it.toInt()) != null){ //Ost might have gotten deleted
+            } else if (dbHandler.getOst(it.toInt()) != null) { //Ost might have gotten deleted
                 println(it)
                 ostList.add(dbHandler.getOst(it.toInt()))
             }

@@ -247,6 +247,7 @@ public class ListFragment extends Fragment implements
     }
 
     public void removeOst(int id){
+        UtilMeths.INSTANCE.deleteThumbnail(customAdapter.getItem(id).getUrl());
         customAdapter.removeOst(id);
     }
     public CustomAdapter getCustomAdapter() {
