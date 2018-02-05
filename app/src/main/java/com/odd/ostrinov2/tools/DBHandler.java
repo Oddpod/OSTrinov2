@@ -77,7 +77,6 @@ public class DBHandler extends SQLiteOpenHelper {
 
         //inserting Row
         db.insert(OST_TABLE, null, values);
-        db.close();
         Log.i("AddNewOst", "row inserted");
 
     }

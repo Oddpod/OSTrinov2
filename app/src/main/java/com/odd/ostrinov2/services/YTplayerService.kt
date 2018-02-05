@@ -129,8 +129,9 @@ class YTplayerService : Service(),
             Log.i(NOT_LOG_TAG, "Received Stop Foreground Intent")
             rl.removeView(floatingPlayer)
             wm.removeView(rl)
-            yPlayerHandler.stopPlayer()
             mainActivity.saveSession()
+            yPlayerHandler.stopPlayer()
+
             //stopSelf()
         }
         return Service.START_NOT_STICKY

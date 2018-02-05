@@ -2,6 +2,7 @@ package com.odd.ostrinov2.tools
 
 import android.content.Context
 import android.net.Uri
+import com.odd.ostrinov2.MainActivity
 import com.odd.ostrinov2.Ost
 import java.io.BufferedReader
 import java.io.IOException
@@ -32,10 +33,10 @@ internal object IOHandler {
 
     fun readFromFile(uri: Uri, context: Context) {
         try {
-            val db = DBHandler(context)
+            val db = MainActivity.getDbHandler()
             val `is` = context.contentResolver.openInputStream(uri)
             val reader = BufferedReader(InputStreamReader(`is`!!))
-            var lines: List<String> = reader.readLines()
+            val lines: List<String> = reader.readLines()
             for (line in lines){
                 val ost = Ost()
                 val lineArray = line.split("; ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()

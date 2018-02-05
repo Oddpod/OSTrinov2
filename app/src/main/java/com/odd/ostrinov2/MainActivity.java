@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity
         DialogInterface.OnDismissListener, QueueListener,
         View.OnClickListener {
 
-    private final static String PREFS_NAME= "Saved queue";
+    private final static String PREFS_NAME = "Saved queue";
     private static DBHandler dbHandler;
     private Ost unAddedOst;
     private int backPress;
@@ -83,11 +83,12 @@ public class MainActivity extends AppCompatActivity
     private FrameLayout floatingPlayer;
     private RelativeLayout rlContent;
     private boolean youtubePlayerLaunched = false, about = false, addCanceled = true, ostFromWidget = false;
+    private int ostFromWidgetId;
     private QueueAdapter queueAdapter;
     private FragmentManager manager;
     private YouTubePlayerSupportFragment youTubePlayerFragment;
     private Boolean mIsBound = false, shuffleActivated = false, repeat = false, playing = false,
-                lastSessionLoaded = false;
+            lastSessionLoaded = false;
     private YTplayerService yTplayerService;
     private ImageButton btnRepeat, btnPlayPause, btnShuffle;
     private SeekBar seekBar;
@@ -155,30 +156,33 @@ public class MainActivity extends AppCompatActivity
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 item.setChecked(true);
-                switch (item.getItemId()){
-                    case R.id.nav_barLibrary:{
+                switch (item.getItemId()) {
+                    case R.id.nav_barLibrary: {
                         fragPager.setCurrentItem(0);
                         break;
                     }
-                    case R.id.nav_barSearch:{
+                    case R.id.nav_barSearch: {
                         fragPager.setCurrentItem(1);
                         break;
                     }
-                    case R.id.nav_barPlaylist:{
+                    case R.id.nav_barPlaylist: {
                         Toast.makeText(getApplicationContext(), "Not implemented", Toast.LENGTH_SHORT).show();
                         break;
                     }
                 }
-
                 return false;
             }
         });
 
-        List<Fragment> frags = new ArrayList<Fragment>(){{add(listFragment); add(searchFragment);}};
+        List<Fragment> frags = new ArrayList<Fragment>() {{
+            add(listFragment);
+            add(searchFragment);
+        }};
         PagerAdapter adapter = new PagerAdapter(manager, frags);
         fragPager.setAdapter(adapter);
         fragPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             MenuItem prevMenuItem;
+
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
                 //
@@ -186,9 +190,9 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onPageSelected(int position) {
-                if(prevMenuItem != null){
+                if (prevMenuItem != null) {
                     prevMenuItem.setChecked(false);
-                } else{
+                } else {
                     bottomNavigationView.getMenu().getItem(0).setChecked(false);
                 }
                 prevMenuItem = bottomNavigationView.getMenu().getItem(position);
@@ -202,12 +206,7 @@ public class MainActivity extends AppCompatActivity
         });
 
         Intent intent = getIntent();
-        int ostId = intent.getIntExtra(getString(R.string.label_ost_of_the_day), -1);
-        if (ostId != -1) {
-            ostFromWidget = true;
-        } else {
-            addOstLink(intent);
-        }
+        handleIntent(intent);
     }
 
     @Override
@@ -401,11 +400,10 @@ public class MainActivity extends AppCompatActivity
         String tags = fieldData[2];
         String url = fieldData[3];
 
-        if(addCanceled){
+        if (addCanceled) {
             unAddedOst = new Ost(title, show, tags, url);
             listFragment.setUnAddedOst(unAddedOst);
-        }
-        else{
+        } else {
             addCanceled = true;
         }
     }
@@ -480,12 +478,12 @@ public class MainActivity extends AppCompatActivity
             Toast.makeText(this, "Play something first bruh :)", Toast.LENGTH_SHORT).show();
         } else {
             switch (id) {
-                case R.id.btnRepeat:{
-                    if(!repeat){
+                case R.id.btnRepeat: {
+                    if (!repeat) {
                         yTplayerService.setRepeating(true);
                         btnRepeat.setColorFilter(Color.GREEN, PorterDuff.Mode.SRC_ATOP);
                         repeat = true;
-                    }else{
+                    } else {
                         yTplayerService.setRepeating(false);
                         btnRepeat.clearColorFilter();
                         repeat = false;
@@ -508,11 +506,10 @@ public class MainActivity extends AppCompatActivity
                     break;
                 }
 
-                case R.id.btnShuffle:{
-                    if(shuffleActivated){
+                case R.id.btnShuffle: {
+                    if (shuffleActivated) {
                         shuffleOff();
-                    }
-                    else{
+                    } else {
                         shuffleOn();
                     }
                     break;
@@ -600,9 +597,10 @@ public class MainActivity extends AppCompatActivity
             // cast its IBinder to a concrete class and directly access it.
             yTplayerService = ((YTplayerService.LocalBinder) service).getService();
             yTplayerService.registerBroadcastReceiver();
-            if(ostFromWidget){
-                startWidgetOst();
-            } else if(!lastSessionLoaded) {
+            if (ostFromWidget) {
+                startWidgetOst(ostFromWidgetId);
+                ostFromWidget = false;
+            } else if (!lastSessionLoaded) {
                 loadLastSession();
             }
             // Tell the user about this for our demo.
@@ -661,7 +659,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onPause(){
+    public void onPause() {
         super.onPause();
     }
 
@@ -671,13 +669,13 @@ public class MainActivity extends AppCompatActivity
         doBindService();
         if (!youtubePlayerLaunched) {
             initPlayerService();
-        } else{
+        } else {
             handler.postDelayed(seekbarUpdater, 1000);
         }
     }
 
-    private void addOstLink(Intent intent){
-        if (intent.getAction().equals(Intent.ACTION_SEND) && intent.getType().equals("text/plain")){
+    private void addOstLink(Intent intent) {
+        if (intent.getAction().equals(Intent.ACTION_SEND) && intent.getType().equals("text/plain")) {
             Bundle extras = intent.getExtras();
             String link = extras.getString(Intent.EXTRA_TEXT);
             YoutubeShare yShare = new YoutubeShare(link);
@@ -691,25 +689,45 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onNewIntent(Intent intent) {
-        int ostId = intent.getIntExtra(getString(R.string.label_ost_of_the_day), -1);
-
-        if (ostId != -1) {
-            initiatePlayer(dbHandler.getAllOsts(), ostId);
-        }else{
-            addOstLink(intent);
+        handleIntent(intent);
+        if(ostFromWidget){
+            startWidgetOst(ostFromWidgetId);
+            ostFromWidget = false;
         }
         super.onNewIntent(intent);
     }
 
-    void startWidgetOst(){
-        Intent widgetIntent = getIntent();
-        int startId = widgetIntent.getIntExtra(getString(R.string.label_ost_of_the_day), -1);
-        if(startId != -1){
+    private void handleIntent(Intent intent) {
+        System.out.println(intent.getAction());
+        String intAction = intent.getAction();
+        if(intAction == null){
+            return;
+        }
+        switch (intAction){
+            case Constants.NOT_OPEN_ACTIVITY_ACTION:{
+                // Does nothing so far
+                break;
+            }
+            case Constants.START_OST:{
+                ostFromWidget = true;
+                ostFromWidgetId = intent.getIntExtra(getString(R.string.label_ost_of_the_day),
+                        -1);
+                break;
+            }
+            case Intent.ACTION_SEND:{
+                addOstLink(intent);
+                break;
+            }
+        }
+    }
+
+    void startWidgetOst(int startId) {
+        if (startId != -1) {
             initiatePlayer(dbHandler.getAllOsts(), startId);
         }
     }
 
-    private void initiateSeekbarTimer(){
+    private void initiateSeekbarTimer() {
         final int interval = 1000; // 1 Second
         seekbarUpdater = new Runnable() {
             public void run() {
@@ -724,21 +742,21 @@ public class MainActivity extends AppCompatActivity
         handler.postDelayed(seekbarUpdater, interval);
     }
 
-    public void setSeekBarProgress(int progress){
+    public void setSeekBarProgress(int progress) {
         seekBar.setProgress(progress);
     }
 
-    public SeekBar getSeekBar(){
+    public SeekBar getSeekBar() {
         return seekBar;
     }
 
-    private void loadLastSession(){
+    private void loadLastSession() {
         SharedPreferences lastSessionPrefs = getSharedPreferences(PREFS_NAME, 0);
         String queueString = lastSessionPrefs.getString("lastSession", "");
         int timestamp = lastSessionPrefs.getInt("timeStamp", 0);
         int lastCurr = lastSessionPrefs.getInt("lastCurrPlaying", 0);
         int videoDuration = lastSessionPrefs.getInt("videoDuration", 0);
-        if(!queueString.equals("")){
+        if (!queueString.equals("")) {
             Log.d("lastQueue", queueString);
             List<Ost> lastQueueList = UtilMeths.INSTANCE.buildOstListFromQueue(queueString, dbHandler);
             initiatePlayer(lastQueueList, lastCurr);
@@ -747,16 +765,15 @@ public class MainActivity extends AppCompatActivity
         lastSessionLoaded = true;
     }
 
-    public void saveSession(){
+    public void saveSession() {
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         SharedPreferences.Editor editor = settings.edit();
         StringBuilder stringBuilder = new StringBuilder();
-        for (Ost ost: yTplayerService.getQueueHandler().getOstList()
+        for (Ost ost : yTplayerService.getQueueHandler().getOstList()
                 ) {
-            if(ost.getId() == 0){ //appends the url of the ost since it has been added from search
+            if (ost.getId() == 0) { //appends the url of the ost since it has been added from search
                 stringBuilder.append(ost.getUrl()).append(",");
-            }
-            else{
+            } else {
                 stringBuilder.append(ost.getId()).append(",");
             }
         }
@@ -774,9 +791,11 @@ public class MainActivity extends AppCompatActivity
         Log.i("Wrote session", successString);
     }
 
-    public static DBHandler getDbHandler(){
+    public static DBHandler getDbHandler() {
         return dbHandler;
     }
 
-    public ListFragment getListFragment() {return listFragment;}
+    public ListFragment getListFragment() {
+        return listFragment;
+    }
 }

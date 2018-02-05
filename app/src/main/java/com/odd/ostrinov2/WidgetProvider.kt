@@ -35,6 +35,7 @@ class WidgetProvider : AppWidgetProvider() {
 
             val intent = Intent(context, MainActivity::class.java)
             intent.putExtra(context.getString(R.string.label_ost_of_the_day), ostNum)
+            intent.action = Constants.START_OST
             val pendingIntent = PendingIntent.getActivity(context,
                     0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
             remoteViews.setOnClickPendingIntent(R.id.widgetThumbnail, pendingIntent)

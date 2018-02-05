@@ -4,6 +4,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
+import android.support.v4.app.NavUtils
 import android.support.v4.app.NotificationCompat
 import android.view.View
 import android.widget.RemoteViews
@@ -33,10 +34,9 @@ class PlayerNotificationService(private val service: YTplayerService) {
         views.setViewVisibility(R.id.status_bar_album_art, View.GONE)
 
         val notificationIntent = Intent(service, MainActivity::class.java)
-        notificationIntent.action = Constants.MAIN_ACTION
-        notificationIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        notificationIntent.action = Constants.NOT_OPEN_ACTIVITY_ACTION
         val pendingIntent = PendingIntent.getActivity(service, 0,
-                notificationIntent, 0)
+                notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT)
 
         val previousIntent = Intent(service, YTplayerService::class.java)
         previousIntent.action = Constants.PREV_ACTION
