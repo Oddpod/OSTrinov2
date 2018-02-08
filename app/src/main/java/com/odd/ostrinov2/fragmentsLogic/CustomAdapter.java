@@ -115,23 +115,6 @@ class CustomAdapter extends BaseAdapter implements PlayerListener {
         notifyDataSetChanged();
     }
 
-    @Override
-    public void next() {
-    }
-
-    @Override
-    public void previous() {
-    }
-
-    @Override
-    public void shuffle(long seed) {
-    }
-
-    @Override
-    public void unShuffle(List<Ost> unShuffledList) {
-
-    }
-
     void filter(String charText) {
         lastQuery = charText.toLowerCase(Locale.getDefault());
         ostList.clear();
