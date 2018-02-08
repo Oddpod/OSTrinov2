@@ -44,13 +44,13 @@ class YoutubePlayerHandler(private var playerNotification:
             }
             }*/
             if(loadLastSession){
-                yPlayer.cueVideo(queueHandler.currentlyPlaying, lastSessionTimeStamp)
+                yPlayer.cueVideo(queueHandler.currentlyPlaying.videoId, lastSessionTimeStamp)
                 loadLastSession = false
                 userPaused = true
                 lastSessionTimeStamp = 0
 
             } else{
-                yPlayer.loadVideo(queueHandler.currentlyPlaying)
+                yPlayer.loadVideo(queueHandler.currentlyPlaying.videoId)
             }
 
             yPlayer.setPlayerStateChangeListener(this)
@@ -60,7 +60,7 @@ class YoutubePlayerHandler(private var playerNotification:
             yPlayer.addFullscreenControlFlag(YouTubePlayer.FULLSCREEN_FLAG_CUSTOM_LAYOUT)
             mainActivity.seekBar.setOnSeekBarChangeListener(this)
 
-            playerNotification.updateNotInfo(queueHandler.getCurrPlayingOst())
+            playerNotification.updateNotInfo(queueHandler.currentlyPlaying)
         }
     }
 
@@ -112,7 +112,7 @@ class YoutubePlayerHandler(private var playerNotification:
 
     fun playerPrevious() {
         yPlayer.loadVideo(queueHandler.previous()!!)
-        playerNotification.updateNotInfo(queueHandler.getCurrPlayingOst())
+        playerNotification.updateNotInfo(queueHandler.currentlyPlaying)
     }
 
     fun pausePlay() {
@@ -128,7 +128,7 @@ class YoutubePlayerHandler(private var playerNotification:
     fun playerNext() {
         if(queueHandler.hasNext()){
             yPlayer.loadVideo(queueHandler.next()!!)
-            playerNotification.updateNotInfo(queueHandler.getCurrPlayingOst())
+            playerNotification.updateNotInfo(queueHandler.currentlyPlaying)
         }
         else
             yPlayer.pause()
@@ -149,16 +149,16 @@ class YoutubePlayerHandler(private var playerNotification:
 
     fun initiateQueue(ostList: List<Ost>, startIndex: Int, shuffle: Boolean) {
         queueHandler.initiateQueue(ostList, startIndex, shuffle)
-        yPlayer.loadVideo(queueHandler.currentlyPlaying)
-        playerNotification.updateNotInfo(queueHandler.getCurrPlayingOst())
+        yPlayer.loadVideo(queueHandler.getCurrVideoId())
+        playerNotification.updateNotInfo(queueHandler.currentlyPlaying)
         userPaused = false
     }
 
     fun refresh(){
         if (userPaused) {
-            yPlayer.cueVideo(queueHandler.currentlyPlaying, stoppedTime)
+            yPlayer.cueVideo(queueHandler.getCurrVideoId(), stoppedTime)
         } else {
-            yPlayer.loadVideo(queueHandler.currentlyPlaying, stoppedTime)
+            yPlayer.loadVideo(queueHandler.getCurrVideoId(), stoppedTime)
         }
     }
 
@@ -180,7 +180,6 @@ class YoutubePlayerHandler(private var playerNotification:
     fun loadLastSession(load: Boolean, playbackPos: Int, duration: Int){
         loadLastSession = load
         lastSessionTimeStamp = playbackPos
-        println(playbackPos.toString() + ", " + duration)
         mainActivity.seekBar.max = duration
         mainActivity.seekBar.progress = playbackPos
 
