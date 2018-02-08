@@ -35,7 +35,7 @@ class SearchAdapter(private val mContext: Context, val mainActivity: MainActivit
         viewWrapper.tvVideoTitle.text = video.title
         viewWrapper.tvViews.text = video.uploader
         viewWrapper.btnOptions.setOnClickListener {
-            val pum = PopupMenu(mainActivity, viewWrapper.btnOptions)
+            val pum = PopupMenu(mContext, viewWrapper.btnOptions)
             pum.inflate(R.menu.btn_chooser_popup)
             pum.setOnMenuItemClickListener { item ->
                 when (item?.itemId) {

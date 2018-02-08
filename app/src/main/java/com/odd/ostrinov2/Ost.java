@@ -1,7 +1,9 @@
 package com.odd.ostrinov2;
 
+import com.odd.ostrinov2.tools.UtilMeths;
+
 public class Ost{
-    private String title, show, tags, url;
+    private String title, show, tags, url, videoId;
 
     private int id;
 
@@ -12,6 +14,7 @@ public class Ost{
         this.show = show;
         this.tags = tags;
         this.url = url;
+        this.videoId = UtilMeths.INSTANCE.urlToId(url);
     }
 
     @Override
@@ -58,6 +61,11 @@ public class Ost{
     }
     public void setUrl(String url){
         this.url = url;
+        this.videoId = UtilMeths.INSTANCE.urlToId(url);
+    }
+
+    public String getVideoId(){
+        return videoId;
     }
 
     public String getSearchString(){
