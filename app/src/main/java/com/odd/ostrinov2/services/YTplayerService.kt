@@ -15,10 +15,7 @@ import com.google.android.youtube.player.YouTubePlayerSupportFragment
 import com.odd.ostrinov2.listeners.PlayerListener
 import android.app.KeyguardManager
 import android.content.IntentFilter
-import com.odd.ostrinov2.Constants
-import com.odd.ostrinov2.MainActivity
-import com.odd.ostrinov2.Ost
-import com.odd.ostrinov2.R
+import com.odd.ostrinov2.*
 import com.odd.ostrinov2.tools.QueueHandler
 import com.odd.ostrinov2.tools.YoutubePlayerHandler
 import com.odd.ostrinov2.tools.isSystemAlertPermissionGranted
@@ -138,8 +135,8 @@ class YTplayerService : Service(),
     }
 
     fun startQueue(ostList: List<Ost>, startIndex: Int, shuffle: Boolean,
-                   playerListeners: Array<PlayerListener>, youTubePlayerFragment: YouTubePlayerSupportFragment) {
-        val queueHandler = QueueHandler(ostList.toMutableList(), startIndex, shuffle, playerListeners)
+                   playerListener: PlayerListener, queueAdapter: QueueAdapter, youTubePlayerFragment: YouTubePlayerSupportFragment) {
+        val queueHandler = QueueHandler(ostList.toMutableList(), startIndex, shuffle, playerListener, queueAdapter)
         yTPlayerFrag = youTubePlayerFragment
         yTPlayerFrag.retainInstance = true
         playerNotification = PlayerNotificationService(this)

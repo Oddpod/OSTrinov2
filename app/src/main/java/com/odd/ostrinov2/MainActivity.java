@@ -135,7 +135,7 @@ public class MainActivity extends AppCompatActivity
 
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
         rvQueue.setLayoutManager(mLayoutManager);
-        queueAdapter = new QueueAdapter(this, this);
+        queueAdapter = new QueueAdapter(this);
         rvQueue.setAdapter(queueAdapter);
         rvQueue.setItemAnimator(new DefaultItemAnimator());
 
@@ -293,7 +293,7 @@ public class MainActivity extends AppCompatActivity
                 if (!youtubePlayerLaunched) {
                     Toast.makeText(this, "Nothing is playing", Toast.LENGTH_SHORT).show();
                 } else {
-                    Ost ost = yTplayerService.getQueueHandler().getCurrPlayingOst();
+                    Ost ost = yTplayerService.getQueueHandler().getCurrentlyPlaying();
                     ClipData clip = ClipData.newPlainText("Ost url", ost.getUrl());
                     clipboard.setPrimaryClip(clip);
                     Toast.makeText(this, "Link Copied to Clipboard", Toast.LENGTH_SHORT).show();
@@ -441,7 +441,6 @@ public class MainActivity extends AppCompatActivity
             Toast.makeText(this, "You have to play something first", Toast.LENGTH_SHORT).show();
         } else {
             yTplayerService.getQueueHandler().addToQueue(ost);
-            queueAdapter.addToQueue(ost);
         }
 
     }
@@ -454,18 +453,13 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void initiatePlayer(List<Ost> ostList, int startId) {
-        queueAdapter.initiateQueue(ostList, startId);
-
         if (!youtubePlayerLaunched) {
             initiateSeekbarTimer();
             rlContent.removeView(floatingPlayer);
             youtubePlayerLaunched = true;
-            PlayerListener[] playerListeners = new PlayerListener[2];
-            playerListeners[0] = queueAdapter;
-            playerListeners[1] = listFragment.getCustomAdapter();
             yTplayerService.launchFloater(floatingPlayer, this);
             yTplayerService.startQueue(ostList, startId, shuffleActivated,
-                    playerListeners, youTubePlayerFragment);
+                    listFragment.getCustomAdapter(), queueAdapter, youTubePlayerFragment);
         } else {
             yTplayerService.initiateQueue(ostList, startId, shuffleActivated);
         }
@@ -546,7 +540,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void removeFromQueue(String url) {
-        yTplayerService.getQueueHandler().removeFromQueue(url);
+        //yTplayerService.getQueueHandler().removeFromQueue();
     }
 
     public void youtubePlayerStopped() {
