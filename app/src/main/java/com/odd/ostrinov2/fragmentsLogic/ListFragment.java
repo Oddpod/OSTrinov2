@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Random;
 
 public class ListFragment extends Fragment implements
-        View.OnClickListener, QueueListener {
+        View.OnClickListener {
 
     boolean editedOst;
     private int ostReplaceId, ostReplacePos;
@@ -203,17 +203,6 @@ public class ListFragment extends Fragment implements
         return customAdapter.getOstList();
     }
 
-    @Override
-    public void addToQueue(int addId) {
-        Ost ost = getCurrDispOstList().get(addId);
-        mainActivity.addToQueue(ost);
-    }
-
-    @Override
-    public void removeFromQueue(String url) {
-
-    }
-
     public void refreshListView(){
         editedOst = false;
         allOsts = MainActivity.getDbHandler().getAllOsts();
@@ -243,7 +232,7 @@ public class ListFragment extends Fragment implements
 
         this.mainActivity = mainAcitivity;
         allOsts = MainActivity.getDbHandler().getAllOsts();
-        customAdapter = new CustomAdapter(mainAcitivity.getApplicationContext(), allOsts, this);
+        customAdapter = new CustomAdapter(mainAcitivity.getApplicationContext(), allOsts, mainAcitivity);
     }
 
     public void removeOst(int id){
