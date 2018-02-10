@@ -37,6 +37,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.DragEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -104,6 +105,7 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         dbHandler = new DBHandler(this);
+        //dbHandler.emptyTable();
         unAddedOst = null;
         rlContent = (RelativeLayout) findViewById(R.id.rlContent);
         fragPager = (ViewPager) findViewById(R.id.frag_pager);
@@ -171,6 +173,28 @@ public class MainActivity extends AppCompatActivity
                     }
                 }
                 return false;
+            }
+        });
+        bottomNavigationView.setOnDragListener(new View.OnDragListener() {
+            @Override
+            public boolean onDrag(View v, DragEvent event) {
+                System.out.println("OKODOKI");
+                System.out.println(event.getAction());
+                switch (event.getAction()) {
+                    case DragEvent.ACTION_DRAG_ENDED: {
+                        return true;
+                    }
+                    case DragEvent.ACTION_DROP: {
+                        return true;
+                    }
+                    case DragEvent.ACTION_DRAG_STARTED: {
+                        bottomNavigationView.getMenu().getItem(1).setChecked(true);
+                        return true;
+                    }
+                    default: {
+                        return false;
+                    }
+                }
             }
         });
 
@@ -414,18 +438,12 @@ public class MainActivity extends AppCompatActivity
         if (requestCode == 1 && resultCode == RESULT_OK) {
             Uri currFileURI = data.getData();
             IOHandler.INSTANCE.readFromFile(currFileURI, this);
-            listFragment.refreshListView();
         }
         if (requestCode == 2 && resultCode == RESULT_OK) {
             Uri currFileURI = data.getData();
-            try {
-                IOHandler.INSTANCE.writeToFile(currFileURI, dbHandler.getAllOsts(), this);
-                listFragment.refreshListView();
-
-            } catch (IOException e) {
-                Log.i("OnActivityResult", " caught IOexception");
-            }
+            IOHandler.INSTANCE.writeToFile(currFileURI, dbHandler.getAllOsts(), this);
         }
+
         if (requestCode == 3) {
             yTplayerService.launchFloater(floatingPlayer, this);
         }
@@ -684,7 +702,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onNewIntent(Intent intent) {
         handleIntent(intent);
-        if(ostFromWidget){
+        if (ostFromWidget) {
             startWidgetOst(ostFromWidgetId);
             ostFromWidget = false;
         }
@@ -694,21 +712,21 @@ public class MainActivity extends AppCompatActivity
     private void handleIntent(Intent intent) {
         System.out.println(intent.getAction());
         String intAction = intent.getAction();
-        if(intAction == null){
+        if (intAction == null) {
             return;
         }
-        switch (intAction){
-            case Constants.NOT_OPEN_ACTIVITY_ACTION:{
+        switch (intAction) {
+            case Constants.NOT_OPEN_ACTIVITY_ACTION: {
                 // Does nothing so far
                 break;
             }
-            case Constants.START_OST:{
+            case Constants.START_OST: {
                 ostFromWidget = true;
                 ostFromWidgetId = intent.getIntExtra(getString(R.string.label_ost_of_the_day),
                         -1);
                 break;
             }
-            case Intent.ACTION_SEND:{
+            case Intent.ACTION_SEND: {
                 addOstLink(intent);
                 break;
             }
