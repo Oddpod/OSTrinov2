@@ -166,8 +166,7 @@ internal object UtilMeths {
             if (!it.matches(Regex("[0-9]+"))) {
                 ostList.add(Ost(null, null, null, it))
             } else if (dbHandler.getOst(it.toInt()) != null) { //Ost might have gotten deleted
-                println(it)
-                ostList.add(dbHandler.getOst(it.toInt()))
+                ostList.add(dbHandler.getOst(it.toInt()) as Ost)
             }
         }
         return ostList
