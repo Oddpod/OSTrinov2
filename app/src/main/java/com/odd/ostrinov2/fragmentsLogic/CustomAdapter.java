@@ -1,6 +1,7 @@
 package com.odd.ostrinov2.fragmentsLogic;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,12 +9,12 @@ import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.odd.ostrinov2.Constants;
 import com.odd.ostrinov2.Ost;
 import com.odd.ostrinov2.R;
 import com.odd.ostrinov2.listeners.PlayerListener;
-import com.odd.ostrinov2.listeners.QueueListener;
+import com.odd.ostrinov2.services.YTplayerService;
 import com.odd.ostrinov2.tools.UtilMeths;
 import com.squareup.picasso.Picasso;
 
@@ -24,23 +25,21 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
-class CustomAdapter extends BaseAdapter implements PlayerListener {
+class CustomAdapter extends BaseAdapter implements PlayerListener{
 
     private List<Ost> filteredOstList, ostList;
     private Context mContext;
     private int prevSortedMode = 0;
     private LayoutInflater mInflater;
-    private QueueListener queueListener;
     private int nowPlaying = -1;
     private String lastQuery = "";
 
-    CustomAdapter(Context context, List<Ost> ostListin, QueueListener ql) {
+    CustomAdapter(Context context, List<Ost> ostListin) {
         mContext = context;
         ostList = new ArrayList<>();
         ostList.addAll(ostListin);
         filteredOstList = new ArrayList<>();
         filteredOstList.addAll(ostListin);
-        queueListener = ql;
         mInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
@@ -83,8 +82,10 @@ class CustomAdapter extends BaseAdapter implements PlayerListener {
         holder.btnOptions.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(mContext, ost.getTitle() + " added to queue", Toast.LENGTH_SHORT).show();
-                queueListener.addToQueue(position);
+                Intent intent = new Intent(mContext, YTplayerService.class);
+                intent.putExtra("ost_extra", ost);
+                intent.setAction(Constants.ADD_OST_TO_QUEUE);
+                mContext.startService(intent);
             }
         });
 

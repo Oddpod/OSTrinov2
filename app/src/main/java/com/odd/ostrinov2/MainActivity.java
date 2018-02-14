@@ -56,8 +56,6 @@ import com.odd.ostrinov2.dialogFragments.AddScreen;
 import com.odd.ostrinov2.fragmentsLogic.AboutFragment;
 import com.odd.ostrinov2.fragmentsLogic.ListFragment;
 import com.odd.ostrinov2.fragmentsLogic.SearchFragment;
-import com.odd.ostrinov2.listeners.PlayerListener;
-import com.odd.ostrinov2.listeners.QueueListener;
 import com.odd.ostrinov2.services.YTplayerService;
 import com.odd.ostrinov2.tools.DBHandler;
 import com.odd.ostrinov2.tools.IOHandler;
@@ -66,14 +64,12 @@ import com.odd.ostrinov2.tools.PermissionHandlerKt;
 import com.odd.ostrinov2.tools.UtilMeths;
 import com.odd.ostrinov2.tools.YoutubeShare;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
         implements AddScreen.AddScreenListener,
-        DialogInterface.OnDismissListener, QueueListener,
-        View.OnClickListener {
+        DialogInterface.OnDismissListener, View.OnClickListener {
 
     private final static String PREFS_NAME = "Saved queue";
     private static DBHandler dbHandler;
@@ -173,28 +169,6 @@ public class MainActivity extends AppCompatActivity
                     }
                 }
                 return false;
-            }
-        });
-        bottomNavigationView.setOnDragListener(new View.OnDragListener() {
-            @Override
-            public boolean onDrag(View v, DragEvent event) {
-                System.out.println("OKODOKI");
-                System.out.println(event.getAction());
-                switch (event.getAction()) {
-                    case DragEvent.ACTION_DRAG_ENDED: {
-                        return true;
-                    }
-                    case DragEvent.ACTION_DROP: {
-                        return true;
-                    }
-                    case DragEvent.ACTION_DRAG_STARTED: {
-                        bottomNavigationView.getMenu().getItem(1).setChecked(true);
-                        return true;
-                    }
-                    default: {
-                        return false;
-                    }
-                }
             }
         });
 
@@ -458,6 +432,7 @@ public class MainActivity extends AppCompatActivity
         if (!youtubePlayerLaunched) {
             Toast.makeText(this, "You have to play something first", Toast.LENGTH_SHORT).show();
         } else {
+            System.out.println("Adding to queue");
             yTplayerService.getQueueHandler().addToQueue(ost);
         }
 
@@ -549,16 +524,6 @@ public class MainActivity extends AppCompatActivity
         shuffleActivated = false;
         yTplayerService.getQueueHandler().shuffleOff();
         btnShuffle.clearColorFilter();
-    }
-
-    @Override
-    public void addToQueue(int addId) {
-
-    }
-
-    @Override
-    public void removeFromQueue(String url) {
-        //yTplayerService.getQueueHandler().removeFromQueue();
     }
 
     public void youtubePlayerStopped() {
