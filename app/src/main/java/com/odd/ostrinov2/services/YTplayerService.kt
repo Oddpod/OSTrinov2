@@ -102,6 +102,10 @@ class YTplayerService : Service(),
             }*/
         } else if (action.equals(Constants.NEXT_ACTION, ignoreCase = true)) {
             yPlayerHandler.playerNext()
+        } else if (action.equals(Constants.ADD_OST_TO_QUEUE, ignoreCase = true)) {
+            val ost = intent.getParcelableExtra<Ost>("ost_extra")
+            Toast.makeText(applicationContext, ost.title + " added to queue", Toast.LENGTH_SHORT).show()
+            yPlayerHandler.getQueueHandler().addToQueue(ost)
         } else if(action.equals(Constants.EXPANDMINIMIZE_PLAYER, ignoreCase = true)){
             expandMinimizePlayer()
         }
@@ -113,6 +117,9 @@ class YTplayerService : Service(),
         } else if (intent.action == Constants.PREV_ACTION) {
             handleIntent(intent)
             Log.i(NOT_LOG_TAG, "Clicked Previous")
+        } else if (intent.action == Constants.ADD_OST_TO_QUEUE) {
+            handleIntent(intent)
+            Log.i(NOT_LOG_TAG, "Add ost to queue")
         } else if (intent.action == Constants.PLAY_ACTION) {
             handleIntent(intent)
             Log.i(NOT_LOG_TAG, "Clicked Play")
