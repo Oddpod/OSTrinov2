@@ -58,15 +58,15 @@ internal object IOHandler {
                 val reader = BufferedReader(InputStreamReader(inStream!!))
                 val lines: List<String> = reader.readLines()
                 for (line in lines) {
-                    val ost = Ost()
                     val lineArray = line.split("; ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
                     if (lineArray.size < 4) {
                         continue
                     }
-                    ost.title = lineArray[0]
-                    ost.show = lineArray[1]
-                    ost.tags = lineArray[2]
-                    ost.url = lineArray[3]
+                    val title = lineArray[0]
+                    val show = lineArray[1]
+                    val tags = lineArray[2]
+                    val url = lineArray[3]
+                    val ost = Ost(title, show, tags, url)
                     val alreadyInDB = db.checkiIfOstInDB(ost)
                     if (!alreadyInDB) {
                         db.addNewOst(ost)

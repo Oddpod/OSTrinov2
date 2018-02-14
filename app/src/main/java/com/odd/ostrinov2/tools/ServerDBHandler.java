@@ -47,12 +47,15 @@ class ServerDBHandler{
             ResultSet myRS = startConnectiontoDatabaseAndQuery(sql);
 
             while(myRS.next()){
-                Ost ost = new Ost();
-                ost.setId(myRS.getInt("Ostid"));
-                ost.setTitle(myRS.getString("Title"));
-                ost.setShow(myRS.getString("Show"));
-                ost.setTags(myRS.getString("Tags"));
-                ost.setUrl(myRS.getString("Url"));
+                int id;
+                String title, show, tags, url;
+                id = myRS.getInt("Ostid");
+                title = myRS.getString("Title");
+                show = myRS.getString("Show");
+                tags = myRS.getString("Tags");
+                url = myRS.getString("Url");
+                Ost ost = new Ost(title, show, tags, url);
+                ost.setId(id);
                 ostList.add(ost);
             }
             return ostList;
