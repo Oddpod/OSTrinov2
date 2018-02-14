@@ -164,7 +164,7 @@ internal object UtilMeths {
         val ostList: MutableList<Ost> = ArrayList(idsArray.size)
         idsArray.forEach {
             if (!it.matches(Regex("[0-9]+"))) {
-                ostList.add(Ost(null, null, null, it))
+                ostList.add(Ost("", "", "", it))
             } else if (dbHandler.getOst(it.toInt()) != null) { //Ost might have gotten deleted
                 ostList.add(dbHandler.getOst(it.toInt()) as Ost)
             }
