@@ -48,7 +48,7 @@ data class QueueHandler(var ostList: MutableList<Ost>, var startIndex : Int, var
     }
 
     fun shuffleOff() {
-        notifyPlayerListeners(false)
+        notifyPlayerListeners()
         currPlayingIndex = ostList.indexOf(currentlyPlaying)
         played = Stack()
         queue = Stack()
@@ -61,22 +61,22 @@ data class QueueHandler(var ostList: MutableList<Ost>, var startIndex : Int, var
             }
         }
         shuffle = false
-        notifyPlayerListeners(false)
+        notifyPlayerListeners()
     }
 
     fun shuffleOn() {
         val seed = System.nanoTime()
         queue.subList(queueAddPos, queue.size).shuffle(Random(seed))
         shuffle = true
-        notifyPlayerListeners(false)
+        notifyPlayerListeners()
     }
 
     fun addToQueue(ost: Ost) {
-        queueAddPos++;
-        queue.add(queueAddPos, ost)
+        queue.add(queue.size - queueAddPos, ost)
+        queueAddPos++
         ostList.add(currPlayingIndex + 1, ost)
         currPlayingIndex = ostList.indexOf(currentlyPlaying)
-        notifyPlayerListeners(false)
+        notifyPlayerListeners()
     }
 
     fun removeFromQueue(ost : Ost) {
@@ -91,7 +91,7 @@ data class QueueHandler(var ostList: MutableList<Ost>, var startIndex : Int, var
             queue.push(currentlyPlaying)
             currentlyPlaying = played.pop()
         }
-        notifyPlayerListeners(true)
+        notifyPlayerListeners()
         return currentlyPlaying.videoId
     }
 
@@ -100,16 +100,19 @@ data class QueueHandler(var ostList: MutableList<Ost>, var startIndex : Int, var
             played.push(currentlyPlaying)
             currentlyPlaying = queue.pop()
         }
-        notifyPlayerListeners(false)
+        notifyPlayerListeners()
+        if(queueAddPos != 0){
+            queueAddPos--
+        }
         return currentlyPlaying.videoId
     }
 
-    fun notifyPlayerListeners(previous: Boolean) {
+    fun notifyPlayerListeners() {
         currPlayingIndex = ostList.indexOf(currentlyPlaying)
         playerListener.updateCurrentlyPlaying(ostList[currPlayingIndex].id)
         queueAdapter.notifyDataSetChanged()
         }
-    fun getCurrVideoId() : String = currentlyPlaying.videoId
+    fun getCurrVideoId() : String? = currentlyPlaying.videoId
 
     fun getCurrPlayingIndex(): Int = ostList.indexOf(currentlyPlaying)
 
