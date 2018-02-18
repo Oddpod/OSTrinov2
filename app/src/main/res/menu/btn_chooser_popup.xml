@@ -10,4 +10,9 @@
         android:title="@string/chooser_add_to_library"
         android:titleCondensed="string"
         android:visible="true" />
+    <item
+        android:id="@+id/chooser_copyLink"
+        android:title="@string/chooser_copy_link"
+        android:titleCondensed="string"
+        android:visible="true" />
 </menu>

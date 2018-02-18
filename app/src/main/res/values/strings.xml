@@ -68,4 +68,5 @@
     <!-- Options on resulting video in search -->
     <string name="chooser_add_to_queue">Add to Queue</string>
     <string name="chooser_add_to_library">Add to Library</string>
+    <string name="chooser_copy_link">Copy Link</string>
 </resources>
