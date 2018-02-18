@@ -69,7 +69,8 @@ class CustomAdapter extends BaseAdapter implements PlayerListener{
         } else{
             holder = (ViewHolder) convertView.getTag();
         }
-        File tnFile = UtilMeths.INSTANCE.getThumbnailLocal(ost.getUrl());
+        File tnFile = UtilMeths.INSTANCE.getThumbnailLocal(ost.getUrl(), mContext);
+        //System.out.println(tnPath);
         Picasso.with(mContext)
                 .load(tnFile)
                 .into(holder.thumbnail);
@@ -82,10 +83,7 @@ class CustomAdapter extends BaseAdapter implements PlayerListener{
         holder.btnOptions.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(mContext, YTplayerService.class);
-                intent.putExtra("ost_extra", ost);
-                intent.setAction(Constants.ADD_OST_TO_QUEUE);
-                mContext.startService(intent);
+                UtilMeths.INSTANCE.addToQueue(mContext, ost);
             }
         });
 

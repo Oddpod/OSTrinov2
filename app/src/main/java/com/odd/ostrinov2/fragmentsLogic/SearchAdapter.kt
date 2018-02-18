@@ -1,15 +1,21 @@
 package com.odd.ostrinov2.fragmentsLogic
 
 import android.annotation.SuppressLint
+import android.app.ProgressDialog.show
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import com.odd.ostrinov2.Constants
 import com.odd.ostrinov2.MainActivity
 import com.odd.ostrinov2.Ost
 import com.odd.ostrinov2.R
+import com.odd.ostrinov2.services.YTplayerService
 import com.squareup.picasso.Picasso
 import com.odd.ostrinov2.tools.UtilMeths
 
@@ -39,10 +45,18 @@ class SearchAdapter(private val mContext: Context, val mainActivity: MainActivit
             pum.inflate(R.menu.btn_chooser_popup)
             pum.setOnMenuItemClickListener { item ->
                 when (item?.itemId) {
-                    R.id.chooser_addToQueue -> mainActivity.addToQueue(Ost(video.title, "", "",
-                            video.url))
-                    R.id.chooser_addToLibrary -> {UtilMeths.parseAddOst(video.title, mainActivity, video.url)
+                    R.id.chooser_addToQueue -> { UtilMeths.addToQueue(mContext,
+                            Ost(video.title, "", "", video.url))
+                    }
+                    R.id.chooser_addToLibrary -> {UtilMeths.parseAddOst(video.title, mContext, video.url)
                                                     mainActivity.listFragment.refreshListView()}
+                    R.id.chooser_copyLink ->{
+                        val clipboard = mContext.getSystemService(Context.CLIPBOARD_SERVICE)
+                                as ClipboardManager?
+                        val clip = ClipData.newPlainText("Ost url", video.url)
+                        clipboard!!.primaryClip = clip
+                            Toast.makeText(mContext, "Link Copied to Clipboard", Toast.LENGTH_SHORT)
+                        .show()}
                 }
                 true
             }
