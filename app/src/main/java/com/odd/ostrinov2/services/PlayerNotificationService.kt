@@ -102,7 +102,7 @@ class PlayerNotificationService(private val service: YTplayerService) {
     }
 
     fun updateNotInfo(ost: Ost) {
-        val tnFile = UtilMeths.getThumbnailLocal(ost.url)
+        val tnFile = UtilMeths.getThumbnailLocal(ost.url, service)
         Picasso.with(service).load(tnFile).into(bigViews, R.id.status_bar_album_art,
                 Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, status.build())
         views.setTextViewText(R.id.status_bar_track_name, ost.title)

@@ -15,6 +15,7 @@ import com.odd.ostrinov2.tools.UtilMeths;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
+import java.io.FileDescriptor;
 
 public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper> {
     private Context mContext;
@@ -41,7 +42,7 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper>
         viewWrapper.getTitle().setText(ost.getTitle());
         viewWrapper.getShow().setText(ost.getShow());
         viewWrapper.getTags().setText(ost.getTags());
-        File tnFile = UtilMeths.INSTANCE.getThumbnailLocal(ost.getUrl());
+        File tnFile = UtilMeths.INSTANCE.getThumbnailLocal(ost.getUrl(), mContext);
         Picasso.with(mContext)
                 .load(tnFile)
                 .into(viewWrapper.getThumbnail());
