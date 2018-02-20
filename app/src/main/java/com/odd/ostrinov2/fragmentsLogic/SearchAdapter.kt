@@ -1,11 +1,9 @@
 package com.odd.ostrinov2.fragmentsLogic
 
 import android.annotation.SuppressLint
-import android.app.ProgressDialog.show
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.content.Intent
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -15,7 +13,6 @@ import com.odd.ostrinov2.Constants
 import com.odd.ostrinov2.MainActivity
 import com.odd.ostrinov2.Ost
 import com.odd.ostrinov2.R
-import com.odd.ostrinov2.services.YTplayerService
 import com.squareup.picasso.Picasso
 import com.odd.ostrinov2.tools.UtilMeths
 
@@ -42,11 +39,11 @@ class SearchAdapter(private val mContext: Context, val mainActivity: MainActivit
         viewWrapper.tvViews.text = video.uploader
         viewWrapper.btnOptions.setOnClickListener {
             val pum = PopupMenu(mContext, viewWrapper.btnOptions)
-            pum.inflate(R.menu.btn_chooser_popup)
+            pum.inflate(R.menu.btn_search_chooser_popup)
             pum.setOnMenuItemClickListener { item ->
                 when (item?.itemId) {
-                    R.id.chooser_addToQueue -> { UtilMeths.addToQueue(mContext,
-                            Ost(video.title, "", "", video.url))
+                    R.id.chooser_addToQueue -> { UtilMeths.sendToYTPService(mContext,
+                            Ost(video.title, "", "", video.url), Constants.ADD_OST_TO_QUEUE)
                     }
                     R.id.chooser_addToLibrary -> {UtilMeths.parseAddOst(video.title, mContext, video.url)
                                                     mainActivity.listFragment.refreshListView()}
@@ -66,8 +63,8 @@ class SearchAdapter(private val mContext: Context, val mainActivity: MainActivit
                 .load(video.thumbnailUrl)
                 .into(viewWrapper.ivThumbnail)
         viewWrapper.baseView.setOnClickListener {
-            val ostList = MutableList(1) { Ost(video.title, "", "", video.url) }
-            mainActivity.initiatePlayer(ostList, 0)
+            UtilMeths.sendToYTPService(mContext, Ost(video.title, "", "", video.url),
+                    Constants.START_OST)
         }
     }
     class ObjectViewWrapper(base: View) : RecyclerView.ViewHolder(base), View.OnClickListener {

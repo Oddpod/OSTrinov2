@@ -6,9 +6,12 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.util.Log
 import android.widget.Toast
+import com.odd.ostrinov2.Constants
 import com.odd.ostrinov2.MainActivity
 import com.odd.ostrinov2.Ost
+import com.odd.ostrinov2.services.YTplayerService
 
 import java.io.File
 import java.io.IOException
@@ -23,9 +26,9 @@ internal object UtilMeths {
             lineArray = lineArray[0].split("=".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         } else if (url.contains("be/")) {
             lineArray = url.split("be/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-        } else if(url.contains("=")){
+        } else if (url.contains("=")) {
             lineArray = url.split("=".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-        } else{
+        } else {
             return url
         }
         return lineArray[1]
@@ -45,27 +48,67 @@ internal object UtilMeths {
     }
 
     private fun downloadFile(context: Context, uRl: String, saveName: String) {
-        val direct = File(Environment.getExternalStorageDirectory().toString() + "/OSTthumbnails")
 
-        if (!direct.exists()) {
-            direct.mkdirs()
+        val isSDPresent = android.os.Environment.getExternalStorageState() == android.os.Environment.MEDIA_MOUNTED
+        val isSDSupportedDevice = Environment.isExternalStorageRemovable()
+        val storageString: String
+
+        if(isSDSupportedDevice && isSDPresent) {
+            storageString = Environment.getExternalStorageDirectory().absolutePath
+
+        } else {
+            storageString = context.filesDir.absolutePath
         }
-        val saveString = direct.absolutePath + "/" + saveName + ".jpg"
-        if (!doesFileExist(saveString)) {
-            val mgr = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+        val direct = File( "/OSTthumbnails")
+        createDir(direct, context)
+        downloadAndSave(uRl, direct.absolutePath, saveName, context)
+    }
 
-            val downloadUri = Uri.parse(uRl)
-            val request = DownloadManager.Request(
-                    downloadUri)
+    private fun createDir(storageDir: File, context: Context){
+        if (!storageDir.exists()) {
+            storageDir.mkdirs()
+            val settings = context.getSharedPreferences(Constants.TB_STORAGE_LOCATION, 0)
+            val editor = settings.edit()
+            editor.putString(Constants.TB_STORAGE_LOCATION, storageDir.absolutePath)
+
+            // Commit the edits!
+            val success = editor.commit()
+            val successString = success.toString()
+            Log.i("Wrote Storage loc", successString)
+        }
+    }
+
+    fun sendToYTPService(context: Context, ost: Ost, action: String){
+        val intent = Intent(context, YTplayerService::class.java)
+        intent.putExtra("ost_extra", ost)
+        intent.action = action
+        context.startService(intent)
+    }
+
+    private fun downloadAndSave(url: String, dir: String, saveName: String, context: Context) {
+        val saveString = "/$saveName.jpg"
+        val downloadUri = Uri.parse(url)
+        val request = DownloadManager.Request(
+                downloadUri)
+        if (!UtilMeths.doesFileExist(saveString)) {
+            val mgr = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
 
             request.setAllowedNetworkTypes(
                     DownloadManager.Request.NETWORK_WIFI or DownloadManager.Request.NETWORK_MOBILE)
-                    .setAllowedOverRoaming(false).setTitle(uRl)
-                    .setDescription("Downloading thumbnails")
-                    .setDestinationInExternalPublicDir("/OSTthumbnails", saveName + ".jpg")
-
+                    .setAllowedOverRoaming(false).setTitle("Downloading thumbnails")
+                    .setDescription(url)
+                    .setDestinationInExternalPublicDir(dir, saveString)
             mgr.enqueue(request)
         }
+        val settings = context.getSharedPreferences(Constants.TB_STORAGE_LOCATION, 0)
+        val editor = settings.edit()
+        //println(" dir: " + dir)
+        editor.putString(Constants.TB_STORAGE_LOCATION, dir)
+
+        // Commit the edits!
+        val success = editor.commit()
+        val successString = success.toString()
+        Log.i("Wrote Storage loc", successString)
     }
 
     fun downloadThumbnail(url: String, context: Context) {
@@ -75,16 +118,19 @@ internal object UtilMeths {
 
     fun getThumbNailUrl(videoId: String): String = "https://i.ytimg.com/vi/$videoId/mqdefault.jpg"
 
-    fun getThumbnailLocal(url: String): File = File(Environment.getExternalStorageDirectory().toString()
-            + "/OSTthumbnails/" + urlToId(url) + ".jpg")
+    fun getThumbnailLocal(url: String, context: Context): File {
+        val fileName = urlToId(url) + ".jpg"
+        //val preferences = context.getSharedPreferences(Constants.TB_STORAGE_LOCATION, 0)
+        return File(Environment.getExternalStorageDirectory().absolutePath + "/OSTthumbnails" + "/$fileName")
+    }
 
-    fun deleteThumbnail(url: String) {
-        val tnFile = getThumbnailLocal(url)
+    fun deleteThumbnail(url: String, context: Context) {
+        val tnFile = getThumbnailLocal(url, context)
         try {
             tnFile.delete()
-        } catch (ex :NoSuchFileException) {
+        } catch (ex: NoSuchFileException) {
             System.err.format("%s: no such" + " file or directory%n", tnFile.absolutePath)
-        } catch (exc : IOException) {
+        } catch (exc: IOException) {
             // File permission problems are caught here.
             System.err.println(exc)
         }
