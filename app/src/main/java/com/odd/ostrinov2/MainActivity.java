@@ -67,9 +67,8 @@ import com.odd.ostrinov2.tools.YoutubeShare;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity
-        implements AddScreen.AddScreenListener,
-        DialogInterface.OnDismissListener, View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements
+        AddScreen.AddScreenListener, DialogInterface.OnDismissListener, View.OnClickListener {
 
     private final static String PREFS_NAME = "Saved queue";
     private static DBHandler dbHandler;
@@ -736,8 +735,10 @@ public class MainActivity extends AppCompatActivity
         if (!queueString.equals("")) {
             Log.d("lastQueue", queueString);
             List<Ost> lastQueueList = UtilMeths.INSTANCE.buildOstListFromQueue(queueString, dbHandler);
-            initiatePlayer(lastQueueList, lastCurr);
-            yTplayerService.getPlayerHandler().loadLastSession(true, timestamp, videoDuration);
+            if(lastQueueList.isEmpty() && lastCurr < lastQueueList.size()) {
+                initiatePlayer(lastQueueList, lastCurr);
+                yTplayerService.getPlayerHandler().loadLastSession(true, timestamp, videoDuration);
+            }
         }
         lastSessionLoaded = true;
     }
