@@ -141,7 +141,7 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
 
         values.put(KEY_SHOW, newShow)
         writableDatabase.insert(SHOW_TABLE, null, values)
-        println(allShows)
+        //println(allShows)
         Log.i("AddNewShow", "added new show")
 
     }
@@ -233,18 +233,16 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
 
     fun updateOst(ost: Ost) {
 
+        addNewTagsandShows(ost.show, ost.tags)
+
         val values = ContentValues()
 
-        values.put(KEY_OST_ID, ost.id)
         values.put(KEY_OST_TITLE, ost.title)
         values.put(FKEY_OST_SHOW_ID, getShowId(ost.show))
         values.put(KEY_OST_TAG, ost.tags)
         values.put(KEY_OST_URL, ost.url)
 
-        addNewTagsandShows(ost.show, ost.tags)
-
-        //replacing row
-        writableDatabase.replace(OST_TABLE, null, values)
+        writableDatabase.update(OST_TABLE, values,"$KEY_OST_ID=?", arrayOf(ost.id.toString()) )
     }
 
     fun checkiIfOstInDB(ost: Ost): Boolean {
@@ -262,6 +260,7 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
     private fun checkIfShowInDB(show: String): Boolean {
         showList = allShows
         val showString = show.toLowerCase()
+        allShows.forEach{print("$it, ")}
         showList!!.forEach {
             if (it.toLowerCase() == showString) {
                 return true
@@ -283,40 +282,38 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
 
     private fun addNewTagsandShows(show: String, tagString: String) {
         var tagString = tagString
+        println("Add new tags and shows")
         if (!checkIfShowInDB(show)) {
             addNewShow(show)
         }
 
         if (tagString.endsWith(",")) {
-            tagString = tagString.substring(0, tagString.length - 1)
+            tagString = tagString.trim(',') //substring(0, tagString.length - 1)
         }
         val tags = tagString.split(", ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        tags.forEach { print("$it, ")}
         tags.forEach {
             if (!checkIfTagInDB(it)) {
                 addNewTag(it)
             }
         }
-        addNewTag(tagString)
     }
 
     fun reCreateTagsAndShowTables() {
-        val db = this.writableDatabase
-        val TRUNCATE_TABLE = "DROP TABLE " + TAGS_TABLE + ""
-        db.execSQL(TRUNCATE_TABLE)
-        val TRUNCATE_TABLE2 = "DROP TABLE " + SHOW_TABLE + ""
-        db.execSQL(TRUNCATE_TABLE2)
-
-        val CREATE_OST_TABLE = ("CREATE TABLE " + TAGS_TABLE + "("
-                + "tagid" + " INTEGER PRIMARY KEY,"
-                + KEY_OST_TAG + " TEXT" + ")")
-        db.execSQL(CREATE_OST_TABLE)
-
-        val CREATE_OST_TABLE2 = ("CREATE TABLE " + SHOW_TABLE + "("
-                + "showid" + " INTEGER PRIMARY KEY,"
-                + KEY_SHOW + " TEXT" + ")")
-        db.execSQL(CREATE_OST_TABLE2)
-
         ostList = allOsts
+        val TRUNCATE_TABLE = "DROP TABLE " + TAGS_TABLE + ""
+        writableDatabase.execSQL(TRUNCATE_TABLE)
+        val TRUNCATE_TABLE2 = "DROP TABLE " + SHOW_TABLE + ""
+        writableDatabase.execSQL(TRUNCATE_TABLE2)
+
+        val CREATE_SHOW_TABLE = "CREATE TABLE $SHOW_TABLE($KEY_SHOW_ID INTEGER UNIQUE PRIMARY KEY," +
+                "$KEY_SHOW TEXT )"
+        writableDatabase.execSQL(CREATE_SHOW_TABLE)
+
+        val CREATE_TAGS_TABLE = "CREATE TABLE $TAGS_TABLE($KEY_TAG_ID INTEGER UNIQUE PRIMARY KEY," +
+                "$KEY_OST_TAG TEXT )"
+        writableDatabase.execSQL(CREATE_TAGS_TABLE)
+
         for (ost in ostList!!) {
             addNewTagsandShows(ost.show, ost.tags)
         }
