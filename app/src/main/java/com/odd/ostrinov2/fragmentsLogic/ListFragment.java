@@ -103,8 +103,8 @@ public class ListFragment extends Fragment implements
                                 if (lineArray.length < 4) {
                                     return;
                                 }
-                                Ost ost = new Ost(lineArray[0], lineArray[1], lineArray[3],
-                                        lineArray[4]);
+                                Ost ost = new Ost(lineArray[0], lineArray[1], lineArray[2],
+                                        lineArray[3]);
                                 boolean alreadyInDB = db.checkiIfOstInDB(ost);
                                 if (!alreadyInDB) {
                                     db.addNewOst(ost);
@@ -232,7 +232,7 @@ public class ListFragment extends Fragment implements
     }
 
     public void removeOst(int id){
-        UtilMeths.INSTANCE.deleteThumbnail(customAdapter.getItem(id).getUrl());
+        UtilMeths.INSTANCE.deleteThumbnail(customAdapter.getItem(id).getUrl(), getContext());
         customAdapter.removeOst(id);
     }
     public CustomAdapter getCustomAdapter() {
