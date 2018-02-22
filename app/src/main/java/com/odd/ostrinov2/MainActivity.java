@@ -61,6 +61,7 @@ import com.odd.ostrinov2.tools.DBHandler;
 import com.odd.ostrinov2.tools.IOHandler;
 import com.odd.ostrinov2.tools.PagerAdapter;
 import com.odd.ostrinov2.tools.PermissionHandlerKt;
+import com.odd.ostrinov2.tools.QueueHandler;
 import com.odd.ostrinov2.tools.UtilMeths;
 import com.odd.ostrinov2.tools.YoutubeShare;
 
@@ -74,6 +75,7 @@ public class MainActivity extends AppCompatActivity implements
     private static DBHandler dbHandler;
     private Ost unAddedOst;
     private int backPress;
+    private QueueHandler queueHandler;
     private ListFragment listFragment;
     private SearchFragment searchFragment;
     private FrameLayout floatingPlayer;
@@ -418,7 +420,7 @@ public class MainActivity extends AppCompatActivity implements
         }
 
         if (requestCode == 3) {
-            yTplayerService.launchFloater(floatingPlayer, this);
+            yTplayerService.launchFloater(floatingPlayer, this, queueHandler);
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -449,9 +451,11 @@ public class MainActivity extends AppCompatActivity implements
             initiateSeekbarTimer();
             rlContent.removeView(floatingPlayer);
             youtubePlayerLaunched = true;
-            yTplayerService.launchFloater(floatingPlayer, this);
-            yTplayerService.startQueue(ostList, startId, shuffleActivated,
-                    listFragment.getCustomAdapter(), queueAdapter, youTubePlayerFragment);
+            queueHandler = new QueueHandler(ostList, startId,
+                    shuffleActivated, listFragment.getCustomAdapter(), queueAdapter);
+            yTplayerService.launchFloater(floatingPlayer, this, queueHandler);
+            //yTplayerService.startQueue(ostList, startId, shuffleActivated,
+             //       listFragment.getCustomAdapter(), queueAdapter, youTubePlayerFragment);
         } else {
             yTplayerService.initiateQueue(ostList, startId, shuffleActivated);
         }

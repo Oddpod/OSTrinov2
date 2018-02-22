@@ -6,7 +6,7 @@ import android.os.Parcelable
 import com.odd.ostrinov2.tools.UtilMeths
 
 class Ost(var title: String, var show: String, var tags: String, var url: String) : Parcelable {
-    var videoId: String? = null
+    var videoId: String
         private set
 
     var id: Int = 0
