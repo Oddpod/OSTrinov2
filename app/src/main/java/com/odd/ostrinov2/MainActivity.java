@@ -90,8 +90,8 @@ public class MainActivity extends AppCompatActivity implements
     private YTplayerService yTplayerService;
     private ImageButton btnRepeat, btnPlayPause, btnShuffle;
     private SeekBar seekBar;
-    private Runnable seekbarUpdater;
-    private Handler handler = new Handler();
+    private static Runnable seekbarUpdater;
+    private static Handler handler = new Handler();
     private SearchView searchView = null;
     private ViewPager fragPager;
 
@@ -448,7 +448,7 @@ public class MainActivity extends AppCompatActivity implements
 
     public void initiatePlayer(List<Ost> ostList, int startId) {
         if (!youtubePlayerLaunched) {
-            initiateSeekbarTimer();
+            //initiateSeekbarTimer();
             rlContent.removeView(floatingPlayer);
             youtubePlayerLaunched = true;
             queueHandler = new QueueHandler(ostList, startId,
@@ -707,13 +707,11 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    private void initiateSeekbarTimer() {
+    public static void initiateSeekbarTimer(final SeekBar seekBar) {
         final int interval = 1000; // 1 Second
         seekbarUpdater = new Runnable() {
             public void run() {
-                if (youtubePlayerLaunched && playing) {
-                    seekBar.setProgress(yTplayerService.getPlayer().getCurrentTimeMillis());
-                }
+                seekBar.setProgress(seekBar.getProgress() + 1);
                 handler.postDelayed(seekbarUpdater, interval);
             }
         };
