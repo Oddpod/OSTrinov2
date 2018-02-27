@@ -15,12 +15,16 @@ import com.google.android.youtube.player.YouTubePlayerSupportFragment
 import com.odd.ostrinov2.listeners.PlayerListener
 import android.app.KeyguardManager
 import android.content.IntentFilter
+import android.os.Build
 import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import com.odd.ostrinov2.*
 import com.odd.ostrinov2.tools.*
 import android.webkit.WebViewClient
+import android.widget.Toast
+
+
 
 
 
@@ -28,7 +32,6 @@ import android.webkit.WebViewClient
 class YTplayerService : Service(),
         YouTubePlayer.OnFullscreenListener {
 
-    lateinit var jsPlayer: WebView
     private val binder = LocalBinder()
     lateinit var wm: WindowManager
     lateinit var yWebPlayer: YWebPlayer
@@ -39,12 +42,11 @@ class YTplayerService : Service(),
     private var playerExpanded: Boolean = false
     lateinit private var mainActivity: MainActivity
     lateinit var yTPlayerFrag: YouTubePlayerSupportFragment
-    private lateinit var playerNotification: PlayerNotificationService
     private lateinit var yPlayerHandler: YoutubePlayerHandler
 
     private val smallWindowParams = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
-            400,
+            800,
             WindowManager.LayoutParams.TYPE_PHONE,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT)
@@ -104,7 +106,8 @@ class YTplayerService : Service(),
 
         } else if (action.equals(Constants.NEXT_ACTION, ignoreCase = true)) {
             Log.i(NOT_LOG_TAG, "Clicked Next")
-            yPlayerHandler.playerNext()
+            yWebPlayer.playerNext()
+            //yPlayerHandler.playerNext()
 
         } else if (action.equals(Constants.ADD_OST_TO_QUEUE, ignoreCase = true)) {
             Log.i(NOT_LOG_TAG, "Add ost to queue")
@@ -140,13 +143,12 @@ class YTplayerService : Service(),
         val queueHandler = QueueHandler(ostList.toMutableList(), startIndex, shuffle, playerListener, queueAdapter)
         /*yTPlayerFrag = youTubePlayerFragment
         yTPlayerFrag.retainInstance = true*/
-        playerNotification = PlayerNotificationService(this)
         /*yPlayerHandler = YoutubePlayerHandler(playerNotification, queueHandler, mainActivity)
         yTPlayerFrag.initialize(Constants.API_TOKEN, yPlayerHandler)*/
     }
 
     fun initiateQueue(ostList: List<Ost>, startIndex: Int, shuffle: Boolean) {
-        yPlayerHandler.initiateQueue(ostList, startIndex, shuffle)
+        yWebPlayer.initiateQueue(ostList, startIndex, shuffle)
     }
 
     fun refresh() {
@@ -185,8 +187,10 @@ class YTplayerService : Service(),
             rl.setBackgroundColor(Color.argb(66, 255, 0, 0))
 
             val player = rl.findViewById(R.id.jsPlayer) as WebView
+
             //rl.addView(floatingPlayer)
-            yWebPlayer = YWebPlayer(player, queueHandler)
+            val playerNotification = PlayerNotificationService(this)
+            yWebPlayer = YWebPlayer(player, queueHandler, mainActivity, playerNotification)
 
             wm.addView(rl, params)
             //rl.descendantFocusability = ViewGroup.FOCUS_BEFORE_DESCENDANTS
@@ -247,11 +251,12 @@ class YTplayerService : Service(),
     }
 
     fun playerPrevious() {
-        yPlayerHandler.playerPrevious()
+        yWebPlayer.playerPrevious()
+        //yPlayerHandler.playerPrevious()
     }
 
     fun pausePlay() {
-        yPlayerHandler.pausePlay()
+        yWebPlayer.pausePlay()
     }
 
     fun playerNext() { val vidId = "r_WxpjhzKH"

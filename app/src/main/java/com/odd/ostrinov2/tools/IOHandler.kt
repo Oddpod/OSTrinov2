@@ -1,6 +1,5 @@
 package com.odd.ostrinov2.tools
 
-import android.content.Context
 import android.net.Uri
 import android.os.AsyncTask
 import com.odd.ostrinov2.MainActivity
