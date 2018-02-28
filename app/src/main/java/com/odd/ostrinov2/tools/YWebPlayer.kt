@@ -7,17 +7,23 @@ import android.view.View
 import android.webkit.*
 import android.widget.SeekBar
 import android.widget.Toast
-import com.odd.ostrinov2.MainActivity
 import com.odd.ostrinov2.Ost
 import com.odd.ostrinov2.services.PlayerNotificationService
+import android.content.Intent
+import android.net.Uri
+import com.odd.ostrinov2.Constants
+import com.odd.ostrinov2.MainActivity
+
 
 class YWebPlayer(private var jsPlayer: WebView, private var queueHandler: QueueHandler,
-                 private var mContext: Context, private var playerNotService: PlayerNotificationService)
+                 private var mContext: Context, private var seekBar: SeekBar,
+                 private var playerNotService: PlayerNotificationService)
                     : SeekBar.OnSeekBarChangeListener {
-
-    private var seekBar: SeekBar = (mContext as MainActivity).seekBar
-    val client = Client()
+    var repeat: Boolean = false
+    var outsideActivity: Boolean = false
+    private val client = Client()
     private var pause: Boolean = false
+    private var seekBarInitialized = false
 
     init {
         seekBar.setOnSeekBarChangeListener(this)
@@ -31,13 +37,16 @@ class YWebPlayer(private var jsPlayer: WebView, private var queueHandler: QueueH
         jsPlayer.settings.userAgentString = "Mozilla/5.0 (Windows NT 6.2; Win64; x64; rv:21.0.0) Gecko/20121011 Firefox/21.0.0"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             // chromium, enable hardware acceleration
-            jsPlayer.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+            jsPlayer.setLayerType(View.LAYER_TYPE_HARDWARE, null)
         } else {
             // older android version, disable hardware acceleration
-            jsPlayer.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+            jsPlayer.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
         }
         jsPlayer.setWebViewClient(client)
         jsPlayer.loadUrl(BASE_URL)
+        /*val html = IOHandler.getHtmlFile(queueHandler.getCurrVideoId(), mContext)
+        jsPlayer.loadDataWithBaseURL("https://www.youtube.com/player_api", html,
+                "text/html", null, null)*/
         jsPlayer.setWebChromeClient(WebChromeClient())
 
         playerNotService.updateNotInfo(queueHandler.currentlyPlaying)
@@ -63,29 +72,49 @@ class YWebPlayer(private var jsPlayer: WebView, private var queueHandler: QueueH
         playerNotService.updateNotInfo(queueHandler.currentlyPlaying)
     }
 
-    fun play(){
+    private fun play(){
         jsPlayer.loadUrl("javascript: player.playVideo()")
         pause = false
+        notifyPausePlay(pause)
     }
 
-    fun pause(){
+    private fun pause(){
         jsPlayer.loadUrl("javascript: player.pauseVideo()")
         pause = true
+        notifyPausePlay(pause)
+
+    }
+
+    private fun notifyPausePlay(pause: Boolean){
+        if(outsideActivity){
+            return
+        }
+        if(pause){
+            val intent = Intent(mContext, MainActivity::class.java)
+            intent.action = Constants.PAUSE_ACTION
+            mContext.startActivity(intent)
+        } else{
+            val intent = Intent(mContext, MainActivity::class.java)
+            intent.action = Constants.PLAY_ACTION
+            mContext.startActivity(intent)
+        }
     }
     fun playVideo(vid: String) {
         jsPlayer.loadUrl("javascript: player.loadVideoById(\"$vid\")")
     }
 
     private fun injectJavaScriptFunction(my_web_view: WebView) {
+        my_web_view.loadUrl("javascript: player.loadVideoById(\"${queueHandler.getCurrVideoId()}\")")
         my_web_view.loadUrl("javascript: " +
-                "window.androidObj.textToAndroid = function(message) { " +
-                JAVASCRIPT_OBJ + ".textFromWeb(message) }")
+                "window.androidObj.notifyPausePlay = function(state) { " +
+                JAVASCRIPT_OBJ + ".notifyPausePlay(state) }")
         my_web_view.loadUrl( "javascript: " +
                 "window.androidObj.notifyNext = function() {" +
                 JAVASCRIPT_OBJ + ".playerNext()}")
         my_web_view.loadUrl( "javascript: " +
                 "window.androidObj.notifySeekBar = function(duration) {" +
                 JAVASCRIPT_OBJ + ".updateSeekBar(duration)}")
+
     }
 
     inner class Client : WebViewClient() {
@@ -95,14 +124,19 @@ class YWebPlayer(private var jsPlayer: WebView, private var queueHandler: QueueH
         }
         override fun onPageFinished(view: WebView, url: String) {
             injectJavaScriptFunction(view)
-            //Toast.makeText(mContext, "Loaded", Toast.LENGTH_SHORT).show()
-            //view.loadData(YPlayerHandlerjs.createHtml(queueHandler.next()), "text/html", "utf-8")
-            //view.loadUrl("javascript:player.loadVideoById('SxV4P0z0xyA');")
         }
 
-        /*fun playerNext() {
-            myView.loadUrl("javascript:player.loadVideoById('0W8pOI-l4C4')")
-        }*/
+        override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                val uri = request?.url
+                if(uri.toString().contains("https://www.youtube.com/watch")){
+                    val appIntent = Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + queueHandler.getCurrVideoId()))
+                    mContext.startActivity(appIntent)
+                }
+                return true
+            }
+            return super.shouldOverrideUrlLoading(view, request)
+        }
     }
 
     companion object {
@@ -115,12 +149,20 @@ class YWebPlayer(private var jsPlayer: WebView, private var queueHandler: QueueH
     private inner class JavaScriptInterface(private var player: YWebPlayer) {
 
         @JavascriptInterface
-        fun textFromWeb(fromWeb: String) {
-            Toast.makeText(mContext, fromWeb, Toast.LENGTH_SHORT).show()
-            handler.post{player.playerNext()}
+        fun notifyPausePlay(state: Int) {
+            //Toast.makeText(mContext, state.toString(), Toast.LENGTH_SHORT).show()
+            if(state == 1){
+                notifyPausePlay(false)
+            } else{
+                notifyPausePlay(true)
+            }
         }
         @JavascriptInterface
         fun updateSeekBar(videoLength : Int) {
+            if(!seekBarInitialized){
+                MainActivity.initiateSeekbarTimer(seekBar)
+                seekBarInitialized = true
+            }
             Toast.makeText(mContext, videoLength.toString(), Toast.LENGTH_SHORT).show()
             handler.post{seekBar.progress = 0
                             seekBar.max = videoLength}
@@ -128,18 +170,25 @@ class YWebPlayer(private var jsPlayer: WebView, private var queueHandler: QueueH
         @JavascriptInterface
         fun playerNext() {
             Toast.makeText(mContext, "Next", Toast.LENGTH_SHORT).show()
-            handler.post{player.playerNext()}
+            if(repeat){
+                handler.post{player.playAgain()}
+            } else {
+                handler.post { player.playerNext() }
+            }
         }
+    }
+
+    private fun playAgain() {
+        jsPlayer.loadUrl("javascript: player.playVideo()")
     }
 
     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-        if(progress == seekBar?.max){
+        /*if(progress == seekBar?.max){
             handler.post{playerNext()}
-        }
+        }*/
     }
 
     override fun onStartTrackingTouch(seekBar: SeekBar?) {
-
     }
 
     override fun onStopTrackingTouch(seekBar: SeekBar?) {
@@ -147,7 +196,7 @@ class YWebPlayer(private var jsPlayer: WebView, private var queueHandler: QueueH
         handler.post{playerSeekTo(seekBar!!.progress)}
     }
 
-    fun pausePlay() {
+    fun pausePlay(){
         if(pause){
             handler.post{play()}
         } else{
@@ -155,4 +204,9 @@ class YWebPlayer(private var jsPlayer: WebView, private var queueHandler: QueueH
         }
     }
 
+    fun destroy() {
+        jsPlayer.destroy()
+    }
+
+    fun getQueueHandler() = queueHandler
 }
