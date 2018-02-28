@@ -69,7 +69,7 @@ internal class CustomAdapter(private val mContext: Context, ostListin: List<Ost>
             conView.setBackgroundResource(R.drawable.white)
         }
         holder.btnOptions.setOnClickListener { val pum = PopupMenu(mContext, holder.btnOptions)
-            pum.inflate(R.menu.btn_search_chooser_popup)
+            pum.inflate(R.menu.btn_lib_chooser_popup)
             pum.setOnMenuItemClickListener { item ->
                 when (item?.itemId) {
                     R.id.chooser_addToQueue -> { UtilMeths.sendToYTPService(mContext,
