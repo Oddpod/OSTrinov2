@@ -15,13 +15,9 @@ import com.google.android.youtube.player.YouTubePlayerSupportFragment
 import com.odd.ostrinov2.listeners.PlayerListener
 import android.app.KeyguardManager
 import android.content.IntentFilter
-import android.os.Build
-import android.webkit.JavascriptInterface
-import android.webkit.WebChromeClient
 import android.webkit.WebView
 import com.odd.ostrinov2.*
 import com.odd.ostrinov2.tools.*
-import android.webkit.WebViewClient
 import android.widget.Toast
 
 
@@ -36,13 +32,10 @@ class YTplayerService : Service(),
     lateinit var wm: WindowManager
     lateinit var yWebPlayer: YWebPlayer
     lateinit private var rl: RelativeLayout
-    lateinit private var floatingPlayer: FrameLayout
-    private var floatingPlayerInitialized: Boolean = false
-    private var outsideActivity: Boolean = false
     private var playerExpanded: Boolean = false
     lateinit private var mainActivity: MainActivity
-    lateinit var yTPlayerFrag: YouTubePlayerSupportFragment
     private lateinit var yPlayerHandler: YoutubePlayerHandler
+    private lateinit var player: WebView
 
     private val smallWindowParams = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
@@ -73,6 +66,7 @@ class YTplayerService : Service(),
         registerBroadcastReceiver()
     }
 
+
     inner class LocalBinder : android.os.Binder() {
         val service: YTplayerService
             get() = this@YTplayerService
@@ -96,29 +90,28 @@ class YTplayerService : Service(),
 
         if (isScreenLocked()) {
             Toast.makeText(applicationContext, "Can't play while on LockScreen! :C", Toast.LENGTH_SHORT).show()
+            return
         } else if (action.equals(Constants.PLAY_ACTION, ignoreCase = true)) {
             Log.i(NOT_LOG_TAG, "Clicked Play")
-            yPlayerHandler.pausePlay()
+            yWebPlayer.pausePlay()
 
         } else if (action.equals(Constants.PREV_ACTION, ignoreCase = true)) {
             Log.i(NOT_LOG_TAG, "Clicked Previous")
-            yPlayerHandler.playerNext()
+            yWebPlayer.playerPrevious()
 
         } else if (action.equals(Constants.NEXT_ACTION, ignoreCase = true)) {
             Log.i(NOT_LOG_TAG, "Clicked Next")
             yWebPlayer.playerNext()
-            //yPlayerHandler.playerNext()
 
         } else if (action.equals(Constants.ADD_OST_TO_QUEUE, ignoreCase = true)) {
             Log.i(NOT_LOG_TAG, "Add ost to queue")
             val ost = intent.getParcelableExtra<Ost>("ost_extra")
             Toast.makeText(applicationContext, ost.title + " added to queue", Toast.LENGTH_SHORT).show()
-            yPlayerHandler.getQueueHandler().addToQueue(ost)
+            yWebPlayer.getQueueHandler().addToQueue(ost)
 
         } else if (action.equals(Constants.START_OST, ignoreCase = true)) {
             val ost = intent.getParcelableExtra<Ost>("ost_extra")
-            yWebPlayer.playVideo(ost.videoId)
-            //yPlayerHandler.initiateQueue(listOf(ost), 0, false)
+            yWebPlayer.initiateQueue(listOf(ost), 0, false)
 
         } else if (action.equals(Constants.EXPANDMINIMIZE_PLAYER, ignoreCase = true)) {
             Log.i(NOT_LOG_TAG, "Expand")
@@ -126,10 +119,11 @@ class YTplayerService : Service(),
 
         } else if (action.equals(Constants.STOPFOREGROUND_ACTION, ignoreCase = true)) {
             Log.i(NOT_LOG_TAG, "Received Stop Foreground Intent")
-            rl.removeView(floatingPlayer)
+            yWebPlayer.destroy()
+            rl.removeView(player)
             wm.removeView(rl)
+            mainActivity.youtubePlayerStopped()
             mainActivity.saveSession()
-            yPlayerHandler.stopPlayer()
         }
     }
 
@@ -151,13 +145,7 @@ class YTplayerService : Service(),
         yWebPlayer.initiateQueue(ostList, startIndex, shuffle)
     }
 
-    fun refresh() {
-        yTPlayerFrag.onResume()
-        outsideActivity = true
-        yPlayerHandler.refresh()
-    }
-
-    fun launchFloater(floatingPlayer: FrameLayout, activity: MainActivity, queueHandler: QueueHandler) {
+    fun launchFloater(activity: MainActivity, queueHandler: QueueHandler) {
         this.mainActivity = activity
         if (!isSystemAlertPermissionGranted(activity)) {
             requestSystemAlertPermission(activity, 3)
@@ -168,12 +156,6 @@ class YTplayerService : Service(),
             params.x = 1
             params.y = 100
 
-            if (!floatingPlayerInitialized) {
-                floatingPlayer.visibility = View.VISIBLE
-                this.floatingPlayer = floatingPlayer
-                floatingPlayerInitialized = true
-                smallPParams = floatingPlayer.layoutParams as RelativeLayout.LayoutParams
-            }
             rl = (this.getSystemService(android.content.Context.LAYOUT_INFLATER_SERVICE)
                     as LayoutInflater).inflate(R.layout.youtube_api, null) as RelativeLayout
             val toggleButton: ToggleButton = rl.findViewById(R.id.toggleButton) as ToggleButton
@@ -186,11 +168,13 @@ class YTplayerService : Service(),
             }
             rl.setBackgroundColor(Color.argb(66, 255, 0, 0))
 
-            val player = rl.findViewById(R.id.jsPlayer) as WebView
+            player = rl.findViewById(R.id.jsPlayer) as WebView
 
-            //rl.addView(floatingPlayer)
             val playerNotification = PlayerNotificationService(this)
-            yWebPlayer = YWebPlayer(player, queueHandler, mainActivity, playerNotification)
+            smallPParams = player.layoutParams as RelativeLayout.LayoutParams
+            yWebPlayer = YWebPlayer(player, queueHandler, this, mainActivity.seekBar,
+                    playerNotification)
+            yWebPlayer
 
             wm.addView(rl, params)
             //rl.descendantFocusability = ViewGroup.FOCUS_BEFORE_DESCENDANTS
@@ -237,37 +221,30 @@ class YTplayerService : Service(),
     private fun expandMinimizePlayer() {
         if (!playerExpanded) {
             Toast.makeText(applicationContext, "Expanding player", Toast.LENGTH_SHORT).show()
-            rl.updateViewLayout(floatingPlayer, largePParams)
+            rl.updateViewLayout(player, largePParams)
             wm.updateViewLayout(rl, largeWindowParams)
-            yPlayerHandler.yPlayer.setShowFullscreenButton(true)
             playerExpanded = true
         } else {
             Toast.makeText(applicationContext, "Minimizing player", Toast.LENGTH_SHORT).show()
-            rl.updateViewLayout(floatingPlayer, smallPParams)
+            rl.updateViewLayout(player, smallPParams)
             wm.updateViewLayout(rl, smallWindowParams)
-            yPlayerHandler.yPlayer.setShowFullscreenButton(false)
             playerExpanded = false
         }
     }
 
     fun playerPrevious() {
         yWebPlayer.playerPrevious()
-        //yPlayerHandler.playerPrevious()
     }
 
     fun pausePlay() {
         yWebPlayer.pausePlay()
     }
 
-    fun playerNext() { val vidId = "r_WxpjhzKH"
-        val javascript = "javascript:player.loadVideoById('$vidId');"
-        //jsPlayer.loadDataWithBaseURL(javascript, YPlayerHandlerjs.html3, "text/html", "utf-8", "")
-        //jsPlayer.loadDataWithBaseURL(javascript, YPlayerHandlerjs.html3, "text/html", "utf-8", "")
-        //jsPlayer.loadUrl(javascript)
-        yWebPlayer.playerNext() //yPlayerHandler.playerNext()
+    fun playerNext() {
+        yWebPlayer.playerNext()
     }
 
-    fun getQueueHandler(): QueueHandler = yPlayerHandler.getQueueHandler()
+    fun getQueueHandler(): QueueHandler = yWebPlayer.getQueueHandler()
 
     fun registerBroadcastReceiver() {
         val theFilter = IntentFilter()
@@ -301,10 +278,8 @@ class YTplayerService : Service(),
     }
 
     fun setRepeating(repeat: Boolean) {
-        yPlayerHandler.repeat = repeat
+        yWebPlayer.repeat = repeat
     }
-
-    fun getPlayer(): YouTubePlayer = yPlayerHandler.yPlayer
 
     fun getPlayerHandler(): YoutubePlayerHandler = yPlayerHandler
 }
