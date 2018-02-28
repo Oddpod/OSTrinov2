@@ -112,13 +112,6 @@
             android:layout_below="@id/bnvFrag"
             android:layout_above="@+id/seekBar"/>
 
-        <FrameLayout
-            android:id="@+id/floatingPlayer"
-            android:layout_width="200dp"
-            android:layout_height="110dp"
-            android:clickable="true"
-            android:visibility="gone" android:focusable="true"/>
-
         <SeekBar
             android:id="@+id/seekBar"
             android:layout_width="match_parent"

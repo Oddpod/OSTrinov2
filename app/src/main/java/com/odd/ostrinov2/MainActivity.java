@@ -25,7 +25,6 @@ import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
@@ -37,21 +36,16 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.DragEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.MultiAutoCompleteTextView;
-import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
-import com.google.android.youtube.player.YouTubePlayer;
-import com.google.android.youtube.player.YouTubePlayerSupportFragment;
 import com.odd.ostrinov2.dialogFragments.AddScreen;
 import com.odd.ostrinov2.fragmentsLogic.AboutFragment;
 import com.odd.ostrinov2.fragmentsLogic.ListFragment;
@@ -78,20 +72,17 @@ public class MainActivity extends AppCompatActivity implements
     private QueueHandler queueHandler;
     private ListFragment listFragment;
     private SearchFragment searchFragment;
-    private FrameLayout floatingPlayer;
-    private RelativeLayout rlContent;
     private boolean youtubePlayerLaunched = false, about = false, addCanceled = true, ostFromWidget = false;
     private int ostFromWidgetId;
     private QueueAdapter queueAdapter;
     private FragmentManager manager;
-    private YouTubePlayerSupportFragment youTubePlayerFragment;
-    private Boolean mIsBound = false, shuffleActivated = false, repeat = false, playing = false,
+    private Boolean mIsBound = false, shuffleActivated = false, repeat = false, isPlaying = false,
             lastSessionLoaded = false;
     private YTplayerService yTplayerService;
     private ImageButton btnRepeat, btnPlayPause, btnShuffle;
     private SeekBar seekBar;
     private static Runnable seekbarUpdater;
-    private static Handler handler = new Handler();
+    public static Handler handler = new Handler();
     private SearchView searchView = null;
     private ViewPager fragPager;
 
@@ -104,7 +95,6 @@ public class MainActivity extends AppCompatActivity implements
         dbHandler = new DBHandler(this);
         //dbHandler.emptyTable();
         unAddedOst = null;
-        rlContent = (RelativeLayout) findViewById(R.id.rlContent);
         fragPager = (ViewPager) findViewById(R.id.frag_pager);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -112,8 +102,6 @@ public class MainActivity extends AppCompatActivity implements
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         //drawer.setDrawerListener(toggle);
         toggle.syncState();
-
-        floatingPlayer = (FrameLayout) findViewById(R.id.floatingPlayer);
 
         btnRepeat = (ImageButton) findViewById(R.id.btnRepeat);
         btnPlayPause = (ImageButton) findViewById(R.id.btnPause);
@@ -146,9 +134,6 @@ public class MainActivity extends AppCompatActivity implements
         searchFragment = new SearchFragment();
         searchFragment.setMainActivity(this);
         searchFragment.setRetainInstance(true);
-        youTubePlayerFragment = YouTubePlayerSupportFragment.newInstance();
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.add(R.id.floatingPlayer, youTubePlayerFragment).commit();
 
         final BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.bnvFrag);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -420,7 +405,7 @@ public class MainActivity extends AppCompatActivity implements
         }
 
         if (requestCode == 3) {
-            yTplayerService.launchFloater(floatingPlayer, this, queueHandler);
+            yTplayerService.launchFloater(this, queueHandler);
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -449,11 +434,10 @@ public class MainActivity extends AppCompatActivity implements
     public void initiatePlayer(List<Ost> ostList, int startId) {
         if (!youtubePlayerLaunched) {
             //initiateSeekbarTimer();
-            rlContent.removeView(floatingPlayer);
             youtubePlayerLaunched = true;
             queueHandler = new QueueHandler(ostList, startId,
                     shuffleActivated, listFragment.getCustomAdapter(), queueAdapter);
-            yTplayerService.launchFloater(floatingPlayer, this, queueHandler);
+            yTplayerService.launchFloater(this, queueHandler);
             //yTplayerService.startQueue(ostList, startId, shuffleActivated,
              //       listFragment.getCustomAdapter(), queueAdapter, youTubePlayerFragment);
         } else {
@@ -508,9 +492,18 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    public void pausePlay(Boolean playing) {
-        this.playing = playing;
-        if (playing) {
+    public void setPlaying(boolean playing) {
+        isPlaying = playing;
+        if(isPlaying){
+            startSeekbar();
+        } else{
+            stopSeekBar();
+        }
+        pausePlay();
+    }
+
+    public void pausePlay() {
+        if (isPlaying) {
             btnPlayPause.setImageResource(R.drawable.ic_pause_black_24dp);
         } else {
             btnPlayPause.setImageResource(R.drawable.ic_play_arrow_black_24dp);
@@ -631,25 +624,20 @@ public class MainActivity extends AppCompatActivity implements
     public void onStop() {
         super.onStop();
         if (youtubePlayerLaunched) {
-            yTplayerService.refresh();
-            saveSession();
+            //yTplayerService.refresh();
+            //saveSession();
+            yTplayerService.getYWebPlayer().setOutsideActivity(true);
+            handler.removeCallbacks(seekbarUpdater);
         }
-        handler.removeCallbacks(seekbarUpdater);
-        doUnbindService();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
+        //doUnbindService();
     }
 
     @Override
     public void onStart() {
         super.onStart();
         doBindService();
-        if (!youtubePlayerLaunched) {
-            initPlayerService();
-        } else {
+        if (youtubePlayerLaunched) {
+            yTplayerService.getYWebPlayer().setOutsideActivity(false);
             handler.postDelayed(seekbarUpdater, 1000);
         }
     }
@@ -678,12 +666,19 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void handleIntent(Intent intent) {
-        System.out.println(intent.getAction());
         String intAction = intent.getAction();
         if (intAction == null) {
             return;
         }
         switch (intAction) {
+            case Constants.PLAY_ACTION:{
+                setPlaying(true);
+                break;
+            }
+            case Constants.PAUSE_ACTION:{
+                setPlaying(false);
+                break;
+            }
             case Constants.NOT_OPEN_ACTIVITY_ACTION: {
                 // Does nothing so far
                 break;
@@ -759,11 +754,11 @@ public class MainActivity extends AppCompatActivity implements
         }
         String idString = stringBuilder.toString();
         editor.putString("lastSession", idString);
-        YouTubePlayer youTubePlayer = yTplayerService.getPlayer();
+        //YouTubePlayer youTubePlayer = yTplayerService.getPlayer();
         int lastCurrentlyPlaying = yTplayerService.getQueueHandler().getCurrPlayingIndex();
         editor.putInt("lastCurrPlaying", lastCurrentlyPlaying);
-        editor.putInt("timeStamp", youTubePlayer.getCurrentTimeMillis());
-        editor.putInt("videoDuration", youTubePlayer.getDurationMillis());
+        editor.putInt("timeStamp", seekBar.getProgress());
+        editor.putInt("videoDuration", seekBar.getMax());
 
         // Commit the edits!
         Boolean success = editor.commit();
@@ -771,6 +766,13 @@ public class MainActivity extends AppCompatActivity implements
         Log.i("Wrote session", successString);
     }
 
+    public static void stopSeekBar(){
+        handler.removeCallbacks(seekbarUpdater);
+    }
+
+    public static void startSeekbar(){
+        handler.postDelayed(seekbarUpdater, 1000);
+    }
     public static DBHandler getDbHandler() {
         return dbHandler;
     }
