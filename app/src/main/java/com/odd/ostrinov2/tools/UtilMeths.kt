@@ -78,9 +78,11 @@ internal object UtilMeths {
         }
     }
 
-    fun sendToYTPService(context: Context, ost: Ost, action: String){
+    fun sendYTPServiceIntent(context: Context, ost: Ost?, action: String){
         val intent = Intent(context, YTplayerService::class.java)
-        intent.putExtra("ost_extra", ost)
+        if(ost != null){
+            intent.putExtra("ost_extra", ost)
+        }
         intent.action = action
         context.startService(intent)
     }
