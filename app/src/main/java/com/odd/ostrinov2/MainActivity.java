@@ -56,6 +56,7 @@ import com.odd.ostrinov2.tools.IOHandler;
 import com.odd.ostrinov2.tools.PagerAdapter;
 import com.odd.ostrinov2.tools.PermissionHandlerKt;
 import com.odd.ostrinov2.tools.QueueHandler;
+import com.odd.ostrinov2.tools.SeekBarHandler;
 import com.odd.ostrinov2.tools.UtilMeths;
 import com.odd.ostrinov2.tools.YoutubeShare;
 
@@ -65,7 +66,6 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements
         AddScreen.AddScreenListener, DialogInterface.OnDismissListener, View.OnClickListener {
 
-    private final static String PREFS_NAME = "Saved queue";
     private static DBHandler dbHandler;
     private Ost unAddedOst;
     private int backPress;
@@ -80,11 +80,12 @@ public class MainActivity extends AppCompatActivity implements
             lastSessionLoaded = false;
     private YTplayerService yTplayerService;
     private ImageButton btnRepeat, btnPlayPause, btnShuffle;
-    private SeekBar seekBar;
+    public SeekBar seekBar;
     private static Runnable seekbarUpdater;
     public static Handler handler = new Handler();
     private SearchView searchView = null;
     private ViewPager fragPager;
+    private SeekBarHandler seekBarHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -311,16 +312,6 @@ public class MainActivity extends AppCompatActivity implements
             }
 
             case R.id.refresh_tagsTable: {
-                /*SQLiteDatabase sqLiteDatabase = dbHandler.getWritableDatabase();
-                String CREATE_TAGS_TABLE = "CREATE TABLE " + "tagsTable" + "("
-                        + "tagid" + " INTEGER PRIMARY KEY,"
-                        + "tag" + " TEXT " + ")";
-                sqLiteDatabase.execSQL(CREATE_TAGS_TABLE);
-
-                String CREATE_SHOW_TABLE = "CREATE TABLE " + "showTable" + "("
-                        + "showid" + " INTEGER PRIMARY KEY,"
-                        + "show" + " TEXT " + ")";
-                sqLiteDatabase.execSQL(CREATE_SHOW_TABLE);*/
                 dbHandler.reCreateTagsAndShowTables();
                 break;
             }
@@ -424,22 +415,14 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-    public void initPlayerService() {
-        if (yTplayerService == null) {
-            startService();
-            doBindService();
-        }
-    }
-
     public void initiatePlayer(List<Ost> ostList, int startId) {
         if (!youtubePlayerLaunched) {
-            //initiateSeekbarTimer();
+            seekBarHandler = new SeekBarHandler(seekBar);
             youtubePlayerLaunched = true;
+            System.out.println("Initiating player");
             queueHandler = new QueueHandler(ostList, startId,
                     shuffleActivated, listFragment.getCustomAdapter(), queueAdapter);
             yTplayerService.launchFloater(this, queueHandler);
-            //yTplayerService.startQueue(ostList, startId, shuffleActivated,
-             //       listFragment.getCustomAdapter(), queueAdapter, youTubePlayerFragment);
         } else {
             yTplayerService.initiateQueue(ostList, startId, shuffleActivated);
         }
@@ -466,17 +449,20 @@ public class MainActivity extends AppCompatActivity implements
                 }
 
                 case R.id.btnPause: {
-                    yTplayerService.pausePlay();
+                    UtilMeths.INSTANCE.sendYTPServiceIntent(this, null,
+                            Constants.PLAY_ACTION);
                     break;
                 }
 
                 case R.id.btnNext: {
-                    yTplayerService.playerNext();
+                    UtilMeths.INSTANCE.sendYTPServiceIntent(this, null,
+                            Constants.NEXT_ACTION);
                     break;
                 }
 
                 case R.id.btnPrevious: {
-                    yTplayerService.playerPrevious();
+                    UtilMeths.INSTANCE.sendYTPServiceIntent(this, null,
+                            Constants.PREV_ACTION);
                     break;
                 }
 
@@ -495,9 +481,9 @@ public class MainActivity extends AppCompatActivity implements
     public void setPlaying(boolean playing) {
         isPlaying = playing;
         if(isPlaying){
-            startSeekbar();
+            seekBarHandler.startSeekbar();
         } else{
-            stopSeekBar();
+            seekBarHandler.stopSeekBar();
         }
         pausePlay();
     }
@@ -625,11 +611,11 @@ public class MainActivity extends AppCompatActivity implements
         super.onStop();
         if (youtubePlayerLaunched) {
             //yTplayerService.refresh();
-            //saveSession();
+            saveSession();
             yTplayerService.getYWebPlayer().setOutsideActivity(true);
-            handler.removeCallbacks(seekbarUpdater);
+            //handler.removeCallbacks(seekbarUpdater);
         }
-        //doUnbindService();
+        doUnbindService();
     }
 
     @Override
@@ -638,7 +624,7 @@ public class MainActivity extends AppCompatActivity implements
         doBindService();
         if (youtubePlayerLaunched) {
             yTplayerService.getYWebPlayer().setOutsideActivity(false);
-            handler.postDelayed(seekbarUpdater, 1000);
+            //handler.postDelayed(seekbarUpdater, 1000);
         }
     }
 
@@ -702,46 +688,12 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    public static void initiateSeekbarTimer(final SeekBar seekBar) {
-        final int interval = 1000; // 1 Second
-        seekbarUpdater = new Runnable() {
-            public void run() {
-                seekBar.setProgress(seekBar.getProgress() + 1);
-                handler.postDelayed(seekbarUpdater, interval);
-            }
-        };
-
-        handler.postAtTime(seekbarUpdater, System.currentTimeMillis() + interval);
-        handler.postDelayed(seekbarUpdater, interval);
-    }
-
     public void setSeekBarProgress(int progress) {
         seekBar.setProgress(progress);
     }
 
-    public SeekBar getSeekBar() {
-        return seekBar;
-    }
-
-    private void loadLastSession() {
-        SharedPreferences lastSessionPrefs = getSharedPreferences(PREFS_NAME, 0);
-        String queueString = lastSessionPrefs.getString("lastSession", "");
-        int timestamp = lastSessionPrefs.getInt("timeStamp", 0);
-        int lastCurr = lastSessionPrefs.getInt("lastCurrPlaying", 0);
-        int videoDuration = lastSessionPrefs.getInt("videoDuration", 0);
-        if (!queueString.equals("")) {
-            Log.d("lastQueue", queueString);
-            List<Ost> lastQueueList = UtilMeths.INSTANCE.buildOstListFromQueue(queueString, dbHandler);
-            if(lastQueueList.isEmpty() && lastCurr < lastQueueList.size()) {
-                initiatePlayer(lastQueueList, lastCurr);
-                yTplayerService.getPlayerHandler().loadLastSession(true, timestamp, videoDuration);
-            }
-        }
-        lastSessionLoaded = true;
-    }
-
     public void saveSession() {
-        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        SharedPreferences settings = getSharedPreferences(Constants.PREFS_NAME, 0);
         SharedPreferences.Editor editor = settings.edit();
         StringBuilder stringBuilder = new StringBuilder();
         for (Ost ost : yTplayerService.getQueueHandler().getOstList()
@@ -765,14 +717,24 @@ public class MainActivity extends AppCompatActivity implements
         String successString = success.toString();
         Log.i("Wrote session", successString);
     }
-
-    public static void stopSeekBar(){
-        handler.removeCallbacks(seekbarUpdater);
+    private void loadLastSession() {
+        SharedPreferences lastSessionPrefs = getSharedPreferences(Constants.PREFS_NAME, 0);
+        String queueString = lastSessionPrefs.getString("lastSession", "");
+        int timestamp = lastSessionPrefs.getInt("timeStamp", 0);
+        int lastCurr = lastSessionPrefs.getInt("lastCurrPlaying", 0);
+        int videoDuration = lastSessionPrefs.getInt("videoDuration", 0);
+        if (!queueString.equals("")) {
+            Log.d("lastQueue", queueString);
+            List<Ost> lastQueueList = UtilMeths.INSTANCE.buildOstListFromQueue(queueString,
+                    dbHandler);
+            if(!lastQueueList.isEmpty() && lastCurr < lastQueueList.size()) {
+                initiatePlayer(lastQueueList, lastCurr);
+                yTplayerService.loadLastSession(timestamp, videoDuration);
+            }
+        }
+        lastSessionLoaded = true;
     }
 
-    public static void startSeekbar(){
-        handler.postDelayed(seekbarUpdater, 1000);
-    }
     public static DBHandler getDbHandler() {
         return dbHandler;
     }
