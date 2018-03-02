@@ -20,11 +20,6 @@ import com.odd.ostrinov2.*
 import com.odd.ostrinov2.tools.*
 import android.widget.Toast
 
-
-
-
-
-
 class YTplayerService : Service(),
         YouTubePlayer.OnFullscreenListener {
 
@@ -232,16 +227,8 @@ class YTplayerService : Service(),
         }
     }
 
-    fun playerPrevious() {
-        yWebPlayer.playerPrevious()
-    }
-
-    fun pausePlay() {
-        yWebPlayer.pausePlay()
-    }
-
-    fun playerNext() {
-        yWebPlayer.playerNext()
+    public fun loadLastSession(timestamp: Int, videoDuration: Int) {
+        yWebPlayer.loadLastSession(timestamp, videoDuration)
     }
 
     fun getQueueHandler(): QueueHandler = yWebPlayer.getQueueHandler()
