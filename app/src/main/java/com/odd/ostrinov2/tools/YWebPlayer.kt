@@ -16,10 +16,13 @@ import com.odd.ostrinov2.MainActivity
 
 
 class YWebPlayer(private var jsPlayer: WebView, private var queueHandler: QueueHandler,
-                 private var mContext: Context, private var seekBar: SeekBar,
+                 private var mContext: Context, var seekBar: SeekBar,
                  private var playerNotService: PlayerNotificationService)
-                    : SeekBar.OnSeekBarChangeListener {
+    : SeekBar.OnSeekBarChangeListener {
     var repeat: Boolean = false
+    private var loadLastSession: Boolean = false
+    private var lastSessionTimeStamp = 0
+    private var lastSessionDuration = 0
     var outsideActivity: Boolean = false
     private val client = Client()
     private var pause: Boolean = false
@@ -55,15 +58,18 @@ class YWebPlayer(private var jsPlayer: WebView, private var queueHandler: QueueH
     fun initiateQueue(ostList: List<Ost>, startIndex: Int, shuffle: Boolean) {
         queueHandler.initiateQueue(ostList, startIndex, shuffle)
         jsPlayer.loadUrl("javascript: player.loadVideoById(\"" + queueHandler.getCurrVideoId() + "\")")
+        loadLastSession = false
+        pause = false
         playerNotService.updateNotInfo(queueHandler.currentlyPlaying)
     }
 
     fun playerNext() {
         jsPlayer.loadUrl("javascript: player.loadVideoById(\"" + queueHandler.next() + "\")")
+        pause = false
         playerNotService.updateNotInfo(queueHandler.currentlyPlaying)
     }
 
-    fun playerSeekTo(progress: Int){
+    fun playerSeekTo(progress: Int) {
         jsPlayer.loadUrl("javascript: player.seekTo($progress, true)")
     }
 
@@ -72,46 +78,52 @@ class YWebPlayer(private var jsPlayer: WebView, private var queueHandler: QueueH
         playerNotService.updateNotInfo(queueHandler.currentlyPlaying)
     }
 
-    private fun play(){
+    private fun play() {
         jsPlayer.loadUrl("javascript: player.playVideo()")
         pause = false
         notifyPausePlay(pause)
     }
 
-    private fun pause(){
+    private fun pause() {
         jsPlayer.loadUrl("javascript: player.pauseVideo()")
         pause = true
         notifyPausePlay(pause)
 
     }
 
-    private fun notifyPausePlay(pause: Boolean){
-        if(outsideActivity){
+    private fun notifyPausePlay(pause: Boolean) {
+        if (outsideActivity) {
             return
         }
-        if(pause){
+        if (pause) {
             val intent = Intent(mContext, MainActivity::class.java)
             intent.action = Constants.PAUSE_ACTION
             mContext.startActivity(intent)
-        } else{
+        } else {
             val intent = Intent(mContext, MainActivity::class.java)
             intent.action = Constants.PLAY_ACTION
             mContext.startActivity(intent)
         }
     }
+
     fun playVideo(vid: String) {
         jsPlayer.loadUrl("javascript: player.loadVideoById(\"$vid\")")
     }
 
     private fun injectJavaScriptFunction(my_web_view: WebView) {
-        my_web_view.loadUrl("javascript: player.loadVideoById(\"${queueHandler.getCurrVideoId()}\")")
+        if (loadLastSession) {
+            my_web_view.loadUrl("javascript: player.cueVideoById(\"${queueHandler.getCurrVideoId()}\", " +
+                    " \"$lastSessionTimeStamp\")")
+        } else {
+            my_web_view.loadUrl("javascript: player.loadVideoById(\"${queueHandler.getCurrVideoId()}\")")
+        }
         my_web_view.loadUrl("javascript: " +
                 "window.androidObj.notifyPausePlay = function(state) { " +
                 JAVASCRIPT_OBJ + ".notifyPausePlay(state) }")
-        my_web_view.loadUrl( "javascript: " +
+        my_web_view.loadUrl("javascript: " +
                 "window.androidObj.notifyNext = function() {" +
                 JAVASCRIPT_OBJ + ".playerNext()}")
-        my_web_view.loadUrl( "javascript: " +
+        my_web_view.loadUrl("javascript: " +
                 "window.androidObj.notifySeekBar = function(duration) {" +
                 JAVASCRIPT_OBJ + ".updateSeekBar(duration)}")
 
@@ -122,14 +134,15 @@ class YWebPlayer(private var jsPlayer: WebView, private var queueHandler: QueueH
             Toast.makeText(mContext, error.toString(), Toast.LENGTH_SHORT).show()
             super.onReceivedError(view, request, error)
         }
+
         override fun onPageFinished(view: WebView, url: String) {
             injectJavaScriptFunction(view)
         }
 
         override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 val uri = request?.url
-                if(uri.toString().contains("https://www.youtube.com/watch")){
+                if (uri.toString().contains("https://www.youtube.com/watch")) {
                     val appIntent = Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + queueHandler.getCurrVideoId()))
                     mContext.startActivity(appIntent)
                 }
@@ -151,27 +164,32 @@ class YWebPlayer(private var jsPlayer: WebView, private var queueHandler: QueueH
         @JavascriptInterface
         fun notifyPausePlay(state: Int) {
             //Toast.makeText(mContext, state.toString(), Toast.LENGTH_SHORT).show()
-            if(state == 1){
+            if (state == 1) {
                 notifyPausePlay(false)
-            } else{
+            } else {
                 notifyPausePlay(true)
             }
         }
+
         @JavascriptInterface
-        fun updateSeekBar(videoLength : Int) {
-            if(!seekBarInitialized){
-                MainActivity.initiateSeekbarTimer(seekBar)
-                seekBarInitialized = true
-            }
+        fun updateSeekBar(videoLength: Int) {
             Toast.makeText(mContext, videoLength.toString(), Toast.LENGTH_SHORT).show()
-            handler.post{seekBar.progress = 0
-                            seekBar.max = videoLength}
+            if (loadLastSession) {
+                loadLastSession = false
+
+            } else {
+                handler.post {
+                    seekBar.progress = 0
+                    seekBar.max = videoLength
+                }
+            }
         }
+
         @JavascriptInterface
         fun playerNext() {
             Toast.makeText(mContext, "Next", Toast.LENGTH_SHORT).show()
-            if(repeat){
-                handler.post{player.playAgain()}
+            if (repeat) {
+                handler.post { player.playAgain() }
             } else {
                 handler.post { player.playerNext() }
             }
@@ -183,24 +201,20 @@ class YWebPlayer(private var jsPlayer: WebView, private var queueHandler: QueueH
     }
 
     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-        /*if(progress == seekBar?.max){
-            handler.post{playerNext()}
-        }*/
     }
 
     override fun onStartTrackingTouch(seekBar: SeekBar?) {
     }
 
     override fun onStopTrackingTouch(seekBar: SeekBar?) {
-        //Toast.makeText(mContext, "stopped tracking", Toast.LENGTH_SHORT).show()
-        handler.post{playerSeekTo(seekBar!!.progress)}
+        handler.post { playerSeekTo(seekBar!!.progress) }
     }
 
-    fun pausePlay(){
-        if(pause){
-            handler.post{play()}
-        } else{
-            handler.post{pause()}
+    fun pausePlay() {
+        if (pause) {
+            handler.post { play() }
+        } else {
+            handler.post { pause() }
         }
     }
 
@@ -209,4 +223,12 @@ class YWebPlayer(private var jsPlayer: WebView, private var queueHandler: QueueH
     }
 
     fun getQueueHandler() = queueHandler
+
+    fun loadLastSession(playbackPos: Int, duration: Int) {
+        loadLastSession = true
+        seekBar.progress = playbackPos
+        lastSessionTimeStamp = playbackPos
+        seekBar.max = duration
+        pause = true
+    }
 }
