@@ -42,7 +42,7 @@ class SearchAdapter(private val mContext: Context, val mainActivity: MainActivit
             pum.inflate(R.menu.btn_search_chooser_popup)
             pum.setOnMenuItemClickListener { item ->
                 when (item?.itemId) {
-                    R.id.chooser_addToQueue -> { UtilMeths.sendToYTPService(mContext,
+                    R.id.chooser_addToQueue -> { UtilMeths.sendYTPServiceIntent(mContext,
                             Ost(video.title, "", "", video.url), Constants.ADD_OST_TO_QUEUE)
                     }
                     R.id.chooser_addToLibrary -> {UtilMeths.parseAddOst(video.title, mContext, video.url)
@@ -63,7 +63,7 @@ class SearchAdapter(private val mContext: Context, val mainActivity: MainActivit
                 .load(video.thumbnailUrl)
                 .into(viewWrapper.ivThumbnail)
         viewWrapper.baseView.setOnClickListener {
-            UtilMeths.sendToYTPService(mContext, Ost(video.title, "", "", video.url),
+            UtilMeths.sendYTPServiceIntent(mContext, Ost(video.title, "", "", video.url),
                     Constants.START_OST)
         }
     }

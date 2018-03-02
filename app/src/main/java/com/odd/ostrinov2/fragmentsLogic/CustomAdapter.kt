@@ -72,7 +72,7 @@ internal class CustomAdapter(private val mContext: Context, ostListin: List<Ost>
             pum.inflate(R.menu.btn_lib_chooser_popup)
             pum.setOnMenuItemClickListener { item ->
                 when (item?.itemId) {
-                    R.id.chooser_addToQueue -> { UtilMeths.sendToYTPService(mContext,
+                    R.id.chooser_addToQueue -> { UtilMeths.sendYTPServiceIntent(mContext,
                            ost, Constants.ADD_OST_TO_QUEUE)
                     }
                     R.id.chooser_copyLink ->{
