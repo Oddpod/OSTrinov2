@@ -62,6 +62,7 @@ import com.odd.ostrinov2.tools.IOHandler;
 import com.odd.ostrinov2.tools.PagerAdapter;
 import com.odd.ostrinov2.tools.PermissionHandlerKt;
 import com.odd.ostrinov2.tools.UtilMeths;
+import com.odd.ostrinov2.tools.YParsePlaylist;
 import com.odd.ostrinov2.tools.YoutubeShare;
 
 import java.util.ArrayList;
@@ -72,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private final static String PREFS_NAME = "Saved queue";
     private static DBHandler dbHandler;
+    private static boolean shoudlRefreshList = false;
     private Ost unAddedOst;
     private int backPress;
     private ListFragment listFragment;
@@ -92,6 +94,10 @@ public class MainActivity extends AppCompatActivity implements
     private Handler handler = new Handler();
     private SearchView searchView = null;
     private ViewPager fragPager;
+
+    public static void setShoudlRefreshList(boolean shoudlRefreshList) {
+        MainActivity.shoudlRefreshList = shoudlRefreshList;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -641,6 +647,10 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onStart() {
+        if(shoudlRefreshList){
+            listFragment.refreshListView();
+            shoudlRefreshList = false;
+        }
         super.onStart();
         doBindService();
         if (!youtubePlayerLaunched) {
@@ -654,9 +664,15 @@ public class MainActivity extends AppCompatActivity implements
         if (intent.getAction().equals(Intent.ACTION_SEND) && intent.getType().equals("text/plain")) {
             Bundle extras = intent.getExtras();
             String link = extras.getString(Intent.EXTRA_TEXT);
-            YoutubeShare yShare = new YoutubeShare(link);
-            yShare.setContext(this);
-            yShare.execute();
+            if(link.contains("playlist")){
+                YParsePlaylist yPP = new YParsePlaylist(link);
+                yPP.setContext(this);
+                yPP.execute();
+            } else{
+                YoutubeShare yShare = new YoutubeShare(link);
+                yShare.setContext(this);
+                yShare.execute();
+            }
             Intent result = new Intent("com.example.RESULT_ACTION", Uri.parse("content://result_uri"));
             setResult(Activity.RESULT_OK, result);
             finish();
@@ -674,7 +690,6 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void handleIntent(Intent intent) {
-        System.out.println(intent.getAction());
         String intAction = intent.getAction();
         if (intAction == null) {
             return;
