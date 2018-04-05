@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/white"
+    android:descendantFocusability="blocksDescendants"
+    android:orientation="horizontal">
+
+    <ImageView
+        android:id="@+id/ivThumbnail"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:contentDescription="@android:string/yes"/>
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="50dp"
+        android:layout_height="20dp"
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@id/ivThumbnail"
+        android:layout_toLeftOf="@+id/tvTags"
+        android:layout_toRightOf="@+id/ivThumbnail"
+        android:layout_toStartOf="@+id/tvTags"
+        android:paddingTop="1dp"
+        android:background="@null"
+        android:textAppearance="@style/TextAppearance.AppCompat.Widget.TextView.SpinnerItem" />
+
+    <TextView
+        android:id="@+id/tvShow"
+        android:layout_width="50dp"
+        android:layout_height="20dp"
+        android:layout_alignBottom="@+id/ivThumbnail"
+        android:layout_toEndOf="@id/ivThumbnail"
+        android:layout_toLeftOf="@+id/tvTags"
+        android:layout_toRightOf="@+id/ivThumbnail"
+        android:layout_toStartOf="@+id/tvTags"
+        android:paddingBottom="1dp"
+        android:background="@null"
+        android:textAppearance="@android:style/TextAppearance.Holo.Small" />
+
+    <TextView
+        android:id="@+id/tvTags"
+        android:layout_width="75dp"
+        android:layout_height="40dp"
+        android:layout_alignParentTop="true"
+        android:layout_toLeftOf="@+id/btnOptions"
+        android:layout_toStartOf="@id/btnOptions"
+        android:padding="1dp"
+        android:background="@null"
+        android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+    <android.support.v7.widget.AppCompatImageButton
+        android:id="@+id/btnOptions"
+        style="@style/Widget.AppCompat.ImageButton"
+        android:layout_width="50dp"
+        android:layout_height="40dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:background="?android:attr/selectableItemBackground"
+        android:contentDescription="@android:string/ok"
+        app:srcCompat="@drawable/ic_playlist_add_black_24dp" />
+
+</RelativeLayout>
