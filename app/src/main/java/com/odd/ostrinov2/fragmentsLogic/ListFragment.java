@@ -19,7 +19,6 @@ import com.odd.ostrinov2.MemesKt;
 import com.odd.ostrinov2.Ost;
 import com.odd.ostrinov2.R;
 import com.odd.ostrinov2.dialogFragments.AddScreen;
-import com.odd.ostrinov2.listeners.QueueListener;
 import com.odd.ostrinov2.tools.DBHandler;
 import com.odd.ostrinov2.tools.UtilMeths;
 
@@ -30,7 +29,7 @@ import java.util.List;
 import java.util.Random;
 
 public class ListFragment extends Fragment implements
-        View.OnClickListener, QueueListener {
+        View.OnClickListener {
 
     boolean editedOst;
     private int ostReplaceId, ostReplacePos;
@@ -100,15 +99,12 @@ public class ListFragment extends Fragment implements
                             // do reading, usually loop until end of file reading
                             String line;
                             while ((line = reader.readLine()) != null) {
-                                Ost ost = new Ost();
                                 String[] lineArray = line.split("; ");
                                 if (lineArray.length < 4) {
                                     return;
                                 }
-                                ost.setTitle(lineArray[0]);
-                                ost.setShow(lineArray[1]);
-                                ost.setTags(lineArray[2]);
-                                ost.setUrl(lineArray[3]);
+                                Ost ost = new Ost(lineArray[0], lineArray[1], lineArray[2],
+                                        lineArray[3]);
                                 boolean alreadyInDB = db.checkiIfOstInDB(ost);
                                 if (!alreadyInDB) {
                                     db.addNewOst(ost);
@@ -203,17 +199,6 @@ public class ListFragment extends Fragment implements
         return customAdapter.getOstList();
     }
 
-    @Override
-    public void addToQueue(int addId) {
-        Ost ost = getCurrDispOstList().get(addId);
-        mainActivity.addToQueue(ost);
-    }
-
-    @Override
-    public void removeFromQueue(String url) {
-
-    }
-
     public void refreshListView(){
         editedOst = false;
         allOsts = MainActivity.getDbHandler().getAllOsts();
@@ -243,11 +228,11 @@ public class ListFragment extends Fragment implements
 
         this.mainActivity = mainAcitivity;
         allOsts = MainActivity.getDbHandler().getAllOsts();
-        customAdapter = new CustomAdapter(mainAcitivity.getApplicationContext(), allOsts, this);
+        customAdapter = new CustomAdapter(mainAcitivity.getApplicationContext(), allOsts);
     }
 
     public void removeOst(int id){
-        UtilMeths.INSTANCE.deleteThumbnail(customAdapter.getItem(id).getUrl());
+        UtilMeths.INSTANCE.deleteThumbnail(customAdapter.getItem(id).getUrl(), getContext());
         customAdapter.removeOst(id);
     }
     public CustomAdapter getCustomAdapter() {

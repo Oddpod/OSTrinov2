@@ -21,28 +21,31 @@ class WidgetProvider : AppWidgetProvider() {
         val dbHandler = DBHandler(context)
 
         val ostList = dbHandler.allOsts
-        val ostNum = Random().nextInt(ostList.size)
-        val ostOfTheDay = ostList[ostNum]
+        if(ostList.isNotEmpty()){
+            val ostNum = Random().nextInt(ostList.size)
+            val ostOfTheDay = ostList[ostNum]
 
-        for (appWidgetId in appWidgetIds) {
+            for (appWidgetId in appWidgetIds) {
 
-            val remoteViews = RemoteViews(context.packageName,
-                    R.layout.widget_layout)
-            remoteViews.setTextViewText(R.id.tvOstoftheDay, ostOfTheDay.title)
-            val tnFile = UtilMeths.getThumbnailLocal(ostOfTheDay.url)
-            Picasso.with(context).load(tnFile).resize(500, 200).onlyScaleDown()
-                    .into(remoteViews, R.id.widgetThumbnail, appWidgetIds)
+                val remoteViews = RemoteViews(context.packageName,
+                        R.layout.widget_layout)
+                remoteViews.setTextViewText(R.id.tvOstoftheDay, ostOfTheDay.title)
+                val tnFile = UtilMeths.getThumbnailLocal(ostOfTheDay.url, context)
+                Picasso.with(context).load(tnFile).resize(500, 200).onlyScaleDown()
+                        .into(remoteViews, R.id.widgetThumbnail, appWidgetIds)
 
-            val intent = Intent(context, MainActivity::class.java)
-            intent.putExtra(context.getString(R.string.label_ost_of_the_day), ostNum)
-            intent.action = Constants.START_OST
-            val pendingIntent = PendingIntent.getActivity(context,
-                    0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-            remoteViews.setOnClickPendingIntent(R.id.widgetThumbnail, pendingIntent)
-            remoteViews.setOnClickPendingIntent(R.id.widgetThumbnail, pendingIntent)
-            appWidgetManager.updateAppWidget(appWidgetId, remoteViews)
+                val intent = Intent(context, MainActivity::class.java)
+                intent.putExtra(context.getString(R.string.label_ost_of_the_day), ostNum)
+                intent.action = Constants.START_OST
+                val pendingIntent = PendingIntent.getActivity(context,
+                        0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+                remoteViews.setOnClickPendingIntent(R.id.widgetThumbnail, pendingIntent)
+                remoteViews.setOnClickPendingIntent(R.id.widgetThumbnail, pendingIntent)
+                appWidgetManager.updateAppWidget(appWidgetId, remoteViews)
 
+            }
         }
+
     }
 
     companion object {

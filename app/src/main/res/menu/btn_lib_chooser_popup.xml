@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+        <item
+            android:id="@+id/chooser_addToQueue"
+            android:title="@string/chooser_add_to_queue"
+            android:titleCondensed="camera"
+            android:visible="true"/>
+        <item
+            android:id="@+id/chooser_copyLink"
+            android:title="@string/chooser_copy_link"
+            android:titleCondensed="string"
+            android:visible="true" />
+</menu>

@@ -1,149 +1,120 @@
 package com.odd.ostrinov2.tools
 
 import com.odd.ostrinov2.Ost
+import com.odd.ostrinov2.QueueAdapter
 import java.util.*
 import com.odd.ostrinov2.listeners.PlayerListener
 
 
 data class QueueHandler(var ostList: MutableList<Ost>, var startIndex : Int, var shuffle
-: Boolean, var playerListeners: Array<PlayerListener> ){
+: Boolean, var playerListener: PlayerListener, private var queueAdapter: QueueAdapter ){
 
-    private var preQueue: Stack<String>
-    private var played: Stack<String>
-    private var queue:Stack<String>
-    private var videoIds: MutableList<String> = UtilMeths.getVideoIdList(ostList)
-    var currentlyPlaying : String
+    var queue: Stack<Ost>
+    private var played: Stack<Ost>
+    var currentlyPlaying : Ost
     private var currPlayingIndex:Int = 0
+    private var queueAddPos: Int = 0
 
     init{
         played = Stack()
-        preQueue = Stack()
         queue = Stack()
-        currentlyPlaying = videoIds[startIndex]
-        playerListeners.forEach {it.updateCurrentlyPlaying(ostList[startIndex].id) }
-        for (i in ostList.indices) {
-            val videoId = videoIds[i]
-            if (i < startIndex) {
-                played.add(videoId)
-            } else if (i > startIndex) {
-                preQueue.add(0, videoId)
-            }
-        }
+        currentlyPlaying = ostList[startIndex]
+        playerListener.updateCurrentlyPlaying(currentlyPlaying.id)
+        played.addAll(ostList.subList(0, startIndex))
+        queue.addAll(ostList.subList(startIndex + 1, ostList.size))
+        queue.reverse()
 
         if (shuffle) {
             shuffleOn()
         }
+
+        queueAdapter.initiateQueue(this)
     }
 
     fun initiateQueue(ostList: List<Ost>, startIndex: Int, shuffle: Boolean) {
         this.ostList = ostList.toMutableList()
-        videoIds = ArrayList()
-        videoIds = UtilMeths.getVideoIdList(ostList)
         played = Stack()
-        preQueue = Stack()
-        currentlyPlaying = videoIds[startIndex]
-        playerListeners.forEach {it.updateCurrentlyPlaying(ostList[startIndex].id) }
-        for (i in ostList.indices) {
-            val videoId = videoIds[i]
-            if (i < startIndex) {
-                played.add(videoId)
-            } else if (i > startIndex) {
-                preQueue.add(0, videoId)
-            }
-        }
+        queue = Stack()
+        currentlyPlaying = ostList[startIndex]
+        playerListener.updateCurrentlyPlaying(ostList[startIndex].id)
+        played.addAll(ostList.subList(0, startIndex))
+        queue.addAll(ostList.subList(startIndex + 1, ostList.size))
+        queue.reverse()
+
         if (shuffle) {
             shuffleOn()
         }
+        queueAdapter.initiateQueue(this)
     }
 
     fun shuffleOff() {
-        currPlayingIndex = videoIds.indexOf(currentlyPlaying)
+        notifyPlayerListeners()
+        currPlayingIndex = ostList.indexOf(currentlyPlaying)
         played = Stack()
-        preQueue = Stack()
-        for (i in videoIds.indices) {
-            val videoId = videoIds[i]
+        queue = Stack()
+        for (i in ostList.indices) {
+            val videoId = ostList[i]
             if (i < currPlayingIndex) {
                 played.add(videoId)
             } else if (i > currPlayingIndex) {
-                preQueue.add(0, videoId)
+                queue.add(0, videoId)
             }
         }
         shuffle = false
-        notifyUnShuffle()
+        notifyPlayerListeners()
     }
 
     fun shuffleOn() {
         val seed = System.nanoTime()
-        Collections.shuffle(preQueue, Random(seed))
-        notifyShuffle(seed)
+        queue.subList(queueAddPos, queue.size).shuffle(Random(seed))
         shuffle = true
+        notifyPlayerListeners()
     }
 
     fun addToQueue(ost: Ost) {
-        val videoId = UtilMeths.urlToId(ost.url)
-        queue.add(0, UtilMeths.urlToId(ost.url))
+        queue.add(queue.size - queueAddPos, ost)
+        queueAddPos++
         ostList.add(currPlayingIndex + 1, ost)
-        currPlayingIndex = videoIds.indexOf(currentlyPlaying)
-        videoIds.add(currPlayingIndex + 1, videoId)
+        currPlayingIndex = ostList.indexOf(currentlyPlaying)
+        notifyPlayerListeners()
     }
 
-    fun removeFromQueue(url: String) {
-        val videoId = UtilMeths.urlToId(url)
-        if (queue.contains(videoId)) {
-            queue.remove(videoId)
-        } else {
-            preQueue.remove(videoId)
+    fun removeFromQueue(ost : Ost) {
+        if(queue.indexOf(ost) <= queueAddPos && queueAddPos!= 0){
+            queueAddPos--
         }
+        queue.remove(ost)
     }
 
     fun previous(): String?{
         if (!played.isEmpty()) {
-            preQueue.push(currentlyPlaying)
+            queue.push(currentlyPlaying)
             currentlyPlaying = played.pop()
         }
-        notifyPlayerListeners(true)
-        return currentlyPlaying
+        notifyPlayerListeners()
+        return currentlyPlaying.videoId
     }
 
     fun next() : String?{
         if (!queue.isEmpty()) {
             played.push(currentlyPlaying)
             currentlyPlaying = queue.pop()
-        } else if (!preQueue.isEmpty()) {
-            played.push(currentlyPlaying)
-            currentlyPlaying = preQueue.pop()
         }
-        notifyPlayerListeners(false)
-        return currentlyPlaying
+        notifyPlayerListeners()
+        if(queueAddPos != 0){
+            queueAddPos--
+        }
+        return currentlyPlaying.videoId
     }
 
-    fun notifyPlayerListeners(previous: Boolean) {
-        currPlayingIndex = videoIds.indexOf(currentlyPlaying)
-        for (i in playerListeners.indices) {
-            playerListeners[i].updateCurrentlyPlaying(ostList[currPlayingIndex].id)
-            if (previous) {
-                playerListeners[i].previous()
-            } else {
-                playerListeners[i].next()
-            }
+    fun notifyPlayerListeners() {
+        currPlayingIndex = ostList.indexOf(currentlyPlaying)
+        playerListener.updateCurrentlyPlaying(ostList[currPlayingIndex].id)
+        queueAdapter.notifyDataSetChanged()
         }
-    }
+    fun getCurrVideoId() : String? = currentlyPlaying.videoId
 
-    fun notifyShuffle(seed: Long) {
-        for (i in playerListeners.indices) {
-            playerListeners[i].shuffle(seed)
-        }
-    }
+    fun getCurrPlayingIndex(): Int = ostList.indexOf(currentlyPlaying)
 
-    fun notifyUnShuffle(){
-        for (i in playerListeners.indices) {
-            playerListeners[i].unShuffle(ostList)
-        }
-    }
-
-    fun getCurrPlayingOst() : Ost = ostList.get(videoIds.indexOf(currentlyPlaying))
-
-    fun getCurrPlayingIndex(): Int = videoIds.indexOf(currentlyPlaying)
-
-    fun hasNext(): Boolean = (!queue.isEmpty() || !preQueue.isEmpty())
+    fun hasNext(): Boolean = !queue.isEmpty()
 }

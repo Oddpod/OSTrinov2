@@ -15,10 +15,7 @@ import com.google.android.youtube.player.YouTubePlayerSupportFragment
 import com.odd.ostrinov2.listeners.PlayerListener
 import android.app.KeyguardManager
 import android.content.IntentFilter
-import com.odd.ostrinov2.Constants
-import com.odd.ostrinov2.MainActivity
-import com.odd.ostrinov2.Ost
-import com.odd.ostrinov2.R
+import com.odd.ostrinov2.*
 import com.odd.ostrinov2.tools.QueueHandler
 import com.odd.ostrinov2.tools.YoutubePlayerHandler
 import com.odd.ostrinov2.tools.isSystemAlertPermissionGranted
@@ -26,7 +23,7 @@ import com.odd.ostrinov2.tools.requestSystemAlertPermission
 
 
 class YTplayerService : Service(),
-        YouTubePlayer.OnFullscreenListener{
+        YouTubePlayer.OnFullscreenListener {
 
     private val binder = LocalBinder()
     lateinit var wm: WindowManager
@@ -50,7 +47,7 @@ class YTplayerService : Service(),
             RelativeLayout.LayoutParams.MATCH_PARENT,
             RelativeLayout.LayoutParams.WRAP_CONTENT)
 
-    private lateinit var smallPParams : RelativeLayout.LayoutParams
+    private lateinit var smallPParams: RelativeLayout.LayoutParams
     private val largeWindowParams = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
@@ -90,60 +87,52 @@ class YTplayerService : Service(),
 
         val action = intent.action
 
-        if(isScreenLocked()){
+        if (isScreenLocked()) {
             Toast.makeText(applicationContext, "Can't play while on LockScreen! :C", Toast.LENGTH_SHORT).show()
-        }
-        else if (action.equals(Constants.PLAY_ACTION, ignoreCase = true)) {
+        } else if (action.equals(Constants.PLAY_ACTION, ignoreCase = true)) {
+            Log.i(NOT_LOG_TAG, "Clicked Play")
             yPlayerHandler.pausePlay()
 
         } else if (action.equals(Constants.PREV_ACTION, ignoreCase = true)) {
-            yPlayerHandler.playerNext()
-            /*
-            if (yPlayer.hasPrevious()) {
-                yPlayer.previous()
-                yPlayer.cueVideo("VneKjsUR1oM")
-            }*/
-        } else if (action.equals(Constants.NEXT_ACTION, ignoreCase = true)) {
-            yPlayerHandler.playerNext()
-        } else if(action.equals(Constants.EXPANDMINIMIZE_PLAYER, ignoreCase = true)){
-            expandMinimizePlayer()
-        }
-    }
-
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        if (intent.action == Constants.STARTFOREGROUND_ACTION) {
-            //showNotification()
-        } else if (intent.action == Constants.PREV_ACTION) {
-            handleIntent(intent)
             Log.i(NOT_LOG_TAG, "Clicked Previous")
-        } else if (intent.action == Constants.PLAY_ACTION) {
-            handleIntent(intent)
-            Log.i(NOT_LOG_TAG, "Clicked Play")
-        } else if (intent.action == Constants.NEXT_ACTION) {
-            handleIntent(intent)
+            yPlayerHandler.playerNext()
+
+        } else if (action.equals(Constants.NEXT_ACTION, ignoreCase = true)) {
             Log.i(NOT_LOG_TAG, "Clicked Next")
-        } else if(intent.action == Constants.EXPANDMINIMIZE_PLAYER) {
-            handleIntent(intent)
+            yPlayerHandler.playerNext()
+
+        } else if (action.equals(Constants.ADD_OST_TO_QUEUE, ignoreCase = true)) {
+            Log.i(NOT_LOG_TAG, "Add ost to queue")
+            val ost = intent.getParcelableExtra<Ost>("ost_extra")
+            Toast.makeText(applicationContext, ost.title + " added to queue", Toast.LENGTH_SHORT).show()
+            yPlayerHandler.getQueueHandler().addToQueue(ost)
+        } else if (action.equals(Constants.START_OST, ignoreCase = true)) {
+            val ost = intent.getParcelableExtra<Ost>("ost_extra")
+            yPlayerHandler.initiateQueue(listOf(ost), 0, false)
+        } else if (action.equals(Constants.EXPANDMINIMIZE_PLAYER, ignoreCase = true)) {
             Log.i(NOT_LOG_TAG, "Expand")
-        }else if (intent.action == Constants.STOPFOREGROUND_ACTION) {
+            expandMinimizePlayer()
+        } else if (action.equals(Constants.STOPFOREGROUND_ACTION, ignoreCase = true)) {
             Log.i(NOT_LOG_TAG, "Received Stop Foreground Intent")
             rl.removeView(floatingPlayer)
             wm.removeView(rl)
             mainActivity.saveSession()
             yPlayerHandler.stopPlayer()
-
-            //stopSelf()
         }
+    }
+
+    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+        handleIntent(intent)
         return Service.START_NOT_STICKY
     }
 
     fun startQueue(ostList: List<Ost>, startIndex: Int, shuffle: Boolean,
-                   playerListeners: Array<PlayerListener>, youTubePlayerFragment: YouTubePlayerSupportFragment) {
-        val queueHandler = QueueHandler(ostList.toMutableList(), startIndex, shuffle, playerListeners)
+                   playerListener: PlayerListener, queueAdapter: QueueAdapter, youTubePlayerFragment: YouTubePlayerSupportFragment) {
+        val queueHandler = QueueHandler(ostList.toMutableList(), startIndex, shuffle, playerListener, queueAdapter)
         yTPlayerFrag = youTubePlayerFragment
         yTPlayerFrag.retainInstance = true
         playerNotification = PlayerNotificationService(this)
-        yPlayerHandler = YoutubePlayerHandler(playerNotification,queueHandler, mainActivity)
+        yPlayerHandler = YoutubePlayerHandler(playerNotification, queueHandler, mainActivity)
         yTPlayerFrag.initialize(Constants.API_TOKEN, yPlayerHandler)
     }
 
@@ -229,7 +218,7 @@ class YTplayerService : Service(),
         }
     }
 
-    private fun expandMinimizePlayer(){
+    private fun expandMinimizePlayer() {
         if (!playerExpanded) {
             Toast.makeText(applicationContext, "Expanding player", Toast.LENGTH_SHORT).show()
             rl.updateViewLayout(floatingPlayer, largePParams)
@@ -245,7 +234,7 @@ class YTplayerService : Service(),
         }
     }
 
-    fun playerPrevious(){
+    fun playerPrevious() {
         yPlayerHandler.playerPrevious()
     }
 
@@ -285,16 +274,16 @@ class YTplayerService : Service(),
         applicationContext.registerReceiver(screenOnOffReceiver, theFilter)
     }
 
-    private fun isScreenLocked(): Boolean{
+    private fun isScreenLocked(): Boolean {
         val myKM = applicationContext.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
         return myKM.inKeyguardRestrictedInputMode()
     }
 
-    fun setRepeating(repeat : Boolean){
+    fun setRepeating(repeat: Boolean) {
         yPlayerHandler.repeat = repeat
     }
 
-    fun getPlayer() : YouTubePlayer = yPlayerHandler.yPlayer
+    fun getPlayer(): YouTubePlayer = yPlayerHandler.yPlayer
 
-    fun getPlayerHandler() : YoutubePlayerHandler = yPlayerHandler
+    fun getPlayerHandler(): YoutubePlayerHandler = yPlayerHandler
 }

@@ -37,6 +37,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.DragEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -55,8 +56,6 @@ import com.odd.ostrinov2.dialogFragments.AddScreen;
 import com.odd.ostrinov2.fragmentsLogic.AboutFragment;
 import com.odd.ostrinov2.fragmentsLogic.ListFragment;
 import com.odd.ostrinov2.fragmentsLogic.SearchFragment;
-import com.odd.ostrinov2.listeners.PlayerListener;
-import com.odd.ostrinov2.listeners.QueueListener;
 import com.odd.ostrinov2.services.YTplayerService;
 import com.odd.ostrinov2.tools.DBHandler;
 import com.odd.ostrinov2.tools.IOHandler;
@@ -65,14 +64,11 @@ import com.odd.ostrinov2.tools.PermissionHandlerKt;
 import com.odd.ostrinov2.tools.UtilMeths;
 import com.odd.ostrinov2.tools.YoutubeShare;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity
-        implements AddScreen.AddScreenListener,
-        DialogInterface.OnDismissListener, QueueListener,
-        View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements
+        AddScreen.AddScreenListener, DialogInterface.OnDismissListener, View.OnClickListener {
 
     private final static String PREFS_NAME = "Saved queue";
     private static DBHandler dbHandler;
@@ -104,6 +100,7 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         dbHandler = new DBHandler(this);
+        //dbHandler.emptyTable();
         unAddedOst = null;
         rlContent = (RelativeLayout) findViewById(R.id.rlContent);
         fragPager = (ViewPager) findViewById(R.id.frag_pager);
@@ -135,7 +132,7 @@ public class MainActivity extends AppCompatActivity
 
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
         rvQueue.setLayoutManager(mLayoutManager);
-        queueAdapter = new QueueAdapter(this, this);
+        queueAdapter = new QueueAdapter(this);
         rvQueue.setAdapter(queueAdapter);
         rvQueue.setItemAnimator(new DefaultItemAnimator());
 
@@ -293,7 +290,7 @@ public class MainActivity extends AppCompatActivity
                 if (!youtubePlayerLaunched) {
                     Toast.makeText(this, "Nothing is playing", Toast.LENGTH_SHORT).show();
                 } else {
-                    Ost ost = yTplayerService.getQueueHandler().getCurrPlayingOst();
+                    Ost ost = yTplayerService.getQueueHandler().getCurrentlyPlaying();
                     ClipData clip = ClipData.newPlainText("Ost url", ost.getUrl());
                     clipboard.setPrimaryClip(clip);
                     Toast.makeText(this, "Link Copied to Clipboard", Toast.LENGTH_SHORT).show();
@@ -414,18 +411,12 @@ public class MainActivity extends AppCompatActivity
         if (requestCode == 1 && resultCode == RESULT_OK) {
             Uri currFileURI = data.getData();
             IOHandler.INSTANCE.readFromFile(currFileURI, this);
-            listFragment.refreshListView();
         }
         if (requestCode == 2 && resultCode == RESULT_OK) {
             Uri currFileURI = data.getData();
-            try {
-                IOHandler.INSTANCE.writeToFile(currFileURI, dbHandler.getAllOsts(), this);
-                listFragment.refreshListView();
-
-            } catch (IOException e) {
-                Log.i("OnActivityResult", " caught IOexception");
-            }
+            IOHandler.INSTANCE.writeToFile(currFileURI, dbHandler.getAllOsts(), this);
         }
+
         if (requestCode == 3) {
             yTplayerService.launchFloater(floatingPlayer, this);
         }
@@ -440,8 +431,8 @@ public class MainActivity extends AppCompatActivity
         if (!youtubePlayerLaunched) {
             Toast.makeText(this, "You have to play something first", Toast.LENGTH_SHORT).show();
         } else {
+            System.out.println("Adding to queue");
             yTplayerService.getQueueHandler().addToQueue(ost);
-            queueAdapter.addToQueue(ost);
         }
 
     }
@@ -454,18 +445,13 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void initiatePlayer(List<Ost> ostList, int startId) {
-        queueAdapter.initiateQueue(ostList, startId);
-
         if (!youtubePlayerLaunched) {
             initiateSeekbarTimer();
             rlContent.removeView(floatingPlayer);
             youtubePlayerLaunched = true;
-            PlayerListener[] playerListeners = new PlayerListener[2];
-            playerListeners[0] = queueAdapter;
-            playerListeners[1] = listFragment.getCustomAdapter();
             yTplayerService.launchFloater(floatingPlayer, this);
             yTplayerService.startQueue(ostList, startId, shuffleActivated,
-                    playerListeners, youTubePlayerFragment);
+                    listFragment.getCustomAdapter(), queueAdapter, youTubePlayerFragment);
         } else {
             yTplayerService.initiateQueue(ostList, startId, shuffleActivated);
         }
@@ -537,16 +523,6 @@ public class MainActivity extends AppCompatActivity
         shuffleActivated = false;
         yTplayerService.getQueueHandler().shuffleOff();
         btnShuffle.clearColorFilter();
-    }
-
-    @Override
-    public void addToQueue(int addId) {
-
-    }
-
-    @Override
-    public void removeFromQueue(String url) {
-        yTplayerService.getQueueHandler().removeFromQueue(url);
     }
 
     public void youtubePlayerStopped() {
@@ -690,7 +666,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onNewIntent(Intent intent) {
         handleIntent(intent);
-        if(ostFromWidget){
+        if (ostFromWidget) {
             startWidgetOst(ostFromWidgetId);
             ostFromWidget = false;
         }
@@ -700,21 +676,21 @@ public class MainActivity extends AppCompatActivity
     private void handleIntent(Intent intent) {
         System.out.println(intent.getAction());
         String intAction = intent.getAction();
-        if(intAction == null){
+        if (intAction == null) {
             return;
         }
-        switch (intAction){
-            case Constants.NOT_OPEN_ACTIVITY_ACTION:{
+        switch (intAction) {
+            case Constants.NOT_OPEN_ACTIVITY_ACTION: {
                 // Does nothing so far
                 break;
             }
-            case Constants.START_OST:{
+            case Constants.START_OST: {
                 ostFromWidget = true;
                 ostFromWidgetId = intent.getIntExtra(getString(R.string.label_ost_of_the_day),
                         -1);
                 break;
             }
-            case Intent.ACTION_SEND:{
+            case Intent.ACTION_SEND: {
                 addOstLink(intent);
                 break;
             }
@@ -759,8 +735,10 @@ public class MainActivity extends AppCompatActivity
         if (!queueString.equals("")) {
             Log.d("lastQueue", queueString);
             List<Ost> lastQueueList = UtilMeths.INSTANCE.buildOstListFromQueue(queueString, dbHandler);
-            initiatePlayer(lastQueueList, lastCurr);
-            yTplayerService.getPlayerHandler().loadLastSession(true, timestamp, videoDuration);
+            if(lastQueueList.isEmpty() && lastCurr < lastQueueList.size()) {
+                initiatePlayer(lastQueueList, lastCurr);
+                yTplayerService.getPlayerHandler().loadLastSession(true, timestamp, videoDuration);
+            }
         }
         lastSessionLoaded = true;
     }
