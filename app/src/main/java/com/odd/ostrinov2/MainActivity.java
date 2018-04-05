@@ -706,7 +706,6 @@ public class MainActivity extends AppCompatActivity implements
         }
         String idString = stringBuilder.toString();
         editor.putString("lastSession", idString);
-        //YouTubePlayer youTubePlayer = yTplayerService.getPlayer();
         int lastCurrentlyPlaying = yTplayerService.getQueueHandler().getCurrPlayingIndex();
         editor.putInt("lastCurrPlaying", lastCurrentlyPlaying);
         editor.putInt("timeStamp", seekBar.getProgress());

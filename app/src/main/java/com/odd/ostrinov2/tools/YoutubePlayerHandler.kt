@@ -98,7 +98,7 @@ class YoutubePlayerHandler(private var playerNotification:
     override fun onPlaying() {
         playing = true
         playerNotification.updateNotButtons(playing)
-        mainActivity.pausePlay(playing)
+        //mainActivity.pausePlay(playing)
     }
 
     override fun onStopped() {}
@@ -106,7 +106,7 @@ class YoutubePlayerHandler(private var playerNotification:
     override fun onPaused() {
         playing = false
         playerNotification.updateNotButtons(playing)
-        mainActivity.pausePlay(playing)
+        //mainActivity.pausePlay(playing)
         stoppedTime = yPlayer.currentTimeMillis
     }
 
@@ -168,7 +168,7 @@ class YoutubePlayerHandler(private var playerNotification:
         mainActivity.youtubePlayerStopped()
         mainActivity.doUnbindService()
         playerNotification.stopNotService()
-        mainActivity.pausePlay(playing)
+        //mainActivity.pausePlay(playing)
     }
 
     fun setPlayerStyle(style: YouTubePlayer.PlayerStyle){

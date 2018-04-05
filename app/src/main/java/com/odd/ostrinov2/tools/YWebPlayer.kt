@@ -15,6 +15,8 @@ import com.odd.ostrinov2.Constants
 import com.odd.ostrinov2.MainActivity
 
 
+
+
 class YWebPlayer(private var jsPlayer: WebView, private var queueHandler: QueueHandler,
                  private var mContext: Context, var seekBar: SeekBar,
                  private var playerNotService: PlayerNotificationService)
@@ -27,8 +29,10 @@ class YWebPlayer(private var jsPlayer: WebView, private var queueHandler: QueueH
     private val client = Client()
     private var pause: Boolean = false
     private var seekBarInitialized = false
+    val extraHeaders = HashMap<String, String>()
 
     init {
+        extraHeaders["Referer"] = "http://youtube.com"
         seekBar.setOnSeekBarChangeListener(this)
         jsPlayer.settings.javaScriptEnabled = true
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
@@ -46,7 +50,10 @@ class YWebPlayer(private var jsPlayer: WebView, private var queueHandler: QueueH
             jsPlayer.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
         }
         jsPlayer.setWebViewClient(client)
-        jsPlayer.loadUrl(BASE_URL)
+        val url = "https://www.youtube.com/embed/" + queueHandler.getCurrVideoId()
+
+        //webView.loadUrl(url, extraHeaders)
+        jsPlayer.loadUrl(url, extraHeaders)
         /*val html = IOHandler.getHtmlFile(queueHandler.getCurrVideoId(), mContext)
         jsPlayer.loadDataWithBaseURL("https://www.youtube.com/player_api", html,
                 "text/html", null, null)*/
@@ -57,14 +64,18 @@ class YWebPlayer(private var jsPlayer: WebView, private var queueHandler: QueueH
 
     fun initiateQueue(ostList: List<Ost>, startIndex: Int, shuffle: Boolean) {
         queueHandler.initiateQueue(ostList, startIndex, shuffle)
-        jsPlayer.loadUrl("javascript: player.loadVideoById(\"" + queueHandler.getCurrVideoId() + "\")")
+        val url = "https://www.youtube.com/embed/" + queueHandler.getCurrVideoId() + "?autoplay=1"
+        jsPlayer.loadUrl(url, extraHeaders)
+        //jsPlayer.loadUrl("javascript: player.loadVideoById(\"" + queueHandler.getCurrVideoId() + "\")", extraHeaders)
         loadLastSession = false
         pause = false
         playerNotService.updateNotInfo(queueHandler.currentlyPlaying)
     }
 
     fun playerNext() {
-        jsPlayer.loadUrl("javascript: player.loadVideoById(\"" + queueHandler.next() + "\")")
+        /*val url = "https://www.youtube.com/embed/" + queueHandler.next() + "?autoplay=1"
+        jsPlayer.loadUrl(url, extraHeaders)*/
+        jsPlayer.loadUrl("javascript: player.loadVideoById(\"" + queueHandler.next() + "\")", extraHeaders)
         pause = false
         playerNotService.updateNotInfo(queueHandler.currentlyPlaying)
     }

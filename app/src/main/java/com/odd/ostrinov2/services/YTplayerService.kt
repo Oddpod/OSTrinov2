@@ -19,6 +19,9 @@ import android.webkit.WebView
 import com.odd.ostrinov2.*
 import com.odd.ostrinov2.tools.*
 import android.widget.Toast
+import android.util.DisplayMetrics
+
+
 
 class YTplayerService : Service(),
         YouTubePlayer.OnFullscreenListener {
@@ -34,13 +37,13 @@ class YTplayerService : Service(),
 
     private val smallWindowParams = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
-            800,
+            WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.TYPE_PHONE,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT)
     private val largePParams = RelativeLayout.LayoutParams(
             RelativeLayout.LayoutParams.MATCH_PARENT,
-            RelativeLayout.LayoutParams.WRAP_CONTENT)
+            RelativeLayout.LayoutParams.MATCH_PARENT)
 
     private lateinit var smallPParams: RelativeLayout.LayoutParams
     private val largeWindowParams = WindowManager.LayoutParams(
@@ -146,6 +149,12 @@ class YTplayerService : Service(),
             requestSystemAlertPermission(activity, 3)
         } else {
             wm = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+            val displayMetrics = DisplayMetrics()
+            wm.defaultDisplay.getMetrics(displayMetrics)
+            val height = displayMetrics.heightPixels
+            val width = displayMetrics.widthPixels
+            largeWindowParams.height = height
+
             val params = smallWindowParams
             params.gravity = Gravity.TOP or Gravity.START
             params.x = 1
@@ -169,48 +178,47 @@ class YTplayerService : Service(),
             smallPParams = player.layoutParams as RelativeLayout.LayoutParams
             yWebPlayer = YWebPlayer(player, queueHandler, this, mainActivity.seekBar,
                     playerNotification)
-            yWebPlayer
 
             wm.addView(rl, params)
             //rl.descendantFocusability = ViewGroup.FOCUS_BEFORE_DESCENDANTS
-            rl.setOnTouchListener(object : View.OnTouchListener {
+            player.setOnClickListener { player.performClick() }
+            player.setOnTouchListener(object : View.OnTouchListener {
 
-                private val updateParams = params
-                internal var X: Int = 0
-                internal var Y: Int = 0
-                internal var touchedX: Float = 0.toFloat()
-                internal var touchedY: Float = 0.toFloat()
+                    private val updateParams = params
+                    internal var X: Int = 0
+                    internal var Y: Int = 0
+                    internal var touchedX: Float = 0.toFloat()
+                    internal var touchedY: Float = 0.toFloat()
 
-                override fun onTouch(v: View, event: MotionEvent): Boolean {
-                    when (event.action) {
-                        MotionEvent.ACTION_DOWN -> {
-                            X = updateParams.x
-                            Y = updateParams.y
+                    override fun onTouch(v: View, event: MotionEvent): Boolean {
+                        when (event.action) {
+                            MotionEvent.ACTION_DOWN -> {
+                                X = updateParams.x
+                                Y = updateParams.y
 
-                            touchedX = event.rawX
-                            touchedY = event.rawY
-                        }
-                        MotionEvent.ACTION_MOVE -> {
+                                touchedX = event.rawX
+                                touchedY = event.rawY
+                            }
+                            MotionEvent.ACTION_MOVE -> {
 
-                            updateParams.x = (X + (event.rawX - touchedX)).toInt()
-                            updateParams.y = (Y + (event.rawY - touchedY)).toInt()
+                                updateParams.x = (X + (event.rawX - touchedX)).toInt()
+                                updateParams.y = (Y + (event.rawY - touchedY)).toInt()
 
-                            wm.updateViewLayout(rl, updateParams)
-                        }
+                                wm.updateViewLayout(rl, updateParams)
+                            }
 
-                        MotionEvent.ACTION_MASK -> run {
+                            MotionEvent.ACTION_MASK -> run {
 
-                        }
+                            }
 
-                        else -> {
-                        }
-                    }//System.out.println(X + ", " + Y);
+                            else -> {
+                            }
+                        }//System.out.println(X + ", " + Y);
 
-                    return false
-                }
-            })
-
-        }
+                        return false
+                    }
+                })
+            }
     }
 
     private fun expandMinimizePlayer() {
