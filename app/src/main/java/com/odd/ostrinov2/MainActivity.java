@@ -37,7 +37,6 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.DragEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -85,8 +84,15 @@ public class MainActivity extends AppCompatActivity implements
     private QueueAdapter queueAdapter;
     private FragmentManager manager;
     private YouTubePlayerSupportFragment youTubePlayerFragment;
-    private Boolean mIsBound = false, shuffleActivated = false, repeat = false, playing = false,
-            lastSessionLoaded = false;
+    private Boolean mIsBound = false;
+    private Boolean shuffleActivated = false;
+    private Boolean repeat = false;
+    private Boolean playing = false;
+    private Boolean lastSessionLoaded = false;
+
+    public Boolean getShuffleActivated() {
+        return shuffleActivated;
+    }
     private YTplayerService yTplayerService;
     private ImageButton btnRepeat, btnPlayPause, btnShuffle;
     private SeekBar seekBar;
@@ -665,8 +671,7 @@ public class MainActivity extends AppCompatActivity implements
             Bundle extras = intent.getExtras();
             String link = extras.getString(Intent.EXTRA_TEXT);
             if(link.contains("playlist")){
-                YParsePlaylist yPP = new YParsePlaylist(link);
-                yPP.setContext(this);
+                YParsePlaylist yPP = new YParsePlaylist(link, this);
                 yPP.execute();
             } else{
                 YoutubeShare yShare = new YoutubeShare(link);
@@ -707,6 +712,13 @@ public class MainActivity extends AppCompatActivity implements
             }
             case Intent.ACTION_SEND: {
                 addOstLink(intent);
+                break;
+            }
+            case Constants.INITPLAYER: {
+                final Ost ost = intent.getParcelableExtra("ost_extra");
+                List<Ost> list = new ArrayList<>();
+                list.add(ost);
+                initiatePlayer(list, 0);
                 break;
             }
         }
