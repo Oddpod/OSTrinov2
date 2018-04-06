@@ -1,8 +1,8 @@
 package com.odd.ostrinov2.tools
 
-import android.content.Context
 import android.net.Uri
 import android.os.AsyncTask
+import android.widget.Toast
 import com.odd.ostrinov2.MainActivity
 import com.odd.ostrinov2.Ost
 import java.io.BufferedReader
@@ -19,11 +19,21 @@ internal object IOHandler {
 
     class WriteToFileAsync(val uri: Uri, val ostList: List<Ost>, mainActivity: MainActivity) : AsyncTask<Void, Void, Void>() {
         private var wContext: WeakReference<MainActivity> = WeakReference(mainActivity)
+        private var progressNotification: ProgressNotification =
+                ProgressNotification("Exporting OSTs", mainActivity,
+                        "Export in progress")
+
+        override fun onPreExecute() {
+            super.onPreExecute()
+            progressNotification.setStartedNotification()
+        }
         override fun doInBackground(vararg params: Void?): Void? {
             try {
                 val os = wContext.get()!!.contentResolver.openOutputStream(uri)
                 val osw = OutputStreamWriter(os!!)
                 var line: String
+                var counter = 0
+                val numItems = ostList.count()
                 for (ost in ostList) {
                     val title = ost.title
                     val show = ost.show
@@ -31,6 +41,7 @@ internal object IOHandler {
                     val url = ost.url
                     line = "$title; $show; $tags; $url"
                     osw.write(line + "\n")
+                    progressNotification.updateProgress(++counter, numItems)
                 }
                 osw.close()
             } catch (e: IOException) {
@@ -40,6 +51,8 @@ internal object IOHandler {
         }
         override fun onPostExecute(result: Void?) {
             wContext.get()!!.listFragment.refreshListView()
+            Toast.makeText(wContext.get()!!, "Finished Exporting OSts", Toast.LENGTH_SHORT).show()
+            progressNotification.setCompletedNotification()
             super.onPostExecute(result)
         }
     }
@@ -50,13 +63,22 @@ internal object IOHandler {
 
     class ReadFromFileAsync(val uri: Uri, mainActivity: MainActivity) : AsyncTask<Void, Void, Void>() {
         private var wContext: WeakReference<MainActivity> = WeakReference(mainActivity)
+        private val progressNotification: ProgressNotification =
+                ProgressNotification("Importing OSTs", mainActivity,
+                        "Import in progress")
 
+        override fun onPreExecute() {
+            super.onPreExecute()
+            progressNotification.setStartedNotification()
+        }
         override fun doInBackground(vararg params: Void?): Void? {
             try {
                 val db = DBHandler(wContext.get()!!)
                 val inStream = wContext.get()!!.contentResolver.openInputStream(uri)
                 val reader = BufferedReader(InputStreamReader(inStream!!))
                 val lines: List<String> = reader.readLines()
+                val numLines = lines.count()
+                var counter = 0
                 for (line in lines) {
                     val lineArray = line.split("; ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
                     if (lineArray.size < 4) {
@@ -72,6 +94,7 @@ internal object IOHandler {
                         db.addNewOst(ost)
                         UtilMeths.downloadThumbnail(lineArray[3], wContext.get()!!)
                     }
+                    progressNotification.updateProgress(++counter, numLines)
                 }
             } catch (e: IOException) {
                 println("File not found")
@@ -82,6 +105,8 @@ internal object IOHandler {
 
         override fun onPostExecute(result: Void?) {
             wContext.get()!!.listFragment.refreshListView()
+            Toast.makeText(wContext.get()!!, "Finished Importing OSts", Toast.LENGTH_SHORT).show()
+            progressNotification.setCompletedNotification()
             super.onPostExecute(result)
         }
     }
