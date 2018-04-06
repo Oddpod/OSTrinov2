@@ -1,41 +1,46 @@
 package com.odd.ostrinov2.services
 
-import android.app.*
+import android.app.KeyguardManager
+import android.app.Service
 import android.content.BroadcastReceiver
-import android.content.Intent
-import android.os.IBinder
-import android.util.Log
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.Color
 import android.graphics.PixelFormat
-import android.view.*
-import android.widget.*
+import android.os.IBinder
+import android.util.Log
+import android.view.Gravity
+import android.view.MotionEvent
+import android.view.View
+import android.view.WindowManager
+import android.widget.FrameLayout
+import android.widget.RelativeLayout
+import android.widget.Toast
+import android.widget.ToggleButton
 import com.google.android.youtube.player.YouTubePlayer
 import com.google.android.youtube.player.YouTubePlayerSupportFragment
-import com.odd.ostrinov2.listeners.PlayerListener
-import android.app.KeyguardManager
-import android.content.IntentFilter
 import com.odd.ostrinov2.*
+import com.odd.ostrinov2.listeners.PlayerListener
 import com.odd.ostrinov2.tools.QueueHandler
 import com.odd.ostrinov2.tools.YoutubePlayerHandler
 import com.odd.ostrinov2.tools.isSystemAlertPermissionGranted
 import com.odd.ostrinov2.tools.requestSystemAlertPermission
-
 
 class YTplayerService : Service(),
         YouTubePlayer.OnFullscreenListener {
 
     private val binder = LocalBinder()
     lateinit var wm: WindowManager
-    lateinit private var rl: RelativeLayout
-    lateinit private var floatingPlayer: FrameLayout
+    private lateinit var rl: RelativeLayout
+    private lateinit var floatingPlayer: FrameLayout
     private var floatingPlayerInitialized: Boolean = false
     private var outsideActivity: Boolean = false
     private var playerExpanded: Boolean = false
-    lateinit private var mainActivity: MainActivity
+    private lateinit var mainActivity: MainActivity
     lateinit var yTPlayerFrag: YouTubePlayerSupportFragment
     private lateinit var playerNotification: PlayerNotificationService
-    private lateinit var yPlayerHandler: YoutubePlayerHandler
+    private var yPlayerHandler: YoutubePlayerHandler? = null
 
     private val smallWindowParams = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
@@ -86,38 +91,55 @@ class YTplayerService : Service(),
             return
 
         val action = intent.action
+        println(action)
 
-        if (isScreenLocked()) {
-            Toast.makeText(applicationContext, "Can't play while on LockScreen! :C", Toast.LENGTH_SHORT).show()
-        } else if (action.equals(Constants.PLAY_ACTION, ignoreCase = true)) {
-            Log.i(NOT_LOG_TAG, "Clicked Play")
-            yPlayerHandler.pausePlay()
+        when {
+            action.equals(Constants.STARTFOREGROUND_ACTION) -> return
+            isScreenLocked() -> Toast.makeText(applicationContext, "Can't play while on LockScreen! :C", Toast.LENGTH_SHORT).show()
+            yPlayerHandler == null -> {
+                val ost = intent.getParcelableExtra<Ost>("ost_extra")
+                val mIntent = Intent(this, MainActivity::class.java)
+                mIntent.putExtra("ost_extra", ost)
+                mIntent.action = Constants.INITPLAYER
+                this.startActivity(mIntent)
+                return
+            }
+            action.equals(Constants.PLAY_ACTION, ignoreCase = true) -> {
+                Log.i(NOT_LOG_TAG, "Clicked Play")
+                yPlayerHandler!!.pausePlay()
 
-        } else if (action.equals(Constants.PREV_ACTION, ignoreCase = true)) {
-            Log.i(NOT_LOG_TAG, "Clicked Previous")
-            yPlayerHandler.playerNext()
+            }
+            action.equals(Constants.PREV_ACTION, ignoreCase = true) -> {
+                Log.i(NOT_LOG_TAG, "Clicked Previous")
+                yPlayerHandler!!.playerNext()
 
-        } else if (action.equals(Constants.NEXT_ACTION, ignoreCase = true)) {
-            Log.i(NOT_LOG_TAG, "Clicked Next")
-            yPlayerHandler.playerNext()
+            }
+            action.equals(Constants.NEXT_ACTION, ignoreCase = true) -> {
+                Log.i(NOT_LOG_TAG, "Clicked Next")
+                yPlayerHandler!!.playerNext()
 
-        } else if (action.equals(Constants.ADD_OST_TO_QUEUE, ignoreCase = true)) {
-            Log.i(NOT_LOG_TAG, "Add ost to queue")
-            val ost = intent.getParcelableExtra<Ost>("ost_extra")
-            Toast.makeText(applicationContext, ost.title + " added to queue", Toast.LENGTH_SHORT).show()
-            yPlayerHandler.getQueueHandler().addToQueue(ost)
-        } else if (action.equals(Constants.START_OST, ignoreCase = true)) {
-            val ost = intent.getParcelableExtra<Ost>("ost_extra")
-            yPlayerHandler.initiateQueue(listOf(ost), 0, false)
-        } else if (action.equals(Constants.EXPANDMINIMIZE_PLAYER, ignoreCase = true)) {
-            Log.i(NOT_LOG_TAG, "Expand")
-            expandMinimizePlayer()
-        } else if (action.equals(Constants.STOPFOREGROUND_ACTION, ignoreCase = true)) {
-            Log.i(NOT_LOG_TAG, "Received Stop Foreground Intent")
-            rl.removeView(floatingPlayer)
-            wm.removeView(rl)
-            mainActivity.saveSession()
-            yPlayerHandler.stopPlayer()
+            }
+            action.equals(Constants.ADD_OST_TO_QUEUE, ignoreCase = true) -> {
+                Log.i(NOT_LOG_TAG, "Add ost to queue")
+                val ost = intent.getParcelableExtra<Ost>("ost_extra")
+                Toast.makeText(applicationContext, ost.title + " added to queue", Toast.LENGTH_SHORT).show()
+                yPlayerHandler!!.getQueueHandler().addToQueue(ost)
+            }
+            action.equals(Constants.START_OST, ignoreCase = true) -> {
+                val ost = intent.getParcelableExtra<Ost>("ost_extra")
+                yPlayerHandler!!.initiateQueue(listOf(ost), 0, false)
+            }
+            action.equals(Constants.EXPANDMINIMIZE_PLAYER, ignoreCase = true) -> {
+                Log.i(NOT_LOG_TAG, "Expand")
+                expandMinimizePlayer()
+            }
+            action.equals(Constants.STOPFOREGROUND_ACTION, ignoreCase = true) -> {
+                Log.i(NOT_LOG_TAG, "Received Stop Foreground Intent")
+                rl.removeView(floatingPlayer)
+                wm.removeView(rl)
+                mainActivity.saveSession()
+                yPlayerHandler!!.stopPlayer()
+            }
         }
     }
 
@@ -136,14 +158,13 @@ class YTplayerService : Service(),
         yTPlayerFrag.initialize(Constants.API_TOKEN, yPlayerHandler)
     }
 
-    fun initiateQueue(ostList: List<Ost>, startIndex: Int, shuffle: Boolean) {
-        yPlayerHandler.initiateQueue(ostList, startIndex, shuffle)
-    }
+    fun initiateQueue(ostList: List<Ost>, startIndex: Int, shuffle: Boolean) =
+            yPlayerHandler!!.initiateQueue(ostList, startIndex, shuffle)
 
     fun refresh() {
         yTPlayerFrag.onResume()
         outsideActivity = true
-        yPlayerHandler.refresh()
+        yPlayerHandler!!.refresh()
     }
 
     fun launchFloater(floatingPlayer: FrameLayout, activity: MainActivity) {
@@ -168,9 +189,9 @@ class YTplayerService : Service(),
             val toggleButton: ToggleButton = rl.findViewById(R.id.toggleButton) as ToggleButton
             toggleButton.setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked) {
-                    yPlayerHandler.setPlayerStyle(YouTubePlayer.PlayerStyle.DEFAULT)
+                    yPlayerHandler!!.setPlayerStyle(YouTubePlayer.PlayerStyle.DEFAULT)
                 } else {
-                    yPlayerHandler.setPlayerStyle(YouTubePlayer.PlayerStyle.CHROMELESS)
+                    yPlayerHandler!!.setPlayerStyle(YouTubePlayer.PlayerStyle.CHROMELESS)
                 }
             }
             rl.setBackgroundColor(Color.argb(66, 255, 0, 0))
@@ -223,30 +244,30 @@ class YTplayerService : Service(),
             Toast.makeText(applicationContext, "Expanding player", Toast.LENGTH_SHORT).show()
             rl.updateViewLayout(floatingPlayer, largePParams)
             wm.updateViewLayout(rl, largeWindowParams)
-            yPlayerHandler.yPlayer.setShowFullscreenButton(true)
+            yPlayerHandler!!.yPlayer.setShowFullscreenButton(true)
             playerExpanded = true
         } else {
             Toast.makeText(applicationContext, "Minimizing player", Toast.LENGTH_SHORT).show()
             rl.updateViewLayout(floatingPlayer, smallPParams)
             wm.updateViewLayout(rl, smallWindowParams)
-            yPlayerHandler.yPlayer.setShowFullscreenButton(false)
+            yPlayerHandler!!.yPlayer.setShowFullscreenButton(false)
             playerExpanded = false
         }
     }
 
     fun playerPrevious() {
-        yPlayerHandler.playerPrevious()
+        yPlayerHandler!!.playerPrevious()
     }
 
     fun pausePlay() {
-        yPlayerHandler.pausePlay()
+        yPlayerHandler!!.pausePlay()
     }
 
     fun playerNext() {
-        yPlayerHandler.playerNext()
+        yPlayerHandler!!.playerNext()
     }
 
-    fun getQueueHandler(): QueueHandler = yPlayerHandler.getQueueHandler()
+    fun getQueueHandler(): QueueHandler = yPlayerHandler!!.getQueueHandler()
 
     fun registerBroadcastReceiver() {
         val theFilter = IntentFilter()
@@ -262,7 +283,7 @@ class YTplayerService : Service(),
 
                 if (strAction == Intent.ACTION_SCREEN_OFF || strAction == Intent.ACTION_SCREEN_ON) {
                     if (myKM.inKeyguardRestrictedInputMode()) {
-                        yPlayerHandler.yPlayer.pause()
+                        yPlayerHandler!!.yPlayer.pause()
                         println("Screen off " + "LOCKED")
                     } else {
                         println("Screen off " + "UNLOCKED")
@@ -280,10 +301,10 @@ class YTplayerService : Service(),
     }
 
     fun setRepeating(repeat: Boolean) {
-        yPlayerHandler.repeat = repeat
+        yPlayerHandler!!.repeat = repeat
     }
 
-    fun getPlayer(): YouTubePlayer = yPlayerHandler.yPlayer
+    fun getPlayer(): YouTubePlayer = yPlayerHandler!!.yPlayer
 
-    fun getPlayerHandler(): YoutubePlayerHandler = yPlayerHandler
+    fun getPlayerHandler(): YoutubePlayerHandler = yPlayerHandler!!
 }
