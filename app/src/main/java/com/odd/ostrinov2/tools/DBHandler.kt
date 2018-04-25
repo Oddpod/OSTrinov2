@@ -340,16 +340,16 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
     }
 
     private fun addNewTagsandShows(show: String, tagString: String) {
-        var tagString = tagString
+        var tagStr = tagString
         println("Add new tags and shows")
         if (!checkIfShowInDB(show)) {
             addNewShow(show)
         }
 
         if (tagString.endsWith(",")) {
-            tagString = tagString.trim(',') //substring(0, tagString.length - 1)
+            tagStr = tagString.trim(',') //substring(0, tagString.length - 1)
         }
-        val tags = tagString.split(", ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        val tags = tagStr.split(", ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         tags.forEach { print("$it, ")}
         tags.forEach {
             if (!checkIfTagInDB(it)) {
