@@ -4,37 +4,48 @@ import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.content.Intent
+import android.os.Bundle
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import com.odd.ostrinov2.Constants
 import com.odd.ostrinov2.MainActivity
 import com.odd.ostrinov2.Ost
 import com.odd.ostrinov2.R
+import com.odd.ostrinov2.dialogFragments.EditOstDialog
+import com.odd.ostrinov2.dialogFragments.PlaylistPicker
 import com.odd.ostrinov2.listeners.PlayerListener
+import com.odd.ostrinov2.tools.FilterHandler
+import com.odd.ostrinov2.tools.SortHandler
 import com.odd.ostrinov2.tools.UtilMeths
+import com.odd.ostrinov2.tools.checkPermission
 import com.squareup.picasso.Picasso
 import java.util.*
 
-open class PlaylistRVAdapter(private val mContext: Context, ostListin: List<Ost>) :
-        RecyclerView.Adapter<PlaylistRVAdapter.RowViewHolder>(), PlayerListener {
+class PlaylistRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
+        RecyclerView.Adapter<PlaylistRVAdapter.RowViewHolder>(), PlayerListener,
+        EditOstDialog.EditOstDialogListener {
 
-    private val filteredOstList: MutableList<Ost>
+    private val unFilteredOstList: MutableList<Ost>
     private val ostList: MutableList<Ost>
-    private var prevSortedMode = 0
+    private val filterHandler: FilterHandler
+    private val sortHandler: SortHandler
     private val mInflater: LayoutInflater
+    private var editOStDialog: EditOstDialog
     var nowPlaying = -1
         private set
     private var lastQuery = ""
 
     init {
         ostList = ArrayList()
-        ostList.addAll(ostListin)
-        filteredOstList = ArrayList()
-        filteredOstList.addAll(ostListin)
+        ostList.addAll(ostListIn)
+        unFilteredOstList = ArrayList()
+        unFilteredOstList.addAll(ostListIn)
+        filterHandler = FilterHandler(ostList)
+        sortHandler = SortHandler(this, ostList)
+        editOStDialog = EditOstDialog()
+        editOStDialog.setEditOstListener(this)
         mInflater = mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
     }
 
@@ -50,7 +61,10 @@ open class PlaylistRVAdapter(private val mContext: Context, ostListin: List<Ost>
     override fun getItemCount(): Int = ostList.size
 
     override fun onBindViewHolder(holder: RowViewHolder, position: Int) {
+        println("relaunching views")
+
         val ost = getItem(position)
+        println("""SearchString: ${ost.searchString}""")
         val tnFile = UtilMeths.getThumbnailLocal(ost.url, mContext)
         holder.tvTitle.text = ost.title
         holder.tvShow.text = ost.show
@@ -81,11 +95,17 @@ open class PlaylistRVAdapter(private val mContext: Context, ostListin: List<Ost>
                                 .show()
                     }
                     R.id.add_to_playlist -> {
-
-                        val mIntent = Intent(mContext, MainActivity::class.java)
+                        val picker = PlaylistPicker()
+                        val bundl = Bundle()
+                        bundl.putInt("ostId", ost.id)
+                        println("ostId: ${ost.id}")
+                        picker.arguments = bundl
+                        picker.show((mContext as MainActivity).supportFragmentManager,
+                                "PlaylistPicker")
+                        /*val mIntent = Intent(mContext, MainActivity::class.java)
                         mIntent.putExtra("ostId", ost.id)
                         mIntent.action = Constants.ADD_OST_TO_PLAYLIST
-                        mContext.startActivity(mIntent)
+                        mContext.startActivity(mIntent)*/
 
                     }
                 }
@@ -94,11 +114,18 @@ open class PlaylistRVAdapter(private val mContext: Context, ostListin: List<Ost>
             pum.show()
         }
         holder.base.setOnClickListener {
+            ostList.forEach { print("$it, ") }
             UtilMeths.initYTPServiceQueue(mContext, ostList, position)
+        }
+        holder.base.setOnLongClickListener {
+            editOStDialog.setText(ost)
+            val fragMan = (mContext as MainActivity).supportFragmentManager
+            editOStDialog.show(fragMan!!, "EditOstDialog")
+            true
         }
     }
 
-    private fun getItem(position: Int): Ost = ostList[position]
+    fun getItem(position: Int): Ost = ostList[position]
     override fun getItemId(position: Int): Long = ostList[position].id.toLong()
 
     class RowViewHolder(val base: View) : RecyclerView.ViewHolder(base) {
@@ -115,93 +142,50 @@ open class PlaylistRVAdapter(private val mContext: Context, ostListin: List<Ost>
     }
 
     fun filter(charText: String) {
-        lastQuery = charText.toLowerCase(Locale.getDefault())
-        ostList.clear()
-        if (lastQuery.isEmpty()) {
-            ostList.addAll(filteredOstList)
-            return
-        }
-        if (lastQuery.startsWith("tags:")) {
-            val query = lastQuery.removeRange(0, 5).trim()
-            val tags = query.split(",")
-            filteredOstList.forEach {
-                var hit = true
-                for (tag in tags) {
-                    val trimmedTag = tag.trim()
-                    if (!it.tags.toLowerCase(Locale.getDefault()).contains(trimmedTag))
-                        hit = false
-                }
-                if (hit) {
-                    ostList.add(it)
-                }
-            }
-        } else if (lastQuery.startsWith("show:")) {
-            val query = lastQuery.removeRange(0, 5).trim()
-            filteredOstList.forEach {
-                if (it.show.toLowerCase(Locale.getDefault()).contains(query))
-                    ostList.add(it)
-            }
-        } else {
-            if (lastQuery.startsWith("-")) {
-                val query = lastQuery.removeRange(0, 1)
-                filteredOstList.forEach {
-                    if (!it.searchString.toLowerCase(Locale.getDefault()).contains(query))
-                        ostList.add(it)
-                }
-            } else {
-
-                filteredOstList.forEach {
-                    if (it.searchString.toLowerCase(Locale.getDefault()).contains(lastQuery))
-                        ostList.add(it)
-                }
-            }
-        }
+        filterHandler.filter(charText)
         notifyDataSetChanged()
     }
 
-    fun sort(mode: Int) {
-        if (prevSortedMode == mode) {
-            unSort()
-            prevSortedMode = 0
-            return
-        }
-        prevSortedMode = mode
-        sortInternal(mode)
+    fun sort(mode: SortHandler.SortMode) {
+        sortHandler.sort(mode)
     }
 
-    private fun sortInternal(mode: Int) {
-        if (mode == 0) {
-            return
-        }
-        when (mode) {
-            1 -> {
-                if (ostList.size > 0) {
-                    ostList.sortWith(Comparator { ost1, ost2 -> ost1.title.compareTo(ost2.title) })
-                }
-                notifyDataSetChanged()
-            }
-            else -> {
-            }
-        }
-    }
-
-    private fun unSort() {
+    fun unSort() {
         ostList.clear()
         filter(lastQuery)
     }
 
     fun updateList(updatedList: List<Ost>) {
-        filteredOstList.clear()
-        filteredOstList.addAll(updatedList)
+        unFilteredOstList.clear()
+        unFilteredOstList.addAll(updatedList)
+        unFilteredOstList.forEach { print(it) }
         filter(lastQuery)
-        sortInternal(prevSortedMode)
+        sortHandler.sortInternal()
     }
 
     fun getOstList(): List<Ost> = ostList
 
-    fun removeOst(pos: Int) {
-        val item = getItem(pos)
-        ostList.removeAt(pos)
-        filteredOstList.remove(item)
+    override fun onSaveButtonClick(editedOst: Ost, dialog: EditOstDialog) {
+        checkPermission(mContext as MainActivity)
+        val replaceIndex = ostList.indexOf(editedOst)
+        ostList[replaceIndex] = editedOst
+        MainActivity.getDbHandler().updateOst(editedOst)
+        UtilMeths.downloadThumbnail(editedOst.url, mContext)
+    }
+
+    override fun onDeleteButtonClick(deletedOst: Ost, dialog: EditOstDialog) {
+        println("Deleting ost")
+        MainActivity.getDbHandler().deleteOst(deletedOst.id)
+        filterHandler.unFilteredOstList.remove(deletedOst)
+        notifyDataSetChanged()
+        filter(lastQuery)
+        Toast.makeText(mContext, "Deleted " + deletedOst.title, Toast.LENGTH_SHORT).show()
+    }
+
+    fun addNewOst(ost: Ost) {
+        ostList.add(ost)
+        filterHandler.unFilteredOstList.add(ost)
+        sortHandler.ostList.add(ost)
+        filter(lastQuery)
     }
 }
