@@ -4,16 +4,16 @@ import com.odd.ostrinov2.Ost
 import java.util.*
 import kotlin.collections.ArrayList
 
-class FilterHandler(private val ostList: ArrayList<Ost>) {
+class FilterHandler(private var ostList: ArrayList<Ost>) {
 
-    private var unFilteredOstList: ArrayList<Ost> = ArrayList(ostList.size)
+    var unFilteredOstList: ArrayList<Ost> = ArrayList(ostList.size)
     private var lastQuery: String = ""
 
     init {
         unFilteredOstList.addAll(ostList)
     }
 
-    fun filter(charText: String) {
+    fun filter(charText: String = lastQuery) {
         lastQuery = charText.toLowerCase(Locale.getDefault())
         ostList.clear()
         if (lastQuery.isEmpty()) {
