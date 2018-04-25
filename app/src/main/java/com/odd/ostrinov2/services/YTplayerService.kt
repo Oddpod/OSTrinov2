@@ -94,12 +94,15 @@ class YTplayerService : Service(),
         println(action)
 
         when {
-            action.equals(Constants.STARTFOREGROUND_ACTION) -> return
+            action == Constants.STARTFOREGROUND_ACTION -> return
             isScreenLocked() -> Toast.makeText(applicationContext, "Can't play while on LockScreen! :C", Toast.LENGTH_SHORT).show()
             yPlayerHandler == null -> {
-                val ost = intent.getParcelableExtra<Ost>("ost_extra")
+                val osts = intent.getParcelableArrayListExtra<Ost>("osts_extra")
+                        as ArrayList
+                val startPos = intent.getIntExtra("startId", 0)
                 val mIntent = Intent(this, MainActivity::class.java)
-                mIntent.putExtra("ost_extra", ost)
+                mIntent.putParcelableArrayListExtra("osts_extra", osts)
+                mIntent.putExtra("startIndex", startPos)
                 mIntent.action = Constants.INITPLAYER
                 this.startActivity(mIntent)
                 return
@@ -125,12 +128,13 @@ class YTplayerService : Service(),
                 Toast.makeText(applicationContext, ost.title + " added to queue", Toast.LENGTH_SHORT).show()
                 yPlayerHandler!!.getQueueHandler().addToQueue(ost)
             }
-        //TODO Consider renaming start ost till init or somthing
+        //TODO Consider renaming start ost to init or somthing
             action.equals(Constants.START_OST, ignoreCase = true) -> {
 
                 val ost = intent.getParcelableExtra<Ost>("ost_extra")
+                val startIndex = intent.getIntExtra("startIndex", 0)
                 var ostList = intent.getParcelableArrayListExtra<Ost>("osts_extra")
-                yPlayerHandler!!.initiateQueue(ostList, 0, false)
+                yPlayerHandler!!.initiateQueue(ostList, startIndex, false)
             }
             action.equals(Constants.EXPANDMINIMIZE_PLAYER, ignoreCase = true) -> {
                 Log.i(NOT_LOG_TAG, "Expand")
