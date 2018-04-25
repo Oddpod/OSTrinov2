@@ -57,13 +57,17 @@
 
     </TableLayout>
 
-    <ListView
-        android:id="@+id/lvOstList"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rvOstList"
         style="@style/Widget.AppCompat.ListView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/tlTop"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:fastScrollEnabled="true"/>
+        app:fastScrollEnabled="true"
+        app:fastScrollHorizontalThumbDrawable="@drawable/scrollbar"
+        app:fastScrollHorizontalTrackDrawable="@drawable/line_drawable"
+        app:fastScrollVerticalThumbDrawable="@drawable/scrollbar"
+        app:fastScrollVerticalTrackDrawable="@drawable/line_drawable" />
 </RelativeLayout>
