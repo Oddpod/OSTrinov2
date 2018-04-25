@@ -1,9 +1,11 @@
 package com.odd.ostrinov2.fragmentsLogic
 
+import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,24 +15,17 @@ import com.odd.ostrinov2.MainActivity
 import com.odd.ostrinov2.Ost
 import com.odd.ostrinov2.R
 import com.odd.ostrinov2.listeners.PlayerListener
-import com.odd.ostrinov2.tools.FilterHandler
 import com.odd.ostrinov2.tools.UtilMeths
 import com.squareup.picasso.Picasso
-import java.util.ArrayList
-import kotlin.Comparator
-import kotlin.Int
-import kotlin.Long
-import kotlin.String
+import java.util.*
 
-
-class CustomAdapter(private val mContext: Context, ostListin: List<Ost>) :
-        BaseAdapter(), PlayerListener {
+open class PlaylistRVAdapter(private val mContext: Context, ostListin: List<Ost>) :
+        RecyclerView.Adapter<PlaylistRVAdapter.RowViewHolder>(), PlayerListener {
 
     private val filteredOstList: MutableList<Ost>
     private val ostList: MutableList<Ost>
     private var prevSortedMode = 0
     private val mInflater: LayoutInflater
-    private val filterHandler: FilterHandler
     var nowPlaying = -1
         private set
     private var lastQuery = ""
@@ -40,37 +35,34 @@ class CustomAdapter(private val mContext: Context, ostListin: List<Ost>) :
         ostList.addAll(ostListin)
         filteredOstList = ArrayList()
         filteredOstList.addAll(ostListin)
-        filterHandler = FilterHandler(ostList)
         mInflater = mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
     }
 
-    override fun getCount(): Int = ostList.size
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int):
+            RowViewHolder {
+        // create a new view
+        @SuppressLint("InflateParams") val itemLayoutView = LayoutInflater.from(parent
+                .context).inflate(R.layout.lib_row, null)
+        // create ViewHolder
+        return RowViewHolder(itemLayoutView)
+    }
 
-    override fun getItem(position: Int): Ost = ostList[position]
+    override fun getItemCount(): Int = ostList.size
 
-    override fun getItemId(position: Int): Long = ostList[position].id.toLong()
-
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        var conView = convertView
+    override fun onBindViewHolder(holder: RowViewHolder, position: Int) {
         val ost = getItem(position)
-        val holder: ViewHolder
-        if (conView == null) {
-            conView = mInflater.inflate(R.layout.lib_row, null)
-            holder = ViewHolder(conView)
-            conView!!.tag = holder
-        } else {
-            holder = conView.tag as ViewHolder
-        }
         val tnFile = UtilMeths.getThumbnailLocal(ost.url, mContext)
-        //System.out.println(tnPath);
+        holder.tvTitle.text = ost.title
+        holder.tvShow.text = ost.show
+        holder.tvTags.text = ost.tags
         Picasso.with(mContext)
                 .load(tnFile)
                 .into(holder.thumbnail)
 
         if (nowPlaying == ost.id) {
-            conView.setBackgroundResource(R.drawable.greenrect)
+            holder.base.setBackgroundResource(R.drawable.greenrect)
         } else {
-            conView.setBackgroundResource(R.drawable.white)
+            holder.base.setBackgroundResource(R.drawable.white)
         }
         holder.btnOptions.setOnClickListener {
             val pum = PopupMenu(mContext, holder.btnOptions)
@@ -89,15 +81,9 @@ class CustomAdapter(private val mContext: Context, ostListin: List<Ost>) :
                                 .show()
                     }
                     R.id.add_to_playlist -> {
-                        /*val picker = PlaylistPicker()
-                        val bundl = Bundle()
-                        bundl.putInt("ostId", ost.id)
-                        picker.arguments = bundl
-                        picker.showNow((mContext as MainActivity).supportFragmentManager,
-                                "PlaylistPicker")*/
+
                         val mIntent = Intent(mContext, MainActivity::class.java)
                         mIntent.putExtra("ostId", ost.id)
-                        mIntent.addFlags(Intent.FLAG_FROM_BACKGROUND)
                         mIntent.action = Constants.ADD_OST_TO_PLAYLIST
                         mContext.startActivity(mIntent)
 
@@ -107,20 +93,20 @@ class CustomAdapter(private val mContext: Context, ostListin: List<Ost>) :
             }
             pum.show()
         }
-
-        holder.tvTitle.text = ost.title
-        holder.tvShow.text = ost.show
-        holder.tvTags.text = ost.tags
-
-        return conView
+        holder.base.setOnClickListener {
+            UtilMeths.initYTPServiceQueue(mContext, ostList, position)
+        }
     }
 
-    private inner class ViewHolder internal constructor(convertView: View) {
-        internal var tvTitle: TextView = convertView.findViewById(R.id.tvTitle) as TextView
-        internal var tvShow: TextView = convertView.findViewById(R.id.tvShow) as TextView
-        internal var tvTags: TextView = convertView.findViewById(R.id.tvTags) as TextView
-        internal var btnOptions: ImageButton = convertView.findViewById(R.id.btnOptions) as ImageButton
-        internal var thumbnail: ImageView = convertView.findViewById(R.id.ivThumbnail) as ImageView
+    private fun getItem(position: Int): Ost = ostList[position]
+    override fun getItemId(position: Int): Long = ostList[position].id.toLong()
+
+    class RowViewHolder(val base: View) : RecyclerView.ViewHolder(base) {
+        var tvTitle: TextView = base.findViewById(R.id.tvTitle) as TextView
+        var tvShow: TextView = base.findViewById(R.id.tvShow) as TextView
+        var tvTags: TextView = base.findViewById(R.id.tvTags) as TextView
+        var btnOptions: ImageButton = base.findViewById(R.id.btnOptions) as ImageButton
+        var thumbnail: ImageView = base.findViewById(R.id.ivThumbnail) as ImageView
     }
 
     override fun updateCurrentlyPlaying(newId: Int) {
@@ -129,7 +115,47 @@ class CustomAdapter(private val mContext: Context, ostListin: List<Ost>) :
     }
 
     fun filter(charText: String) {
-        filterHandler.filter(charText)
+        lastQuery = charText.toLowerCase(Locale.getDefault())
+        ostList.clear()
+        if (lastQuery.isEmpty()) {
+            ostList.addAll(filteredOstList)
+            return
+        }
+        if (lastQuery.startsWith("tags:")) {
+            val query = lastQuery.removeRange(0, 5).trim()
+            val tags = query.split(",")
+            filteredOstList.forEach {
+                var hit = true
+                for (tag in tags) {
+                    val trimmedTag = tag.trim()
+                    if (!it.tags.toLowerCase(Locale.getDefault()).contains(trimmedTag))
+                        hit = false
+                }
+                if (hit) {
+                    ostList.add(it)
+                }
+            }
+        } else if (lastQuery.startsWith("show:")) {
+            val query = lastQuery.removeRange(0, 5).trim()
+            filteredOstList.forEach {
+                if (it.show.toLowerCase(Locale.getDefault()).contains(query))
+                    ostList.add(it)
+            }
+        } else {
+            if (lastQuery.startsWith("-")) {
+                val query = lastQuery.removeRange(0, 1)
+                filteredOstList.forEach {
+                    if (!it.searchString.toLowerCase(Locale.getDefault()).contains(query))
+                        ostList.add(it)
+                }
+            } else {
+
+                filteredOstList.forEach {
+                    if (it.searchString.toLowerCase(Locale.getDefault()).contains(lastQuery))
+                        ostList.add(it)
+                }
+            }
+        }
         notifyDataSetChanged()
     }
 

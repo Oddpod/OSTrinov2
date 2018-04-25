@@ -107,10 +107,10 @@
 
         <android.support.v4.view.ViewPager
             android:id="@+id/frag_pager"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/bnvFrag"
-            android:layout_above="@+id/seekBar"/>
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/seekBar"
+            android:layout_below="@id/bnvFrag" />
 
         <FrameLayout
             android:id="@+id/floatingPlayer"

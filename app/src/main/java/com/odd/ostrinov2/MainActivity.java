@@ -52,8 +52,10 @@ import android.widget.Toast;
 import com.google.android.youtube.player.YouTubePlayer;
 import com.google.android.youtube.player.YouTubePlayerSupportFragment;
 import com.odd.ostrinov2.dialogFragments.AddScreen;
+import com.odd.ostrinov2.dialogFragments.PlaylistPicker;
 import com.odd.ostrinov2.fragmentsLogic.AboutFragment;
-import com.odd.ostrinov2.fragmentsLogic.ListFragment;
+import com.odd.ostrinov2.fragmentsLogic.LibraryFragment;
+import com.odd.ostrinov2.fragmentsLogic.PlaylistFragment;
 import com.odd.ostrinov2.fragmentsLogic.SearchFragment;
 import com.odd.ostrinov2.services.YTplayerService;
 import com.odd.ostrinov2.tools.DBHandler;
@@ -75,8 +77,9 @@ public class MainActivity extends AppCompatActivity implements
     private static boolean shoudlRefreshList = false;
     private Ost unAddedOst;
     private int backPress;
-    private ListFragment listFragment;
+    private LibraryFragment libraryFragment;
     private SearchFragment searchFragment;
+    private PlaylistFragment playlistFragment;
     private FrameLayout floatingPlayer;
     private RelativeLayout rlContent;
     private boolean youtubePlayerLaunched = false, about = false, addCanceled = true, ostFromWidget = false;
@@ -105,31 +108,60 @@ public class MainActivity extends AppCompatActivity implements
         MainActivity.shoudlRefreshList = shoudlRefreshList;
     }
 
+    private ServiceConnection mConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            // This is called when the connection with the service has been
+            // established, giving us the service object we can use to
+            // interact with the service.  Because we have bound to a explicit
+            // service that we know is running in our own process, we can
+            // cast its IBinder to a concrete class and directly access it.
+            yTplayerService = ((YTplayerService.LocalBinder) service).getService();
+            yTplayerService.registerBroadcastReceiver();
+            if (ostFromWidget) {
+                startWidgetOst(ostFromWidgetId);
+                ostFromWidget = false;
+                shuffleOn();
+                System.out.println("ost from widget");
+            } else if (!lastSessionLoaded) {
+                loadLastSession();
+            }
+            // Tell the user about this for our demo.
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+            // This is called when the connection with the service has been
+            // unexpectedly disconnected -- that is, its process crashed.
+            // Because it is running in our same process, we should never
+            // see this happen.
+            mIsBound = false;
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         dbHandler = new DBHandler(this);
         //dbHandler.emptyTable();
         unAddedOst = null;
-        rlContent = (RelativeLayout) findViewById(R.id.rlContent);
-        fragPager = (ViewPager) findViewById(R.id.frag_pager);
+        rlContent = findViewById(R.id.rlContent);
+        fragPager = findViewById(R.id.frag_pager);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         //drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        floatingPlayer = (FrameLayout) findViewById(R.id.floatingPlayer);
+        floatingPlayer = findViewById(R.id.floatingPlayer);
 
-        btnRepeat = (ImageButton) findViewById(R.id.btnRepeat);
-        btnPlayPause = (ImageButton) findViewById(R.id.btnPause);
-        final ImageButton btnNext = (ImageButton) findViewById(R.id.btnNext);
-        ImageButton btnPrevious = (ImageButton) findViewById(R.id.btnPrevious);
-        btnShuffle = (ImageButton) findViewById(R.id.btnShuffle);
+        btnRepeat = findViewById(R.id.btnRepeat);
+        btnPlayPause = findViewById(R.id.btnPause);
+        final ImageButton btnNext = findViewById(R.id.btnNext);
+        ImageButton btnPrevious = findViewById(R.id.btnPrevious);
+        btnShuffle = findViewById(R.id.btnShuffle);
 
         btnRepeat.setOnClickListener(this);
         btnPlayPause.setOnClickListener(this);
@@ -137,10 +169,10 @@ public class MainActivity extends AppCompatActivity implements
         btnPrevious.setOnClickListener(this);
         btnShuffle.setOnClickListener(this);
 
-        seekBar = (SeekBar) findViewById(R.id.seekBar);
+        seekBar = findViewById(R.id.seekBar);
         //Make sure you update Seekbar on UI thread
 
-        RecyclerView rvQueue = (RecyclerView) findViewById(R.id.rvQueue);
+        RecyclerView rvQueue = findViewById(R.id.rvQueue);
 
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
         rvQueue.setLayoutManager(mLayoutManager);
@@ -148,19 +180,19 @@ public class MainActivity extends AppCompatActivity implements
         rvQueue.setAdapter(queueAdapter);
         rvQueue.setItemAnimator(new DefaultItemAnimator());
 
-        listFragment = new ListFragment();
-        listFragment.setMainAcitivity(this);
-        listFragment.setRetainInstance(true);
+        libraryFragment = new LibraryFragment();
+        libraryFragment.setMainAcitivity(this);
+        libraryFragment.setRetainInstance(true);
         manager = getSupportFragmentManager();
 
         searchFragment = new SearchFragment();
         searchFragment.setMainActivity(this);
         searchFragment.setRetainInstance(true);
         youTubePlayerFragment = YouTubePlayerSupportFragment.newInstance();
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        FragmentTransaction transaction = manager.beginTransaction();
         transaction.add(R.id.floatingPlayer, youTubePlayerFragment).commit();
 
-        final BottomNavigationView bottomNavigationView = (BottomNavigationView) findViewById(R.id.bnvFrag);
+        final BottomNavigationView bottomNavigationView = findViewById(R.id.bnvFrag);
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -175,7 +207,7 @@ public class MainActivity extends AppCompatActivity implements
                         break;
                     }
                     case R.id.nav_barPlaylist: {
-                        Toast.makeText(getApplicationContext(), "Not implemented", Toast.LENGTH_SHORT).show();
+                        fragPager.setCurrentItem(2);
                         break;
                     }
                 }
@@ -183,11 +215,15 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
 
+        playlistFragment = new PlaylistFragment();
+        playlistFragment.applicationContext = getApplicationContext();
         List<Fragment> frags = new ArrayList<Fragment>() {{
-            add(listFragment);
+            add(libraryFragment);
             add(searchFragment);
+            add(playlistFragment);
         }};
         PagerAdapter adapter = new PagerAdapter(manager, frags);
+
         fragPager.setAdapter(adapter);
         fragPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             MenuItem prevMenuItem;
@@ -216,24 +252,6 @@ public class MainActivity extends AppCompatActivity implements
 
         Intent intent = getIntent();
         handleIntent(intent);
-    }
-
-    @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else if (about) {
-            super.onBackPressed();
-            about = false;
-        } else {
-            backPress += 1;
-            Toast.makeText(getApplicationContext(), " Press Back again to Exit ", Toast.LENGTH_SHORT).show();
-
-            if (backPress > 1) {
-                super.onBackPressed();
-            }
-        }
     }
 
     @Override
@@ -274,6 +292,24 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else if (about) {
+            super.onBackPressed();
+            about = false;
+        } else {
+            backPress += 1;
+            Toast.makeText(getApplicationContext(), " Press Back again to Exit ", Toast.LENGTH_SHORT).show();
+
+            if (backPress > 1) {
+                super.onBackPressed();
+            }
+        }
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -311,10 +347,10 @@ public class MainActivity extends AppCompatActivity implements
             }
 
             case R.id.hide_SearchBar: {
-                if (listFragment.tlTop.getVisibility() == View.GONE) {
-                    listFragment.tlTop.setVisibility(View.VISIBLE);
+                if (libraryFragment.tlTop.getVisibility() == View.GONE) {
+                    libraryFragment.tlTop.setVisibility(View.VISIBLE);
                 } else {
-                    listFragment.tlTop.setVisibility(View.GONE);
+                    libraryFragment.tlTop.setVisibility(View.GONE);
                 }
                 break;
             }
@@ -331,7 +367,7 @@ public class MainActivity extends AppCompatActivity implements
 
             case R.id.delete_allOsts: {
                 dbHandler.emptyTable();
-                listFragment.refreshListView();
+                libraryFragment.refreshListView();
                 break;
             }
 
@@ -357,10 +393,10 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onSaveButtonClick(DialogFragment dialog) {
-        MultiAutoCompleteTextView entTags = (MultiAutoCompleteTextView) dialog.getDialog().findViewById(R.id.mactvTags);
-        AutoCompleteTextView entShow = (AutoCompleteTextView) dialog.getDialog().findViewById(R.id.actvShow);
-        EditText entTitle = (EditText) dialog.getDialog().findViewById(R.id.edtTitle);
-        EditText entUrl = (EditText) dialog.getDialog().findViewById(R.id.edtUrl);
+        MultiAutoCompleteTextView entTags = dialog.getDialog().findViewById(R.id.mactvTags);
+        AutoCompleteTextView entShow = dialog.getDialog().findViewById(R.id.actvShow);
+        EditText entTitle = dialog.getDialog().findViewById(R.id.edtTitle);
+        EditText entUrl = dialog.getDialog().findViewById(R.id.edtUrl);
 
         String title = entTitle.getText().toString();
         String show = entShow.getText().toString();
@@ -369,11 +405,11 @@ public class MainActivity extends AppCompatActivity implements
 
         PermissionHandlerKt.checkPermission(this);
         Ost lastAddedOst = new Ost(title, show, tags, url);
-        lastAddedOst.setId(listFragment.getOstReplaceId());
+        lastAddedOst.setId(libraryFragment.getOstReplaceId());
         boolean alreadyAdded = dbHandler.checkiIfOstInDB(lastAddedOst);
-        if (listFragment.isEditedOst()) {
+        if (libraryFragment.isEditedOst()) {
             dbHandler.updateOst(lastAddedOst);
-            listFragment.refreshListView();
+            libraryFragment.refreshListView();
             UtilMeths.INSTANCE.downloadThumbnail(url, this);
             addCanceled = false;
         } else if (!alreadyAdded) {
@@ -382,7 +418,7 @@ public class MainActivity extends AppCompatActivity implements
             } else {
                 dbHandler.addNewOst(lastAddedOst);
                 Toast.makeText(getApplicationContext(), lastAddedOst.getTitle() + " added", Toast.LENGTH_SHORT).show();
-                listFragment.refreshListView();
+                libraryFragment.refreshListView();
                 UtilMeths.INSTANCE.downloadThumbnail(url, this);
                 addCanceled = false;
             }
@@ -394,27 +430,10 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onDeleteButtonClick(DialogFragment dialog) {
-        dbHandler.deleteOst(listFragment.getOstReplaceId());
-        listFragment.removeOst(listFragment.getOstReplacePos());
-        listFragment.refreshListView();
-        Toast.makeText(this, "Deleted " + listFragment.getDialog().getFieldData()[0], Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onDismiss(DialogInterface dialogInterface) {
-        String[] fieldData = getDialog().getFieldData();
-
-        String title = fieldData[0];
-        String show = fieldData[1];
-        String tags = fieldData[2];
-        String url = fieldData[3];
-
-        if (addCanceled) {
-            unAddedOst = new Ost(title, show, tags, url);
-            listFragment.setUnAddedOst(unAddedOst);
-        } else {
-            addCanceled = true;
-        }
+        dbHandler.deleteOst(libraryFragment.getOstReplaceId());
+        libraryFragment.removeOst(libraryFragment.getOstReplacePos());
+        libraryFragment.refreshListView();
+        Toast.makeText(this, "Deleted " + libraryFragment.getDialog().getFieldData()[0], Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -435,8 +454,21 @@ public class MainActivity extends AppCompatActivity implements
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    public AddScreen getDialog() {
-        return listFragment.getDialog();
+    @Override
+    public void onDismiss(DialogInterface dialogInterface) {
+        String[] fieldData = getDialog().getFieldData();
+
+        String title = fieldData[0];
+        String show = fieldData[1];
+        String tags = fieldData[2];
+        String url = fieldData[3];
+
+        if (addCanceled) {
+            unAddedOst = new Ost(title, show, tags, url);
+            libraryFragment.setUnAddedOst(unAddedOst);
+        } else {
+            addCanceled = true;
+        }
     }
 
     public void addToQueue(Ost ost) {
@@ -456,17 +488,8 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    public void initiatePlayer(List<Ost> ostList, int startId) {
-        if (!youtubePlayerLaunched) {
-            initiateSeekbarTimer();
-            rlContent.removeView(floatingPlayer);
-            youtubePlayerLaunched = true;
-            yTplayerService.launchFloater(floatingPlayer, this);
-            yTplayerService.startQueue(ostList, startId, shuffleActivated,
-                    listFragment.getCustomAdapter(), queueAdapter, youTubePlayerFragment);
-        } else {
-            yTplayerService.initiateQueue(ostList, startId, shuffleActivated);
-        }
+    public AddScreen getDialog() {
+        return libraryFragment.getDialog();
     }
 
     @Override
@@ -576,32 +599,18 @@ public class MainActivity extends AppCompatActivity implements
         startService(serviceIntent);
     }
 
-    private ServiceConnection mConnection = new ServiceConnection() {
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            // This is called when the connection with the service has been
-            // established, giving us the service object we can use to
-            // interact with the service.  Because we have bound to a explicit
-            // service that we know is running in our own process, we can
-            // cast its IBinder to a concrete class and directly access it.
-            yTplayerService = ((YTplayerService.LocalBinder) service).getService();
-            yTplayerService.registerBroadcastReceiver();
-            if (ostFromWidget) {
-                startWidgetOst(ostFromWidgetId);
-                ostFromWidget = false;
-            } else if (!lastSessionLoaded) {
-                loadLastSession();
-            }
-            // Tell the user about this for our demo.
+    public void initiatePlayer(List<Ost> ostList, int startId) {
+        if (!youtubePlayerLaunched) {
+            initiateSeekbarTimer();
+            rlContent.removeView(floatingPlayer);
+            yTplayerService.launchFloater(floatingPlayer, this);
+            yTplayerService.startQueue(ostList, startId, shuffleActivated,
+                    libraryFragment.getCustomAdapter(), queueAdapter, youTubePlayerFragment);
+            youtubePlayerLaunched = true;
+        } else {
+            yTplayerService.initiateQueue(ostList, startId, shuffleActivated);
         }
-
-        public void onServiceDisconnected(ComponentName className) {
-            // This is called when the connection with the service has been
-            // unexpectedly disconnected -- that is, its process crashed.
-            // Because it is running in our same process, we should never
-            // see this happen.
-            mIsBound = false;
-        }
-    };
+    }
 
     private void doBindService() {
         // Establish a connection with the service.  We use an explicit
@@ -654,7 +663,7 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onStart() {
         if(shoudlRefreshList){
-            listFragment.refreshListView();
+            libraryFragment.refreshListView();
             shoudlRefreshList = false;
         }
         super.onStart();
@@ -690,6 +699,7 @@ public class MainActivity extends AppCompatActivity implements
         if (ostFromWidget) {
             startWidgetOst(ostFromWidgetId);
             ostFromWidget = false;
+            shuffleOn();
         }
         super.onNewIntent(intent);
     }
@@ -719,6 +729,15 @@ public class MainActivity extends AppCompatActivity implements
                 List<Ost> list = new ArrayList<>();
                 list.add(ost);
                 initiatePlayer(list, 0);
+                break;
+            }
+            case Constants.ADD_OST_TO_PLAYLIST: {
+                int ostId = intent.getIntExtra("ostId", 0);
+                PlaylistPicker picker = new PlaylistPicker();
+                Bundle bundl = new Bundle();
+                bundl.putInt("ostId", ostId);
+                picker.setArguments(bundl);
+                picker.show(manager, "PlaylistPicker");
                 break;
             }
         }
@@ -762,7 +781,7 @@ public class MainActivity extends AppCompatActivity implements
         if (!queueString.equals("")) {
             Log.d("lastQueue", queueString);
             List<Ost> lastQueueList = UtilMeths.INSTANCE.buildOstListFromQueue(queueString, dbHandler);
-            if(lastQueueList.isEmpty() && lastCurr < lastQueueList.size()) {
+            if (!lastQueueList.isEmpty() && lastCurr < lastQueueList.size()) {
                 initiatePlayer(lastQueueList, lastCurr);
                 yTplayerService.getPlayerHandler().loadLastSession(true, timestamp, videoDuration);
             }
@@ -800,7 +819,7 @@ public class MainActivity extends AppCompatActivity implements
         return dbHandler;
     }
 
-    public ListFragment getListFragment() {
-        return listFragment;
+    public LibraryFragment getLibraryFragment() {
+        return libraryFragment;
     }
 }

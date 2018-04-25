@@ -1,15 +1,14 @@
 package com.odd.ostrinov2.tools
 
+import QueryStrings
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
-
 import com.odd.ostrinov2.Ost
-
-import java.util.ArrayList
+import java.util.*
 
 class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
@@ -22,9 +21,7 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
 
             val ostList = ArrayList<Ost>()
 
-            val selectQuery = "SELECT $KEY_OST_ID,$KEY_OST_TITLE,$KEY_SHOW,$KEY_OST_TAG,$KEY_OST_URL FROM " +
-                    "$OST_TABLE INNER JOIN $SHOW_TABLE ON $KEY_SHOW_ID = $FKEY_OST_SHOW_ID"
-            val cursor = writableDatabase.rawQuery(selectQuery, null)
+            val cursor = writableDatabase.rawQuery(QueryStrings.selectAllOsts, null)
             if (cursor.moveToFirst()) {
                 do {
                     val id = cursor.getInt(0)
@@ -43,6 +40,34 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
             return ostList
         }
 
+    val allPlaylists: List<Playlist>
+        get() {
+            val playLists = ArrayList<Playlist>()
+
+            val selectQuery = "SELECT * FROM $PLAYLIST_TABLE"
+
+            val cursor = writableDatabase.rawQuery(selectQuery, null)
+            if (cursor.moveToFirst()) {
+                do {
+                    val id = cursor.getInt(0)
+                    val name = cursor.getString(1)
+
+                    val countQuery = "SELECT COUNT($FKEY_PLAYLIST_ID) " +
+                            "FROM $PLAYLIST_OST_TABLE"
+                    val cur = writableDatabase.rawQuery(countQuery, null)
+
+                    val numOsts: Int = cur.count
+
+                    val playlist = Playlist(id, name, numOsts)
+                    cur.close()
+                    playLists.add(playlist)
+
+
+                } while (cursor.moveToNext())
+            }
+            cursor.close()
+            return playLists
+        }
 
     val allShows: List<String>
         get() {
@@ -104,8 +129,10 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
                 "PRIMARY KEY,$KEY_PLAYLIST_NAME TEXT )"
         db.execSQL(CREATE_PLAYLIST_TABLE)
 
-        val CREATE_PLAYLIST_OST_TABLE = "CREATE TABLE $PLAYLIST_OST_TABLE($KEY_PLAYLIST_ID INTEGER," +
-                "$KEY_TAG_ID INTEGER, UNIQUE($KEY_PLAYLIST_ID, $KEY_TAG_ID ))"
+        val CREATE_PLAYLIST_OST_TABLE = "CREATE TABLE $PLAYLIST_OST_TABLE(" +
+                "$KEY_ENTRY INTEGER PRIMARY KEY," +
+                "$FKEY_PLAYLIST_ID INTEGER," +
+                "$FKEY_OST_ID INTEGER, UNIQUE($FKEY_PLAYLIST_ID, $FKEY_OST_ID ))"
         db.execSQL(CREATE_PLAYLIST_OST_TABLE)
         Log.i("DBHandlerOnCreate", "Created tables")
     }
@@ -115,6 +142,40 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
         db.execSQL("DROP TABLE IF EXISTS " + OST_TABLE)
 
         onCreate(db)
+    }
+
+
+    fun addNewPlaylist(playlistName: String) {
+        val values = ContentValues()
+
+        values.put(KEY_PLAYLIST_NAME, playlistName)
+
+        //inserting Row
+        writableDatabase.insert(PLAYLIST_TABLE, null, values)
+        Log.i("AddNewPlaylist", "row inserted")
+
+    }
+
+    fun addOstToPlaylist(ostId: Int?, playlistId: Int) {
+
+        val values = ContentValues()
+
+        /*val TRUNCATE_TABLE5 = "DROP TABLE IF EXISTS $PLAYLIST_OST_TABLE"
+        writableDatabase.execSQL(TRUNCATE_TABLE5)
+
+        val CREATE_PLAYLIST_OST_TABLE = "CREATE TABLE $PLAYLIST_OST_TABLE(" +
+                "$KEY_ENTRY INTEGER PRIMARY KEY," +
+                "$FKEY_PLAYLIST_ID INTEGER," +
+                "$FKEY_OST_ID INTEGER, UNIQUE($FKEY_PLAYLIST_ID, $FKEY_OST_ID ))"
+        writableDatabase.execSQL(CREATE_PLAYLIST_OST_TABLE)*/
+
+        values.put(FKEY_OST_ID, ostId)
+        values.put(FKEY_PLAYLIST_ID, playlistId)
+
+        //inserting Row
+        writableDatabase.insert(PLAYLIST_OST_TABLE, null, values)
+        Log.i("AddOstToPlaylist", "inserted: $ostId, $playlistId")
+
     }
 
     fun addNewOst(newOst: Ost) {
@@ -210,10 +271,8 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
 
     fun getOst(id: Int): Ost? {
 
-        val selectQuery = "SELECT $KEY_OST_ID,$KEY_OST_TITLE,$KEY_SHOW,$KEY_OST_TAG,$KEY_OST_URL FROM " +
-                "$OST_TABLE INNER JOIN $SHOW_TABLE ON $KEY_SHOW_ID = $FKEY_OST_SHOW_ID WHERE $KEY_OST_ID IS $id"
-
-        val cursor = writableDatabase.rawQuery(selectQuery, null)
+        val cursor = writableDatabase.rawQuery(QueryStrings.selectOstQuery,
+                arrayOf(id.toString()))
         if (cursor.moveToFirst()) {
             val ostId = cursor.getInt(0)
             val title = cursor.getString(1)
@@ -303,7 +362,7 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
         ostList = allOsts
         val TRUNCATE_TABLE = "DROP TABLE " + TAGS_TABLE + ""
         writableDatabase.execSQL(TRUNCATE_TABLE)
-        val TRUNCATE_TABLE2 = "DROP TABLE " + SHOW_TABLE + ""
+        val TRUNCATE_TABLE2 = "DROP TABLE " + SHOW_TABLE
         writableDatabase.execSQL(TRUNCATE_TABLE2)
 
         val CREATE_SHOW_TABLE = "CREATE TABLE $SHOW_TABLE($KEY_SHOW_ID INTEGER UNIQUE PRIMARY KEY," +
@@ -317,6 +376,31 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
         for (ost in ostList!!) {
             addNewTagsandShows(ost.show, ost.tags)
         }
+    }
+
+    fun getOstsInPlaylist(id: Int): ArrayList<Ost> {
+
+        println(id)
+        var ostList = ArrayList<Ost>()
+
+        val cursor = writableDatabase.rawQuery(QueryStrings.selectAllOstsInPlaylist,
+                arrayOf(id.toString()))
+        if (cursor.moveToFirst()) {
+            do {
+                val id = cursor.getInt(0)
+                val title = cursor.getString(1)
+                val show = cursor.getString(2)
+                val tags = cursor.getString(3)
+                val url = cursor.getString(4)
+                val ost = Ost(title, show, tags, url)
+                ost.id = id
+                println(ost.toString())
+                ostList.add(ost)
+
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return ostList
     }
 
     companion object {
@@ -342,10 +426,12 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
         private const val KEY_TAG_ID = "tagId"
         private const val KEY_SHOW_ID = "showId"
 
-        private const val FKEY_OST_ID = "ost_id"
+        private const val FKEY_PLAYLIST_ID = "fkey_playlist_id"
+        private const val FKEY_OST_ID = "fkey_ost_id"
         private const val FKEY_TAG_ID = "tag_id"
         private const val FKEY_SHOW_ID = "show_id"
         private const val FKEY_OST_SHOW_ID = "ostShowId"
         private const val FKEY_OST_TAG_ID = "ostTagId"
+        private const val KEY_ENTRY = "rowId"
     }
 }

@@ -9,21 +9,21 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import com.odd.ostrinov2.Constants
 import com.odd.ostrinov2.MainActivity
 import com.odd.ostrinov2.Ost
 import com.odd.ostrinov2.R
-import com.squareup.picasso.Picasso
 import com.odd.ostrinov2.tools.UtilMeths
+import com.squareup.picasso.Picasso
 
 class SearchAdapter(private val mContext: Context, val mainActivity: MainActivity) :
         RecyclerView.Adapter<SearchAdapter.ObjectViewWrapper>() {
 
     private var searchResults: MutableList<VideoObject> = ArrayList(20)
 
-    override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): ObjectViewWrapper {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ObjectViewWrapper {
         // create a new view
-        @SuppressLint("InflateParams") val itemLayoutView = LayoutInflater.from(parent!!.context).inflate(R.layout.search_row, null)
+        @SuppressLint("InflateParams") val itemLayoutView = LayoutInflater.from(
+                parent.context).inflate(R.layout.search_row, null)
         // create ViewHolder
         return ObjectViewWrapper(itemLayoutView)
     }
@@ -42,11 +42,13 @@ class SearchAdapter(private val mContext: Context, val mainActivity: MainActivit
             pum.inflate(R.menu.btn_search_chooser_popup)
             pum.setOnMenuItemClickListener { item ->
                 when (item?.itemId) {
-                    R.id.chooser_addToQueue -> { UtilMeths.sendToYTPService(mContext,
-                            Ost(video.title, "", "", video.url), Constants.ADD_OST_TO_QUEUE)
+                    R.id.chooser_addToQueue -> {
+                        UtilMeths.addToYTPServiceQueue(mContext,
+                                Ost(video.title, "", "", video.url))
                     }
                     R.id.chooser_addToLibrary -> {UtilMeths.parseAddOst(video.title, mContext, video.url)
-                                                    mainActivity.listFragment.refreshListView()}
+                        mainActivity.libraryFragment.shouldRefreshList = true
+                    }
                     R.id.chooser_copyLink ->{
                         val clipboard = mContext.getSystemService(Context.CLIPBOARD_SERVICE)
                                 as ClipboardManager?
@@ -63,8 +65,8 @@ class SearchAdapter(private val mContext: Context, val mainActivity: MainActivit
                 .load(video.thumbnailUrl)
                 .into(viewWrapper.ivThumbnail)
         viewWrapper.baseView.setOnClickListener {
-            UtilMeths.sendToYTPService(mContext, Ost(video.title, "", "", video.url),
-                    Constants.START_OST)
+            val ostList = searchResults.map { Ost(it.title, "", "", it.url) }
+            UtilMeths.initYTPServiceQueue(mContext, ostList, startPos = position)
         }
     }
     class ObjectViewWrapper(base: View) : RecyclerView.ViewHolder(base), View.OnClickListener {

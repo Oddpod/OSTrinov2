@@ -25,9 +25,9 @@ class SearchFragment: Fragment() {
     private var totalItemCount:Int = 0
     private var isFromBackStack: Boolean = false
 
-    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState : Bundle?): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
 
-        val rootView = inflater!!.inflate(R.layout.search_layout, container, false)
+        val rootView = inflater.inflate(R.layout.search_layout, container, false)
 
         rvSearchResults = rootView.findViewById(R.id.rvSearchresults) as RecyclerView
         val mLayoutManager = LinearLayoutManager(mainActivity)

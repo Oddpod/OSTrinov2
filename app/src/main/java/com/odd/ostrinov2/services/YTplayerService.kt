@@ -125,9 +125,12 @@ class YTplayerService : Service(),
                 Toast.makeText(applicationContext, ost.title + " added to queue", Toast.LENGTH_SHORT).show()
                 yPlayerHandler!!.getQueueHandler().addToQueue(ost)
             }
+        //TODO Consider renaming start ost till init or somthing
             action.equals(Constants.START_OST, ignoreCase = true) -> {
+
                 val ost = intent.getParcelableExtra<Ost>("ost_extra")
-                yPlayerHandler!!.initiateQueue(listOf(ost), 0, false)
+                var ostList = intent.getParcelableArrayListExtra<Ost>("osts_extra")
+                yPlayerHandler!!.initiateQueue(ostList, 0, false)
             }
             action.equals(Constants.EXPANDMINIMIZE_PLAYER, ignoreCase = true) -> {
                 Log.i(NOT_LOG_TAG, "Expand")

@@ -38,7 +38,7 @@ class PlaylistPicker : DialogFragment() {
         val mLayoutManager = LinearLayoutManager(context)
         rvPlaylists.layoutManager = mLayoutManager
 
-        val ostId = arguments?.getInt("ostid")
+        val ostId = arguments?.getInt("ostId")
         rvPlaylists.adapter = TextAdapter(playlists, ostId, this)
 
         builder.setView(dialogView)

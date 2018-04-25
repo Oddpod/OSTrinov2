@@ -69,4 +69,7 @@
     <string name="chooser_add_to_queue">Add to Queue</string>
     <string name="chooser_add_to_library">Add to Library</string>
     <string name="chooser_copy_link">Copy Link</string>
+    <string name="create_new_playlist">Create new Playlist</string>
+    <string name="playlist_name">Playlist Name</string>
+    <string name="chooser_add_to_playlist">Add to Playlist</string>
 </resources>

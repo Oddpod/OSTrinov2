@@ -50,7 +50,7 @@ internal object IOHandler {
             return null
         }
         override fun onPostExecute(result: Void?) {
-            wContext.get()!!.listFragment.refreshListView()
+            wContext.get()!!.libraryFragment.refreshListView()
             Toast.makeText(wContext.get()!!, "Finished Exporting OSts", Toast.LENGTH_SHORT).show()
             progressNotification.setCompletedNotification()
             super.onPostExecute(result)
@@ -104,7 +104,7 @@ internal object IOHandler {
         }
 
         override fun onPostExecute(result: Void?) {
-            wContext.get()!!.listFragment.refreshListView()
+            wContext.get()!!.libraryFragment.refreshListView()
             Toast.makeText(wContext.get()!!, "Finished Importing OSts", Toast.LENGTH_SHORT).show()
             progressNotification.setCompletedNotification()
             super.onPostExecute(result)

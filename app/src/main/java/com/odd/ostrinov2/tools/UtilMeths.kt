@@ -12,10 +12,8 @@ import com.odd.ostrinov2.Constants
 import com.odd.ostrinov2.MainActivity
 import com.odd.ostrinov2.Ost
 import com.odd.ostrinov2.services.YTplayerService
-
 import java.io.File
 import java.io.IOException
-import java.util.ArrayList
 
 internal object UtilMeths {
 
@@ -78,10 +76,18 @@ internal object UtilMeths {
         }
     }
 
-    fun sendToYTPService(context: Context, ost: Ost, action: String){
+    fun initYTPServiceQueue(context: Context, ostList: List<Ost>, startPos: Int) {
+        val intent = Intent(context, YTplayerService::class.java)
+        intent.putExtra("osts_extra", ostList as ArrayList)
+        intent.putExtra("startid", startPos)
+        intent.action = Constants.START_OST
+        context.startService(intent)
+    }
+
+    fun addToYTPServiceQueue(context: Context, ost: Ost) {
         val intent = Intent(context, YTplayerService::class.java)
         intent.putExtra("ost_extra", ost)
-        intent.action = action
+        intent.action = Constants.ADD_OST_TO_QUEUE
         context.startService(intent)
     }
 
@@ -120,7 +126,7 @@ internal object UtilMeths {
 
     fun getThumbnailLocal(url: String, context: Context): File {
         val fileName = urlToId(url) + ".jpg"
-        //val preferences = context.getSharedPreferences(Constants.TB_STORAGE_LOCATION, 0)
+        //val preferences = mContext.getSharedPreferences(Constants.TB_STORAGE_LOCATION, 0)
         return File(Environment.getExternalStorageDirectory().absolutePath + "/OSTthumbnails" + "/$fileName")
     }
 

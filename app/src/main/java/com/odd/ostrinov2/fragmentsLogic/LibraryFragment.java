@@ -28,7 +28,7 @@ import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Random;
 
-public class ListFragment extends Fragment implements
+public class LibraryFragment extends Fragment implements
         View.OnClickListener {
 
     boolean editedOst;
@@ -43,6 +43,7 @@ public class ListFragment extends Fragment implements
     private Ost unAddedOst;
     private MainActivity mainActivity;
     public TableLayout tlTop;
+    public boolean shouldRefreshList;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -52,9 +53,9 @@ public class ListFragment extends Fragment implements
         dialog = new AddScreen();
         dialog.setAddScreenListener(mainActivity);
 
-        tlTop = (TableLayout) rootView.findViewById(R.id.tlTop);
+        tlTop = rootView.findViewById(R.id.tlTop);
 
-        lvOst = (ListView) rootView.findViewById(R.id.lvOstList);
+        lvOst = rootView.findViewById(R.id.lvOstList);
         lvOst.findViewById(R.id.btnOptions);
         lvOst.setDivider(null);
 
@@ -129,7 +130,7 @@ public class ListFragment extends Fragment implements
             lvOst.addHeaderView(tv);
         }
 
-        EditText filter = (EditText) rootView.findViewById(R.id.edtFilter);
+        EditText filter = rootView.findViewById(R.id.edtFilter);
         filterText = "";
         TextWatcher textWatcher = new TextWatcher() {
             @Override
@@ -148,9 +149,9 @@ public class ListFragment extends Fragment implements
             }
         };
         filter.addTextChangedListener(textWatcher);
-        ImageButton btnSort = (ImageButton) rootView.findViewById(R.id.btnSort);
-        ImageButton btnShufflePlay = (ImageButton) rootView.findViewById(R.id.btnShufflePlay);
-        ImageButton btnAdd = (ImageButton)  rootView.findViewById(R.id.btnAdd);
+        ImageButton btnSort = rootView.findViewById(R.id.btnSort);
+        ImageButton btnShufflePlay = rootView.findViewById(R.id.btnShufflePlay);
+        ImageButton btnAdd = rootView.findViewById(R.id.btnAdd);
 
         btnSort.setOnClickListener(this);
         btnShufflePlay.setOnClickListener(this);
@@ -159,6 +160,15 @@ public class ListFragment extends Fragment implements
         return rootView;
     }
 
+    @Override
+    public void onResume() {
+        if (shouldRefreshList) {
+            refreshListView();
+            System.out.println("refreshing");
+            shouldRefreshList = false;
+        }
+        super.onResume();
+    }
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
