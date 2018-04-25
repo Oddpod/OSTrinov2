@@ -6,27 +6,19 @@ import android.os.Parcelable
 import com.odd.ostrinov2.tools.UtilMeths
 
 class Ost(var title: String, var show: String, var tags: String, var url: String) : Parcelable {
-    var videoId: String? = null
+    var videoId: String = UtilMeths.urlToId(url)
         private set
 
     var id: Int = 0
 
     val searchString: String
         get() = "$title, $show, $tags"
-    init {
-        this.videoId = UtilMeths.urlToId(url)
-    }
 
     override fun toString(): String {
         return "Ost{title='" + title + '\''.toString() +
                 ", show='" + show + '\''.toString() +
                 ", tags='" + tags + '\''.toString() +
                 '}'.toString()
-    }
-
-    fun setUrl2(url: String) {
-        this.url = url
-        this.videoId = UtilMeths.urlToId(url)
     }
 
     override fun describeContents(): Int = 0
