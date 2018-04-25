@@ -6,7 +6,6 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
@@ -40,18 +39,15 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AutoCompleteTextView;
-import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.MultiAutoCompleteTextView;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.google.android.youtube.player.YouTubePlayer;
 import com.google.android.youtube.player.YouTubePlayerSupportFragment;
-import com.odd.ostrinov2.dialogFragments.AddScreen;
+import com.odd.ostrinov2.dialogFragments.AddOstDialog;
 import com.odd.ostrinov2.dialogFragments.PlaylistPicker;
 import com.odd.ostrinov2.fragmentsLogic.AboutFragment;
 import com.odd.ostrinov2.fragmentsLogic.LibraryFragment;
@@ -66,16 +62,17 @@ import com.odd.ostrinov2.tools.UtilMeths;
 import com.odd.ostrinov2.tools.YParsePlaylist;
 import com.odd.ostrinov2.tools.YoutubeShare;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements
-        AddScreen.AddScreenListener, DialogInterface.OnDismissListener, View.OnClickListener {
+        AddOstDialog.AddDialogListener, View.OnClickListener {
 
     private final static String PREFS_NAME = "Saved queue";
     private static DBHandler dbHandler;
     private static boolean shoudlRefreshList = false;
-    private Ost unAddedOst;
     private int backPress;
     private LibraryFragment libraryFragment;
     private SearchFragment searchFragment;
@@ -145,7 +142,6 @@ public class MainActivity extends AppCompatActivity implements
         setSupportActionBar(toolbar);
         dbHandler = new DBHandler(this);
         //dbHandler.emptyTable();
-        unAddedOst = null;
         rlContent = findViewById(R.id.rlContent);
         fragPager = findViewById(R.id.frag_pager);
 
@@ -392,51 +388,6 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onSaveButtonClick(DialogFragment dialog) {
-        MultiAutoCompleteTextView entTags = dialog.getDialog().findViewById(R.id.mactvTags);
-        AutoCompleteTextView entShow = dialog.getDialog().findViewById(R.id.actvShow);
-        EditText entTitle = dialog.getDialog().findViewById(R.id.edtTitle);
-        EditText entUrl = dialog.getDialog().findViewById(R.id.edtUrl);
-
-        String title = entTitle.getText().toString();
-        String show = entShow.getText().toString();
-        String tags = entTags.getText().toString();
-        String url = entUrl.getText().toString();
-
-        PermissionHandlerKt.checkPermission(this);
-        Ost lastAddedOst = new Ost(title, show, tags, url);
-        lastAddedOst.setId(libraryFragment.getOstReplaceId());
-        boolean alreadyAdded = dbHandler.checkiIfOstInDB(lastAddedOst);
-        if (libraryFragment.isEditedOst()) {
-            dbHandler.updateOst(lastAddedOst);
-            libraryFragment.refreshListView();
-            UtilMeths.INSTANCE.downloadThumbnail(url, this);
-            addCanceled = false;
-        } else if (!alreadyAdded) {
-            if (!url.contains("https://")) {
-                Toast.makeText(this, "You have to put in a valid youtube link", Toast.LENGTH_SHORT).show();
-            } else {
-                dbHandler.addNewOst(lastAddedOst);
-                Toast.makeText(getApplicationContext(), lastAddedOst.getTitle() + " added", Toast.LENGTH_SHORT).show();
-                libraryFragment.refreshListView();
-                UtilMeths.INSTANCE.downloadThumbnail(url, this);
-                addCanceled = false;
-            }
-        } else {
-            Toast.makeText(this, lastAddedOst.getTitle() + " From " + lastAddedOst.getShow() + " has already been added", Toast.LENGTH_SHORT).show();
-            //lastAddedOst = null;
-        }
-    }
-
-    @Override
-    public void onDeleteButtonClick(DialogFragment dialog) {
-        dbHandler.deleteOst(libraryFragment.getOstReplaceId());
-        libraryFragment.removeOst(libraryFragment.getOstReplacePos());
-        libraryFragment.refreshListView();
-        Toast.makeText(this, "Deleted " + libraryFragment.getDialog().getFieldData()[0], Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         PermissionHandlerKt.checkPermission(this);
         if (requestCode == 1 && resultCode == RESULT_OK) {
@@ -454,33 +405,6 @@ public class MainActivity extends AppCompatActivity implements
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    @Override
-    public void onDismiss(DialogInterface dialogInterface) {
-        String[] fieldData = getDialog().getFieldData();
-
-        String title = fieldData[0];
-        String show = fieldData[1];
-        String tags = fieldData[2];
-        String url = fieldData[3];
-
-        if (addCanceled) {
-            unAddedOst = new Ost(title, show, tags, url);
-            libraryFragment.setUnAddedOst(unAddedOst);
-        } else {
-            addCanceled = true;
-        }
-    }
-
-    public void addToQueue(Ost ost) {
-        if (!youtubePlayerLaunched) {
-            Toast.makeText(this, "You have to play something first", Toast.LENGTH_SHORT).show();
-        } else {
-            System.out.println("Adding to queue");
-            yTplayerService.getQueueHandler().addToQueue(ost);
-        }
-
-    }
-
     public void initPlayerService() {
         if (yTplayerService == null) {
             startService();
@@ -488,7 +412,7 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    public AddScreen getDialog() {
+    public AddOstDialog getDialog() {
         return libraryFragment.getDialog();
     }
 
@@ -605,7 +529,7 @@ public class MainActivity extends AppCompatActivity implements
             rlContent.removeView(floatingPlayer);
             yTplayerService.launchFloater(floatingPlayer, this);
             yTplayerService.startQueue(ostList, startId, shuffleActivated,
-                    libraryFragment.getCustomAdapter(), queueAdapter, youTubePlayerFragment);
+                    libraryFragment.getLibListAdapter(), queueAdapter, youTubePlayerFragment);
             youtubePlayerLaunched = true;
         } else {
             yTplayerService.initiateQueue(ostList, startId, shuffleActivated);
@@ -679,6 +603,7 @@ public class MainActivity extends AppCompatActivity implements
         if (intent.getAction().equals(Intent.ACTION_SEND) && intent.getType().equals("text/plain")) {
             Bundle extras = intent.getExtras();
             String link = extras.getString(Intent.EXTRA_TEXT);
+            System.out.println("link: " + link);
             if(link.contains("playlist")){
                 YParsePlaylist yPP = new YParsePlaylist(link, this);
                 yPP.execute();
@@ -725,10 +650,9 @@ public class MainActivity extends AppCompatActivity implements
                 break;
             }
             case Constants.INITPLAYER: {
-                final Ost ost = intent.getParcelableExtra("ost_extra");
-                List<Ost> list = new ArrayList<>();
-                list.add(ost);
-                initiatePlayer(list, 0);
+                final List<Ost> osts = intent.getParcelableArrayListExtra("osts_extra");
+                int startPos = intent.getIntExtra("startIndex", 0);
+                initiatePlayer(osts, startPos);
                 break;
             }
             case Constants.ADD_OST_TO_PLAYLIST: {
@@ -821,5 +745,29 @@ public class MainActivity extends AppCompatActivity implements
 
     public LibraryFragment getLibraryFragment() {
         return libraryFragment;
+    }
+
+    @Override
+    public void onAddButtonClick(@NotNull Ost ostToAdd, @NotNull DialogFragment dialog) {
+
+        PermissionHandlerKt.checkPermission(this);
+        boolean alreadyAdded = dbHandler.checkiIfOstInDB(ostToAdd);
+        if (!alreadyAdded) {
+            if (!ostToAdd.getUrl().contains("https://")) {
+                Toast.makeText(this, "You have to put in a valid youtube link",
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                dbHandler.addNewOst(ostToAdd);
+                Toast.makeText(getApplicationContext(), ostToAdd.getTitle() + " added",
+                        Toast.LENGTH_SHORT).show();
+                libraryFragment.addOst(ostToAdd);
+                UtilMeths.INSTANCE.downloadThumbnail(ostToAdd.getUrl(), this);
+                addCanceled = false;
+            }
+        } else {
+            Toast.makeText(this, ostToAdd.getTitle() + " From " + ostToAdd.getShow()
+                    + " has already been added", Toast.LENGTH_SHORT).show();
+            //lastAddedOst = null;
+        }
     }
 }
