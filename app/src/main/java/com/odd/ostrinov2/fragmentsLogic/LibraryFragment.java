@@ -2,45 +2,37 @@ package com.odd.ostrinov2.fragmentsLogic;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ListView;
 import android.widget.TableLayout;
-import android.widget.TextView;
 
 import com.odd.ostrinov2.MainActivity;
 import com.odd.ostrinov2.MemesKt;
 import com.odd.ostrinov2.Ost;
 import com.odd.ostrinov2.R;
-import com.odd.ostrinov2.dialogFragments.AddScreen;
-import com.odd.ostrinov2.tools.DBHandler;
-import com.odd.ostrinov2.tools.UtilMeths;
+import com.odd.ostrinov2.dialogFragments.AddOstDialog;
+import com.odd.ostrinov2.tools.SortHandler;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Random;
 
 public class LibraryFragment extends Fragment implements
         View.OnClickListener {
 
-    boolean editedOst;
-    private int ostReplaceId, ostReplacePos;
     private List<Ost> allOsts, currOstList;
     private final String TAG = "OstInfo";
     private String filterText;
-    private CustomAdapter customAdapter;
-    private ListView lvOst;
+    AddOstDialog dialog;
+    private RecyclerView rvOst;
     boolean playerDocked;
-    AddScreen dialog;
-    private Ost unAddedOst;
+    private PlaylistRVAdapter libListAdapter;
     private MainActivity mainActivity;
     public TableLayout tlTop;
     public boolean shouldRefreshList;
@@ -48,41 +40,20 @@ public class LibraryFragment extends Fragment implements
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         playerDocked = true;
-        final View rootView = inflater.inflate(R.layout.activity_listscreen, container, false);
-        unAddedOst = null;
-        dialog = new AddScreen();
+        final View rootView = inflater.inflate(R.layout.fragment_library, container, false);
+        dialog = new AddOstDialog();
         dialog.setAddScreenListener(mainActivity);
 
         tlTop = rootView.findViewById(R.id.tlTop);
 
-        lvOst = rootView.findViewById(R.id.lvOstList);
-        lvOst.findViewById(R.id.btnOptions);
-        lvOst.setDivider(null);
+        rvOst = rootView.findViewById(R.id.rvOstList);
 
-        lvOst.setAdapter(customAdapter);
+        rvOst.setLayoutManager(new LinearLayoutManager(getActivity(),
+                LinearLayoutManager.VERTICAL, false));
+        rvOst.setAdapter(libListAdapter);
+        rvOst.findViewById(R.id.btnOptions);
 
-        lvOst.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                currOstList = getCurrDispOstList();
-                mainActivity.initiatePlayer(currOstList, position);
-            }
-        });
-
-        lvOst.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                Ost ost = customAdapter.getItem(position);
-                dialog.show(getFragmentManager(), TAG);
-                ostReplaceId = ost.getId();
-                ostReplacePos = position;
-                editedOst = true;
-                dialog.setEditing(ost, true);
-                return true;
-            }
-        });
-
-        if(allOsts.isEmpty()){
+        /*if(allOsts.isEmpty()){
             final TextView tv = new TextView(getContext());
             ViewGroup.LayoutParams tvParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT);
@@ -123,12 +94,12 @@ public class LibraryFragment extends Fragment implements
                                 }
                             }
                         }
-                        lvOst.removeHeaderView(tv);
+                        rvOst.removeHeaderView(tv);
                         refreshListView();
                 }
             });
-            lvOst.addHeaderView(tv);
-        }
+            rvOst.addHeaderView(tv);
+        }*/
 
         EditText filter = rootView.findViewById(R.id.edtFilter);
         filterText = "";
@@ -145,7 +116,7 @@ public class LibraryFragment extends Fragment implements
             public void afterTextChanged(Editable s) {
                 filterText = s.toString();
                 MemesKt.launchMeme(filterText, mainActivity);
-                customAdapter.filter(s.toString());
+                libListAdapter.filter(s.toString());
             }
         };
         filter.addTextChangedListener(textWatcher);
@@ -182,70 +153,42 @@ public class LibraryFragment extends Fragment implements
             }
 
             case R.id.btnAdd:{
-                addOst();
+                dialog.show(getFragmentManager(), TAG);
                 break;
             }
 
             case R.id.btnSort:{
-                customAdapter.sort(1);
+                libListAdapter.sort(SortHandler.SortMode.Alphabetical);
                 break;
             }
         }
     }
 
-    public int getOstReplaceId(){
-        return ostReplaceId;
-    }
-
-    public int getOstReplacePos(){
-        return  ostReplacePos;
-    }
-
-    public boolean isEditedOst(){
-        return editedOst;
-    }
-
     public List<Ost> getCurrDispOstList(){
-        return customAdapter.getOstList();
+        return libListAdapter.getOstList();
     }
 
     public void refreshListView(){
-        editedOst = false;
         allOsts = MainActivity.getDbHandler().getAllOsts();
-        customAdapter.updateList(allOsts);
+        libListAdapter.updateList(allOsts);
     }
 
-    public AddScreen getDialog(){
+    public AddOstDialog getDialog() {
         return dialog;
     }
-
-    public void setUnAddedOst(Ost ost){
-        unAddedOst = ost;
-    }
-
-    public void addOst(){
-        if(unAddedOst != null){
-            dialog.setEditing(unAddedOst, false);
-        }else {
-            dialog.setEditing(new Ost("", "", "", ""), false);
-        }
-        dialog.show(getFragmentManager(), TAG);
-        editedOst = false;
-    }
-
 
     public void setMainAcitivity(MainActivity mainAcitivity){
 
         this.mainActivity = mainAcitivity;
         allOsts = MainActivity.getDbHandler().getAllOsts();
-        customAdapter = new CustomAdapter(mainAcitivity.getApplicationContext(), allOsts);
+        libListAdapter = new PlaylistRVAdapter(mainAcitivity, allOsts);
     }
 
-    public void removeOst(int id){
-        UtilMeths.INSTANCE.deleteThumbnail(customAdapter.getItem(id).getUrl(), getContext());
-        customAdapter.removeOst(id);
+    public void addOst(Ost ost) {
+        libListAdapter.addNewOst(ost);
     }
-    public CustomAdapter getCustomAdapter() {
-        return customAdapter;
+
+    public PlaylistRVAdapter getLibListAdapter() {
+        return libListAdapter;
     }
 }
