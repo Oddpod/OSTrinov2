@@ -15,7 +15,6 @@ import com.odd.ostrinov2.tools.UtilMeths;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
-import java.io.FileDescriptor;
 
 public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.ViewWrapper> {
     private Context mContext;
@@ -82,28 +81,28 @@ class ViewWrapper extends RecyclerView.ViewHolder implements View.OnClickListene
 
     TextView getTitle() {
         if (tvTItle == null) {
-            tvTItle = (TextView) base.findViewById(R.id.tvTitle);
+            tvTItle = base.findViewById(R.id.tvTitle);
         }
         return tvTItle;
     }
 
     TextView getShow() {
         if (tvShow == null) {
-            tvShow = (TextView) base.findViewById(R.id.tvShow);
+            tvShow = base.findViewById(R.id.tvShow);
         }
         return (tvShow);
     }
 
     TextView getTags() {
         if (tvTags == null) {
-            tvTags = (TextView) base.findViewById(R.id.tvTags);
+            tvTags = base.findViewById(R.id.tvTags);
         }
         return (tvTags);
     }
 
     ImageView getThumbnail() {
         if (thumbnail == null) {
-            thumbnail = (ImageView) base.findViewById(R.id.ivThumbnail);
+            thumbnail = base.findViewById(R.id.ivThumbnail);
 
         }
         return thumbnail;
@@ -111,7 +110,7 @@ class ViewWrapper extends RecyclerView.ViewHolder implements View.OnClickListene
 
     ImageButton getBtnOptions() {
         if (btnOptions == null) {
-            btnOptions = (ImageButton) base.findViewById(R.id.btnOptions);
+            btnOptions = base.findViewById(R.id.btnOptions);
         }
         return btnOptions;
     }
