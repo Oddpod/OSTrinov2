@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements
     private PlaylistFragment playlistFragment;
     private FrameLayout floatingPlayer;
     private RelativeLayout rlContent;
-    private boolean youtubePlayerLaunched = false, about = false, addCanceled = true, ostFromWidget = false;
+    private boolean youtubePlayerLaunched = false, about = false, ostFromWidget = false;
     private int ostFromWidgetId;
     private QueueAdapter queueAdapter;
     private FragmentManager manager;
@@ -89,10 +89,6 @@ public class MainActivity extends AppCompatActivity implements
     private Boolean repeat = false;
     private Boolean playing = false;
     private Boolean lastSessionLoaded = false;
-
-    public Boolean getShuffleActivated() {
-        return shuffleActivated;
-    }
     private YTplayerService yTplayerService;
     private ImageButton btnRepeat, btnPlayPause, btnShuffle;
     private SeekBar seekBar;
@@ -145,6 +141,7 @@ public class MainActivity extends AppCompatActivity implements
         rlContent = findViewById(R.id.rlContent);
         fragPager = findViewById(R.id.frag_pager);
 
+        checkAutorotate();
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -295,6 +292,8 @@ public class MainActivity extends AppCompatActivity implements
         } else if (about) {
             super.onBackPressed();
             about = false;
+        } else if (playlistFragment.isViewingPlaylist()) {
+            playlistFragment.resetAdapter();
         } else {
             backPress += 1;
             Toast.makeText(getApplicationContext(), " Press Back again to Exit ", Toast.LENGTH_SHORT).show();
@@ -514,12 +513,13 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        // Checks the orientation of the screen
+        checkAutorotate();
+    }
+
+    private void checkAutorotate() {
         Boolean autoRotate = Settings.System.getInt(getContentResolver(), Settings.System.ACCELEROMETER_ROTATION, 0) == 1;
         if (autoRotate) {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-        } else {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);
         }
     }
 
@@ -597,6 +597,7 @@ public class MainActivity extends AppCompatActivity implements
             shoudlRefreshList = false;
         }
         super.onStart();
+        checkAutorotate();
         doBindService();
         if (!youtubePlayerLaunched) {
             initPlayerService();
@@ -781,8 +782,6 @@ public class MainActivity extends AppCompatActivity implements
                 Toast.makeText(getApplicationContext(), ostToAdd.getTitle() + " added",
                         Toast.LENGTH_SHORT).show();
                 libraryFragment.addOst(ostToAdd);
-                UtilMeths.INSTANCE.downloadThumbnail(ostToAdd.getUrl(), this);
-                addCanceled = false;
             }
         } else {
             Toast.makeText(this, ostToAdd.getTitle() + " From " + ostToAdd.getShow()

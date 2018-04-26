@@ -17,6 +17,7 @@ import kotlinx.android.synthetic.main.playlist_layout.view.*
 class PlaylistFragment: Fragment() {
 
     private var isFromBackStack: Boolean = false
+    var isViewingPlaylist: Boolean = false
     lateinit var applicationContext: Context
     private lateinit var playlistAdapter: PlaylistAdapter
 
@@ -52,7 +53,12 @@ class PlaylistFragment: Fragment() {
     }
 
     fun changeAdapter(osts: List<Ost>) {
-        println(osts)
         rvPlaylists.adapter = PlaylistRVAdapter(applicationContext, osts)
+        isViewingPlaylist = true
+    }
+
+    fun resetAdapter() {
+        rvPlaylists.adapter = playlistAdapter
+        isViewingPlaylist = false
     }
 }
