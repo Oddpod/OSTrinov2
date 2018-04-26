@@ -381,7 +381,7 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
     fun getOstsInPlaylist(id: Int): ArrayList<Ost> {
 
         println(id)
-        var ostList = ArrayList<Ost>()
+        val ostList = ArrayList<Ost>()
 
         val cursor = writableDatabase.rawQuery(QueryStrings.selectAllOstsInPlaylist,
                 arrayOf(id.toString()))

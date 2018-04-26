@@ -19,7 +19,7 @@ class ProgressNotification(private val mTitle: String,
     init {
         mNotifyManager = mContext.getSystemService(Context.NOTIFICATION_SERVICE)
                 as NotificationManager
-        mBuilder = NotificationCompat.Builder(mContext)
+        mBuilder = NotificationCompat.Builder(mContext, "ProgressNotification")
         setStartedNotification()
     }
 
