@@ -147,7 +147,7 @@ class YoutubePlayerHandler(private var playerNotification:
     override fun onStopTrackingTouch(seekBar: SeekBar?) {
     }
 
-    fun initiateQueue(ostList: List<Ost>, startIndex: Int, shuffle: Boolean) {
+    fun initiateQueue(ostList: List<Ost>, startIndex: Int, shuffle: Boolean = queueHandler.shuffle) {
         queueHandler.initiateQueue(ostList, startIndex, shuffle)
         yPlayer.loadVideo(queueHandler.getCurrVideoId())
         playerNotification.updateNotInfo(queueHandler.currentlyPlaying)

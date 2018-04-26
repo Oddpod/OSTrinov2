@@ -130,11 +130,9 @@ class YTplayerService : Service(),
             }
         //TODO Consider renaming start ost to init or somthing
             action.equals(Constants.START_OST, ignoreCase = true) -> {
-
-                val ost = intent.getParcelableExtra<Ost>("ost_extra")
                 val startIndex = intent.getIntExtra("startIndex", 0)
-                var ostList = intent.getParcelableArrayListExtra<Ost>("osts_extra")
-                yPlayerHandler!!.initiateQueue(ostList, startIndex, false)
+                val ostList = intent.getParcelableArrayListExtra<Ost>("osts_extra")
+                yPlayerHandler!!.initiateQueue(ostList, startIndex)
             }
             action.equals(Constants.EXPANDMINIMIZE_PLAYER, ignoreCase = true) -> {
                 Log.i(NOT_LOG_TAG, "Expand")
