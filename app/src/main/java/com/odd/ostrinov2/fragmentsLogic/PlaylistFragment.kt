@@ -3,7 +3,6 @@ package com.odd.ostrinov2.fragmentsLogic
 import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.Fragment
-import android.support.v7.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -26,8 +25,6 @@ class PlaylistFragment: Fragment() {
         val rootView = inflater.inflate(R.layout.playlist_layout, container, false)
 
         playlistAdapter = PlaylistAdapter(context, this)
-        val mLayoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
-        rootView.rvPlaylists.layoutManager = mLayoutManager
         rootView.rvPlaylists.adapter = playlistAdapter
 
         if (rootView.rvPlaylists.adapter?.itemCount == 0) {

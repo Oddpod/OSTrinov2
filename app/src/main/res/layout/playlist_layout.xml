@@ -15,7 +15,8 @@
         app:fastScrollHorizontalThumbDrawable="@drawable/scrollbar"
         app:fastScrollHorizontalTrackDrawable="@drawable/line_drawable"
         app:fastScrollVerticalThumbDrawable="@drawable/scrollbar"
-        app:fastScrollVerticalTrackDrawable="@drawable/line_drawable" />
+        app:fastScrollVerticalTrackDrawable="@drawable/line_drawable"
+        app:layoutManager="android.support.v7.widget.LinearLayoutManager" />
 
     <ImageView
         android:id="@+id/ivArchives"
