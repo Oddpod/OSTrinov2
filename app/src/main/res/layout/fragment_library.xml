@@ -58,6 +58,7 @@
     </TableLayout>
 
     <android.support.v7.widget.RecyclerView
+        app:fastScrollVerticalTrackDrawable="@drawable/line_drawable"
         android:id="@+id/rvOstList"
         style="@style/Widget.AppCompat.ListView"
         android:layout_width="wrap_content"
@@ -69,5 +70,6 @@
         app:fastScrollHorizontalThumbDrawable="@drawable/scrollbar"
         app:fastScrollHorizontalTrackDrawable="@drawable/line_drawable"
         app:fastScrollVerticalThumbDrawable="@drawable/scrollbar"
-        app:fastScrollVerticalTrackDrawable="@drawable/line_drawable" />
+        app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 </RelativeLayout>
