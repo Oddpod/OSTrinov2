@@ -1,23 +1,21 @@
 package com.odd.ostrinov2.tools
 
-import com.odd.ostrinov2.Ost
+import com.odd.ostrinov2.fragmentsLogic.PlaylistRVAdapter
 import java.util.*
-import kotlin.collections.ArrayList
 
-class FilterHandler(private var ostList: ArrayList<Ost>) {
+class FilterHandler {
 
-    var unFilteredOstList: ArrayList<Ost> = ArrayList(ostList.size)
+
     private var lastQuery: String = ""
 
-    init {
-        unFilteredOstList.addAll(ostList)
-    }
-
     fun filter(charText: String = lastQuery) {
+        val unFilteredOstList = PlaylistRVAdapter.unFilteredOstList
+        val ostList = PlaylistRVAdapter.ostList
+
         lastQuery = charText.toLowerCase(Locale.getDefault())
-        ostList.clear()
+        PlaylistRVAdapter.ostList.clear()
         if (lastQuery.isEmpty()) {
-            ostList.addAll(unFilteredOstList)
+            PlaylistRVAdapter.ostList.addAll(unFilteredOstList)
             return
         }
         if (lastQuery.startsWith("tags:")) {
@@ -48,6 +46,8 @@ class FilterHandler(private var ostList: ArrayList<Ost>) {
     }
 
     private fun filterTags(tags: List<String>) {
+        val unFilteredOstList = PlaylistRVAdapter.unFilteredOstList
+        val ostList = PlaylistRVAdapter.ostList
         ostList.clear()
         if (lastQuery.isEmpty()) {
             ostList.addAll(unFilteredOstList)
@@ -58,13 +58,15 @@ class FilterHandler(private var ostList: ArrayList<Ost>) {
             for (tag in tags) {
                 val trimmedTag = tag.trim()
                 val exclude = trimmedTag.startsWith("-")
-                if (exclude && it.tags.toLowerCase(Locale.getDefault()).contains(trimmedTag.drop(1))) {
-                    hit = false
-                    break
-                }
-                if (!it.tags.toLowerCase(Locale.getDefault()).contains(trimmedTag)) {
-                    hit = false
-                    break
+                println(trimmedTag.drop(1))
+                if (exclude) {
+                    val excludeTag = trimmedTag.drop(1)
+                    if (it.tags.toLowerCase(Locale.getDefault()).contains(excludeTag)) {
+                        hit = false; break
+                    }
+                } else {
+                    if (!it.tags.toLowerCase(Locale.getDefault()).contains(trimmedTag))
+                        hit = false; break
                 }
             }
             if (hit) {

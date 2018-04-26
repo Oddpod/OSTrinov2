@@ -21,14 +21,11 @@ import com.odd.ostrinov2.tools.SortHandler
 import com.odd.ostrinov2.tools.UtilMeths
 import com.odd.ostrinov2.tools.checkPermission
 import com.squareup.picasso.Picasso
-import java.util.*
 
 class PlaylistRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
         RecyclerView.Adapter<PlaylistRVAdapter.RowViewHolder>(), PlayerListener,
         EditOstDialog.EditOstDialogListener {
 
-    private val unFilteredOstList: MutableList<Ost>
-    private val ostList: MutableList<Ost>
     private val filterHandler: FilterHandler
     private val sortHandler: SortHandler
     private val mInflater: LayoutInflater
@@ -42,8 +39,8 @@ class PlaylistRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
         ostList.addAll(ostListIn)
         unFilteredOstList = ArrayList()
         unFilteredOstList.addAll(ostListIn)
-        filterHandler = FilterHandler(ostList)
-        sortHandler = SortHandler(this, ostList)
+        filterHandler = FilterHandler()
+        sortHandler = SortHandler(this)
         editOStDialog = EditOstDialog()
         editOStDialog.setEditOstListener(this)
         mInflater = mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -148,6 +145,7 @@ class PlaylistRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
 
     fun sort(mode: SortHandler.SortMode) {
         sortHandler.sort(mode)
+        notifyDataSetChanged()
     }
 
     fun unSort() {
@@ -156,36 +154,44 @@ class PlaylistRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
     }
 
     fun updateList(updatedList: List<Ost>) {
+        ostList.clear()
         unFilteredOstList.clear()
         unFilteredOstList.addAll(updatedList)
-        unFilteredOstList.forEach { print(it) }
-        filter(lastQuery)
         sortHandler.sortInternal()
+        filter(lastQuery)
     }
 
     fun getOstList(): List<Ost> = ostList
 
     override fun onSaveButtonClick(editedOst: Ost, dialog: EditOstDialog) {
-        checkPermission(mContext as MainActivity)
         val replaceIndex = ostList.indexOf(editedOst)
+        val replaceIndex2 = unFilteredOstList.indexOf(editedOst)
+        unFilteredOstList[replaceIndex2] = editedOst
         ostList[replaceIndex] = editedOst
         MainActivity.getDbHandler().updateOst(editedOst)
-        UtilMeths.downloadThumbnail(editedOst.url, mContext)
+        val callback = Runnable {
+            UtilMeths.downloadThumbnail(editedOst.url, mContext)
+        }
+        checkPermission(mContext as MainActivity, callback)
+        notifyDataSetChanged()
     }
 
     override fun onDeleteButtonClick(deletedOst: Ost, dialog: EditOstDialog) {
         println("Deleting ost")
         MainActivity.getDbHandler().deleteOst(deletedOst.id)
-        filterHandler.unFilteredOstList.remove(deletedOst)
+        unFilteredOstList.remove(deletedOst)
         notifyDataSetChanged()
         filter(lastQuery)
         Toast.makeText(mContext, "Deleted " + deletedOst.title, Toast.LENGTH_SHORT).show()
     }
 
     fun addNewOst(ost: Ost) {
-        ostList.add(ost)
-        filterHandler.unFilteredOstList.add(ost)
-        sortHandler.ostList.add(ost)
+        unFilteredOstList.add(ost)
         filter(lastQuery)
+    }
+
+    companion object Statics {
+        lateinit var ostList: MutableList<Ost>
+        lateinit var unFilteredOstList: MutableList<Ost>
     }
 }

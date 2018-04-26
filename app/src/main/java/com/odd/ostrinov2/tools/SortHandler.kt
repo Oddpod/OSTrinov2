@@ -1,9 +1,8 @@
 package com.odd.ostrinov2.tools
 
-import com.odd.ostrinov2.Ost
 import com.odd.ostrinov2.fragmentsLogic.PlaylistRVAdapter
 
-class SortHandler(private val rvAdapter: PlaylistRVAdapter, val ostList: ArrayList<Ost>) {
+class SortHandler(private val rvAdapter: PlaylistRVAdapter) {
 
     private var prevSortedMode = SortMode.None
 
@@ -23,16 +22,14 @@ class SortHandler(private val rvAdapter: PlaylistRVAdapter, val ostList: ArrayLi
         }
         when (mode) {
             SortMode.Alphabetical -> {
-                if (!ostList.isEmpty()) {
-                    ostList.sortWith(Comparator { ost1, ost2 -> ost1.title.compareTo(ost2.title) })
+                if (!PlaylistRVAdapter.ostList.isEmpty()) {
+                    PlaylistRVAdapter.ostList.sortWith(Comparator { ost1, ost2 -> ost1.title.compareTo(ost2.title) })
                 }
-                rvAdapter.notifyDataSetChanged()
             }
             else -> {
             }
         }
     }
-
 
     enum class SortMode {
         None,
