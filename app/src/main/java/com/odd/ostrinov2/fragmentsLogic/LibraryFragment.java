@@ -2,7 +2,6 @@ package com.odd.ostrinov2.fragmentsLogic;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -26,11 +25,8 @@ import java.util.Random;
 public class LibraryFragment extends Fragment implements
         View.OnClickListener {
 
-    private List<Ost> allOsts, currOstList;
-    private final String TAG = "OstInfo";
     private String filterText;
     AddOstDialog dialog;
-    private RecyclerView rvOst;
     boolean playerDocked;
     private PlaylistRVAdapter libListAdapter;
     private MainActivity mainActivity;
@@ -46,10 +42,8 @@ public class LibraryFragment extends Fragment implements
 
         tlTop = rootView.findViewById(R.id.tlTop);
 
-        rvOst = rootView.findViewById(R.id.rvOstList);
+        RecyclerView rvOst = rootView.findViewById(R.id.rvOstList);
 
-        rvOst.setLayoutManager(new LinearLayoutManager(getActivity(),
-                LinearLayoutManager.VERTICAL, false));
         rvOst.setAdapter(libListAdapter);
         rvOst.findViewById(R.id.btnOptions);
 
@@ -132,20 +126,11 @@ public class LibraryFragment extends Fragment implements
     }
 
     @Override
-    public void onResume() {
-        if (shouldRefreshList) {
-            refreshListView();
-            System.out.println("refreshing");
-            shouldRefreshList = false;
-        }
-        super.onResume();
-    }
-    @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btnShufflePlay:{
                 Random rnd = new Random();
-                currOstList = getCurrDispOstList();
+                List<Ost> currOstList = getCurrDispOstList();
                 int rndPos = rnd.nextInt(currOstList.size());
                 mainActivity.initiatePlayer(currOstList, rndPos);
                 mainActivity.shuffleOn();
@@ -153,6 +138,7 @@ public class LibraryFragment extends Fragment implements
             }
 
             case R.id.btnAdd:{
+                String TAG = "OstInfo";
                 dialog.show(getFragmentManager(), TAG);
                 break;
             }
@@ -164,23 +150,30 @@ public class LibraryFragment extends Fragment implements
         }
     }
 
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        System.out.println("Isvisibletouser");
+        if (isVisibleToUser && shouldRefreshList) {
+            System.out.println("refreshingisvisibile");
+            refreshListView();
+            shouldRefreshList = false;
+        }
+    }
+
     public List<Ost> getCurrDispOstList(){
         return libListAdapter.getOstList();
     }
 
     public void refreshListView(){
-        allOsts = MainActivity.getDbHandler().getAllOsts();
+        List<Ost> allOsts = MainActivity.getDbHandler().getAllOsts();
         libListAdapter.updateList(allOsts);
-    }
-
-    public AddOstDialog getDialog() {
-        return dialog;
     }
 
     public void setMainAcitivity(MainActivity mainAcitivity){
 
         this.mainActivity = mainAcitivity;
-        allOsts = MainActivity.getDbHandler().getAllOsts();
+        List<Ost> allOsts = MainActivity.getDbHandler().getAllOsts();
         libListAdapter = new PlaylistRVAdapter(mainAcitivity, allOsts);
     }
 
