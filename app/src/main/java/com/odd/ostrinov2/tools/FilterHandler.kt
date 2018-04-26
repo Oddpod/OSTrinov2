@@ -1,6 +1,6 @@
 package com.odd.ostrinov2.tools
 
-import com.odd.ostrinov2.fragmentsLogic.PlaylistRVAdapter
+import com.odd.ostrinov2.Ost
 import java.util.*
 
 class FilterHandler {
@@ -8,20 +8,19 @@ class FilterHandler {
 
     private var lastQuery: String = ""
 
-    fun filter(charText: String = lastQuery) {
-        val unFilteredOstList = PlaylistRVAdapter.unFilteredOstList
-        val ostList = PlaylistRVAdapter.ostList
+    fun filter(charText: String = lastQuery, unFilteredOstList: MutableList<Ost>
+               , ostList: MutableList<Ost>) {
 
         lastQuery = charText.toLowerCase(Locale.getDefault())
-        PlaylistRVAdapter.ostList.clear()
+        ostList.clear()
         if (lastQuery.isEmpty()) {
-            PlaylistRVAdapter.ostList.addAll(unFilteredOstList)
+            ostList.addAll(unFilteredOstList)
             return
         }
         if (lastQuery.startsWith("tags:")) {
             val query = lastQuery.removeRange(0, 5).trim()
             val tags = query.split(",")
-            filterTags(tags)
+            filterTags(tags, unFilteredOstList, ostList)
         } else if (lastQuery.startsWith("show:")) {
             val query = lastQuery.removeRange(0, 5).trim()
             unFilteredOstList.forEach {
@@ -45,9 +44,8 @@ class FilterHandler {
         }
     }
 
-    private fun filterTags(tags: List<String>) {
-        val unFilteredOstList = PlaylistRVAdapter.unFilteredOstList
-        val ostList = PlaylistRVAdapter.ostList
+    private fun filterTags(tags: List<String>, unFilteredOstList: MutableList<Ost>
+                           , ostList: MutableList<Ost>) {
         ostList.clear()
         if (lastQuery.isEmpty()) {
             ostList.addAll(unFilteredOstList)

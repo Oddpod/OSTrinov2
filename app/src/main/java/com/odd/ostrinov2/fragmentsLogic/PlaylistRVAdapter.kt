@@ -26,6 +26,8 @@ class PlaylistRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
         RecyclerView.Adapter<PlaylistRVAdapter.RowViewHolder>(), PlayerListener,
         EditOstDialog.EditOstDialogListener {
 
+    private var ostList: MutableList<Ost> = ArrayList()
+    private var unFilteredOstList: MutableList<Ost> = ArrayList()
     private val filterHandler: FilterHandler
     private val sortHandler: SortHandler
     private val mInflater: LayoutInflater
@@ -35,9 +37,7 @@ class PlaylistRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
     private var lastQuery = ""
 
     init {
-        ostList = ArrayList()
         ostList.addAll(ostListIn)
-        unFilteredOstList = ArrayList()
         unFilteredOstList.addAll(ostListIn)
         filterHandler = FilterHandler()
         sortHandler = SortHandler(this)
@@ -122,6 +122,7 @@ class PlaylistRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
         }
     }
 
+    fun getOstList() = ostList
     fun getItem(position: Int): Ost = ostList[position]
     override fun getItemId(position: Int): Long = ostList[position].id.toLong()
 
@@ -139,12 +140,12 @@ class PlaylistRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
     }
 
     fun filter(charText: String) {
-        filterHandler.filter(charText)
+        filterHandler.filter(charText, unFilteredOstList, ostList)
         notifyDataSetChanged()
     }
 
     fun sort(mode: SortHandler.SortMode) {
-        sortHandler.sort(mode)
+        sortHandler.sort(mode, ostList)
         notifyDataSetChanged()
     }
 
@@ -157,11 +158,9 @@ class PlaylistRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
         ostList.clear()
         unFilteredOstList.clear()
         unFilteredOstList.addAll(updatedList)
-        sortHandler.sortInternal()
+        sortHandler.sortInternal(ostList)
         filter(lastQuery)
     }
-
-    fun getOstList(): List<Ost> = ostList
 
     override fun onSaveButtonClick(editedOst: Ost, dialog: EditOstDialog) {
         val replaceIndex = ostList.indexOf(editedOst)
@@ -190,8 +189,8 @@ class PlaylistRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
         filter(lastQuery)
     }
 
-    companion object Statics {
+    /*companion object Statics {
         lateinit var ostList: MutableList<Ost>
         lateinit var unFilteredOstList: MutableList<Ost>
-    }
+    }*/
 }
