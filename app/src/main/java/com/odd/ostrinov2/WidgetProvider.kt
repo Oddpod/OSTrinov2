@@ -3,18 +3,13 @@ package com.odd.ostrinov2
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.os.Environment
 import android.widget.RemoteViews
-
 import com.odd.ostrinov2.tools.DBHandler
 import com.odd.ostrinov2.tools.UtilMeths
 import com.squareup.picasso.Picasso
-
-import java.io.File
-import java.util.Random
+import java.util.*
 
 class WidgetProvider : AppWidgetProvider() {
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
@@ -29,7 +24,6 @@ class WidgetProvider : AppWidgetProvider() {
 
                 val remoteViews = RemoteViews(context.packageName,
                         R.layout.widget_layout)
-                remoteViews.setTextViewText(R.id.tvOstoftheDay, ostOfTheDay.title)
                 val tnFile = UtilMeths.getThumbnailLocal(ostOfTheDay.url, context)
                 Picasso.with(context).load(tnFile).resize(500, 200).onlyScaleDown()
                         .into(remoteViews, R.id.widgetThumbnail, appWidgetIds)
