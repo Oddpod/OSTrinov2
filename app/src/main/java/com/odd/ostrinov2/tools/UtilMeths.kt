@@ -120,7 +120,7 @@ internal object UtilMeths {
 
     fun downloadThumbnail(url: String, context: Context) {
         val saveName = urlToId(url)
-        downloadFile(context, "http://img.youtube.com/vi/$saveName/2.jpg", saveName)
+        downloadFile(context, "http://img.youtube.com/vi/$saveName/0.jpg", saveName)
     }
 
     fun getThumbNailUrl(videoId: String): String = "https://i.ytimg.com/vi/$videoId/mqdefault.jpg"
@@ -223,5 +223,24 @@ internal object UtilMeths {
             }
         }
         return ostList
+    }
+
+    fun nukeThumbnails(context: Context) {
+        val settings = context.getSharedPreferences(Constants.TB_STORAGE_LOCATION, 0)
+        val path = Environment.getExternalStorageDirectory().absolutePath +
+                settings.getString(Constants.TB_STORAGE_LOCATION, "")
+        val tnFolder = File(path)
+        println(tnFolder.absolutePath)
+        recursiveDelete(tnFolder)
+    }
+
+    fun recursiveDelete(fileOrDirectory: File) {
+
+        if (fileOrDirectory.isDirectory)
+            for (child in fileOrDirectory.listFiles())
+                recursiveDelete(child)
+
+        fileOrDirectory.delete()
+
     }
 }

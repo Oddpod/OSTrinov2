@@ -27,14 +27,14 @@ fun requestSystemAlertPermission(context: Activity?, requestCode: Int) {
         return result
     }
 
-    fun checkPermission(mainActivity: MainActivity) {
+fun checkPermission(mainActivity: MainActivity, callback: Runnable) {
         if (ContextCompat.checkSelfPermission(mainActivity,
             Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(mainActivity,
             Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 
         // Should we show an explanation?
         if (ActivityCompat.shouldShowRequestPermissionRationale(mainActivity,
-                Manifest.permission.READ_CONTACTS)) {
+                        Manifest.permission.READ_EXTERNAL_STORAGE)) {
 
             // Show an explanation to the user *asynchronously* -- don't block
             // this thread waiting for the user's response! After the user
@@ -50,6 +50,7 @@ fun requestSystemAlertPermission(context: Activity?, requestCode: Int) {
             // MY_PERMISSIONS_REQUEST_READWRITE_EXTERNAL_STORAGE is an
             // app-defined int constant. The callback method gets the
             // result of the request.
+            callback.run()
         }
     }
 }

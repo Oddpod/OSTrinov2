@@ -364,6 +364,7 @@ public class MainActivity extends AppCompatActivity implements
             case R.id.delete_allOsts: {
                 dbHandler.emptyTable();
                 libraryFragment.refreshListView();
+                UtilMeths.INSTANCE.nukeThumbnails(this);
                 break;
             }
 
@@ -388,8 +389,18 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        PermissionHandlerKt.checkPermission(this);
+    public void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
+        Runnable callback = new Runnable() {
+            @Override
+            public void run() {
+                onRequestCode(requestCode, resultCode, data);
+            }
+        };
+        PermissionHandlerKt.checkPermission(this, callback);
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private void onRequestCode(int requestCode, int resultCode, Intent data) {
         if (requestCode == 1 && resultCode == RESULT_OK) {
             Uri currFileURI = data.getData();
             IOHandler.INSTANCE.readFromFile(currFileURI, this);
@@ -402,7 +413,6 @@ public class MainActivity extends AppCompatActivity implements
         if (requestCode == 3) {
             yTplayerService.launchFloater(floatingPlayer, this);
         }
-        super.onActivityResult(requestCode, resultCode, data);
     }
 
     public void initPlayerService() {
@@ -410,10 +420,6 @@ public class MainActivity extends AppCompatActivity implements
             startService();
             doBindService();
         }
-    }
-
-    public AddOstDialog getDialog() {
-        return libraryFragment.getDialog();
     }
 
     @Override
@@ -669,7 +675,12 @@ public class MainActivity extends AppCompatActivity implements
 
     void startWidgetOst(int startId) {
         if (startId != -1) {
-            initiatePlayer(dbHandler.getAllOsts(), startId);
+            if (dbHandler.getAllOsts().isEmpty()) {
+                Toast.makeText(this, "Uh oh, It seems your library is empty :C",
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                initiatePlayer(dbHandler.getAllOsts(), startId);
+            }
         }
     }
 
@@ -748,9 +759,18 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onAddButtonClick(@NotNull Ost ostToAdd, @NotNull DialogFragment dialog) {
+    public void onAddButtonClick(@NotNull final Ost ostToAdd, @NotNull DialogFragment dialog) {
 
-        PermissionHandlerKt.checkPermission(this);
+        Runnable addOstCallBack = new Runnable() {
+            @Override
+            public void run() {
+                addnewOst(ostToAdd);
+            }
+        };
+        PermissionHandlerKt.checkPermission(this, addOstCallBack);
+    }
+
+    private void addnewOst(Ost ostToAdd) {
         boolean alreadyAdded = dbHandler.checkiIfOstInDB(ostToAdd);
         if (!alreadyAdded) {
             if (!ostToAdd.getUrl().contains("https://")) {
