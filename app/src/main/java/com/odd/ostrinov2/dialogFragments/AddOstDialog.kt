@@ -54,7 +54,7 @@ class AddOstDialog : DialogFragment() {
         dialogView = inflater.inflate(R.layout.dialog_addscreen, null)
 
         builder.setView(dialogView)
-                .setPositiveButton("Add") { dialog, which -> addOst() }
+                .setPositiveButton("Add") { _, _ -> addOst() }
 
         val tagsAdapter = ArrayAdapter(activity!!,
                 android.R.layout.simple_spinner_dropdown_item, tagList)

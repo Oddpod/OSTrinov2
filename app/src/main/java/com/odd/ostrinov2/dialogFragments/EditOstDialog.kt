@@ -51,9 +51,9 @@ class EditOstDialog : DialogFragment() {
         dialogView = inflater.inflate(R.layout.dialog_addscreen, null)
 
         builder.setView(dialogView)
-                .setPositiveButton("Save") { dialog, which -> saveOst() }
+                .setPositiveButton("Save") { _, _ -> saveOst() }
 
-        builder.setNegativeButton("Delete") { dialog, which -> deleteOst() }
+        builder.setNegativeButton("Delete") { _, _ -> deleteOst() }
 
         val tagsAdapter = ArrayAdapter(activity!!,
                 android.R.layout.simple_spinner_dropdown_item, tagList)
