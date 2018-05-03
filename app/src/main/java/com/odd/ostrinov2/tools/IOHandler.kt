@@ -17,7 +17,7 @@ internal object IOHandler {
         WriteToFileAsync(uri, ostList, mainActivity).execute()
     }
 
-    class WriteToFileAsync(val uri: Uri, val ostList: List<Ost>, mainActivity: MainActivity) : AsyncTask<Void, Void, Void>() {
+    class WriteToFileAsync(private val uri: Uri, val ostList: List<Ost>, mainActivity: MainActivity) : AsyncTask<Void, Void, Void>() {
         private var wContext: WeakReference<MainActivity> = WeakReference(mainActivity)
         private var progressNotification: ProgressNotification =
                 ProgressNotification("Exporting OSTs", mainActivity,
@@ -32,16 +32,15 @@ internal object IOHandler {
                 val os = wContext.get()!!.contentResolver.openOutputStream(uri)
                 val osw = OutputStreamWriter(os!!)
                 var line: String
-                var counter = 0
                 val numItems = ostList.count()
-                for (ost in ostList) {
+                for ((counter, ost) in ostList.withIndex()) {
                     val title = ost.title
                     val show = ost.show
                     val tags = ost.tags
                     val url = ost.url
                     line = "$title; $show; $tags; $url"
                     osw.write(line + "\n")
-                    progressNotification.updateProgress(++counter, numItems)
+                    progressNotification.updateProgress(counter + 1, numItems)
                 }
                 osw.close()
             } catch (e: IOException) {
@@ -61,7 +60,7 @@ internal object IOHandler {
         ReadFromFileAsync(uri, mainActivity).execute()
     }
 
-    class ReadFromFileAsync(val uri: Uri, mainActivity: MainActivity) : AsyncTask<Void, Void, Void>() {
+    class ReadFromFileAsync(private val uri: Uri, mainActivity: MainActivity) : AsyncTask<Void, Void, Void>() {
         private var wContext: WeakReference<MainActivity> = WeakReference(mainActivity)
         private val progressNotification: ProgressNotification =
                 ProgressNotification("Importing OSTs", mainActivity,
