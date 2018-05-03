@@ -4,7 +4,6 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
-import android.support.v4.app.NavUtils
 import android.support.v4.app.NotificationCompat
 import android.view.View
 import android.widget.RemoteViews
@@ -21,6 +20,7 @@ class PlayerNotificationService(private val service: YTplayerService) {
     private val packageName = service.packageName
     private var status: NotificationCompat.Builder
     private var mNotifyMgr: NotificationManager
+    private val channedId = "PlayerNotService"
 
     init{
         // Using RemoteViews to bind custom layouts into Notification
@@ -93,7 +93,7 @@ class PlayerNotificationService(private val service: YTplayerService) {
 
         mNotifyMgr = service.getSystemService(Service.NOTIFICATION_SERVICE) as NotificationManager
 
-        status = NotificationCompat.Builder(service)
+        status = NotificationCompat.Builder(service, channedId)
                 .setCustomContentView(views)
                 .setCustomBigContentView(bigViews)
                 .setSmallIcon(R.drawable.ic_stat_name)

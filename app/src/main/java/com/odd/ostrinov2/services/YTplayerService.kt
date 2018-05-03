@@ -99,7 +99,7 @@ class YTplayerService : Service(),
             yPlayerHandler == null -> {
                 val osts = intent.getParcelableArrayListExtra<Ost>("osts_extra")
                         as ArrayList
-                val startPos = intent.getIntExtra("startId", 0)
+                val startPos = intent.getIntExtra("startIndex", 0)
                 val mIntent = Intent(this, MainActivity::class.java)
                 mIntent.putParcelableArrayListExtra("osts_extra", osts)
                 mIntent.putExtra("startIndex", startPos)
@@ -144,6 +144,7 @@ class YTplayerService : Service(),
                 wm.removeView(rl)
                 mainActivity.saveSession()
                 yPlayerHandler!!.stopPlayer()
+                yPlayerHandler = null
             }
         }
     }
