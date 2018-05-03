@@ -10,6 +10,8 @@ import android.view.ViewGroup
 import com.odd.ostrinov2.MainActivity
 import com.odd.ostrinov2.R
 import com.odd.ostrinov2.tools.YoutubeSearch
+import com.squareup.picasso.Picasso
+import kotlinx.android.synthetic.main.playlist_layout.view.*
 
 class SearchFragment: Fragment() {
 
@@ -24,10 +26,11 @@ class SearchFragment: Fragment() {
     private var firstVisibleItem: Int = 0
     private var totalItemCount:Int = 0
     private var isFromBackStack: Boolean = false
+    private lateinit var rootView: View
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
 
-        val rootView = inflater.inflate(R.layout.search_layout, container, false)
+        rootView = inflater.inflate(R.layout.search_layout, container, false)
 
         rvSearchResults = rootView.findViewById(R.id.rvSearchresults) as RecyclerView
         val mLayoutManager = LinearLayoutManager(mainActivity)
@@ -73,6 +76,14 @@ class SearchFragment: Fragment() {
 
     fun updateSearchresult(videoObjects: MutableList<SearchAdapter.VideoObject>, extend: Boolean){
         searchAdapter.updateVideoObjects(videoObjects, extend)
+        if (searchAdapter.itemCount == 0) {
+            rootView.ivArchives.visibility = View.VISIBLE
+            Picasso.with(context).load(
+                    "http://i0.kym-cdn.com/entries/icons/original/000/023/967/obiwan.jpg")
+                    .into(rootView.ivArchives)
+        } else if (rootView.ivArchives.visibility == View.VISIBLE)
+            rootView.ivArchives.visibility = View.GONE
+        rootView.ivArchives.destroyDrawingCache()
     }
 
     fun performSearch( query: String){
