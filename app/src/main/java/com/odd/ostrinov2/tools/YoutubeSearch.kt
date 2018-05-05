@@ -2,6 +2,7 @@ package com.odd.ostrinov2.tools
 
 import android.app.Activity
 import android.os.AsyncTask
+import android.util.Log
 import android.widget.Toast
 import com.odd.ostrinov2.Constants
 import com.odd.ostrinov2.fragmentsLogic.SearchAdapter
@@ -80,7 +81,6 @@ class YoutubeSearch(private val activity: Activity, private val searchQuery: Str
                 try {
                     val jsonObj = JSONObject(jsonStr)
                     nextPagetoken = jsonObj.getString("nextPageToken")
-                    println(nextPagetoken)
                     val items : JSONArray = jsonObj.getJSONArray("items")
                     var i = 0
                     while (i < maxResults) {
@@ -100,12 +100,8 @@ class YoutubeSearch(private val activity: Activity, private val searchQuery: Str
                     }
 
                 } catch (e: JSONException) {
-                    // Log.e(TAG, "Json parsing error: " + e.getMessage());
                     activity.runOnUiThread {
-                        Toast.makeText(activity,
-                                "Json parsing error: " + e.message,
-                                Toast.LENGTH_LONG)
-                                .show()
+                        Log.e("SearchError","Json parsing error ${e.message}")
                     }
 
                 }
