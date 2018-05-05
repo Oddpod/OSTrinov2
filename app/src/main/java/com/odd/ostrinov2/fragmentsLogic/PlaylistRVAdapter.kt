@@ -21,6 +21,7 @@ import com.odd.ostrinov2.tools.SortHandler
 import com.odd.ostrinov2.tools.UtilMeths
 import com.odd.ostrinov2.tools.checkPermission
 import com.squareup.picasso.Picasso
+import java.util.jar.Manifest
 
 class PlaylistRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
         RecyclerView.Adapter<PlaylistRVAdapter.RowViewHolder>(), PlayerListener,
@@ -168,19 +169,17 @@ class PlaylistRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
         unFilteredOstList[replaceIndex2] = editedOst
         ostList[replaceIndex] = editedOst
         MainActivity.getDbHandler().updateOst(editedOst)
-        val callback = Runnable {
-            UtilMeths.downloadThumbnail(editedOst.url, mContext)
-        }
-        checkPermission(mContext as MainActivity, callback)
+        checkPermission(mContext as MainActivity)
+        UtilMeths.downloadThumbnail(editedOst.url, mContext)
         notifyDataSetChanged()
     }
 
     override fun onDeleteButtonClick(deletedOst: Ost, dialog: EditOstDialog) {
         println("Deleting ost")
         MainActivity.getDbHandler().deleteOst(deletedOst.id)
+        ostList.remove(deletedOst)
         unFilteredOstList.remove(deletedOst)
         notifyDataSetChanged()
-        filter(lastQuery)
         Toast.makeText(mContext, "Deleted " + deletedOst.title, Toast.LENGTH_SHORT).show()
     }
 

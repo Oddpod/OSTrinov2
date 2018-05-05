@@ -388,14 +388,9 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
-        Runnable callback = new Runnable() {
-            @Override
-            public void run() {
-                onRequestCode(requestCode, resultCode, data);
-            }
-        };
-        PermissionHandlerKt.checkPermission(this, callback);
+    public void onActivityResult(final int requestCode, final int resultCode, Intent data) {
+        PermissionHandlerKt.checkPermission(this);
+        onRequestCode(requestCode, resultCode, data);
         super.onActivityResult(requestCode, resultCode, data);
     }
 
@@ -519,6 +514,8 @@ public class MainActivity extends AppCompatActivity implements
     private void checkAutorotate() {
         Boolean autoRotate = Settings.System.getInt(getContentResolver(), Settings.System.ACCELEROMETER_ROTATION, 0) == 1;
         if (autoRotate) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);
+        } else{
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);
         }
     }
@@ -662,15 +659,6 @@ public class MainActivity extends AppCompatActivity implements
                 initiatePlayer(osts, startPos);
                 break;
             }
-            case Constants.ADD_OST_TO_PLAYLIST: {
-                int ostId = intent.getIntExtra("ostId", 0);
-                PlaylistPicker picker = new PlaylistPicker();
-                Bundle bundl = new Bundle();
-                bundl.putInt("ostId", ostId);
-                picker.setArguments(bundl);
-                picker.show(manager, "PlaylistPicker");
-                break;
-            }
         }
     }
 
@@ -762,13 +750,8 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onAddButtonClick(@NotNull final Ost ostToAdd, @NotNull DialogFragment dialog) {
 
-        Runnable addOstCallBack = new Runnable() {
-            @Override
-            public void run() {
-                addnewOst(ostToAdd);
-            }
-        };
-        PermissionHandlerKt.checkPermission(this, addOstCallBack);
+        PermissionHandlerKt.checkPermission(this);
+        addnewOst(ostToAdd);
     }
 
     private void addnewOst(Ost ostToAdd) {

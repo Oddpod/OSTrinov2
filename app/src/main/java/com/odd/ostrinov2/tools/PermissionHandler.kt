@@ -27,7 +27,7 @@ fun requestSystemAlertPermission(context: Activity?, requestCode: Int) {
         return result
     }
 
-fun checkPermission(mainActivity: MainActivity, callback: Runnable) {
+fun checkPermission(mainActivity: MainActivity) {
         if (ContextCompat.checkSelfPermission(mainActivity,
             Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(mainActivity,
             Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -50,7 +50,6 @@ fun checkPermission(mainActivity: MainActivity, callback: Runnable) {
             // MY_PERMISSIONS_REQUEST_READWRITE_EXTERNAL_STORAGE is an
             // app-defined int constant. The callback method gets the
             // result of the request.
-            callback.run()
         }
     }
 }
