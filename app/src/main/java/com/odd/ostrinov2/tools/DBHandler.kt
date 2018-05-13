@@ -175,8 +175,12 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
         //inserting Row
         writableDatabase.insert(PLAYLIST_OST_TABLE, null, values)
         Log.i("AddOstToPlaylist", "inserted: $ostId, $playlistId")
-
     }
+
+    fun addOstsToPlaylist(ostIds: List<Int>?, playlistId: Int) {
+        ostIds?.forEach { addOstToPlaylist(it, playlistId) }
+    }
+
 
     fun addNewOst(newOst: Ost) {
         val values = ContentValues()
@@ -267,7 +271,7 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
     }
 
     fun deleteOst(delID: Int): Boolean = writableDatabase.delete(OST_TABLE,
-            KEY_OST_ID + "=" + delID, null) > 0
+            "$KEY_OST_ID=$delID", null) > 0
 
     fun getOst(id: Int): Ost? {
 
@@ -401,6 +405,13 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
         }
         cursor.close()
         return ostList
+    }
+
+    fun deletePlaylist(playlistId: Int) {
+        writableDatabase.delete(PLAYLIST_OST_TABLE, "$FKEY_PLAYLIST_ID = $playlistId",
+                null)
+        writableDatabase.delete(PLAYLIST_TABLE,
+                "$KEY_PLAYLIST_ID = $playlistId", null)
     }
 
     companion object {
