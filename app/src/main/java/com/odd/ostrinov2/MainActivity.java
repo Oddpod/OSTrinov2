@@ -48,7 +48,6 @@ import android.widget.Toast;
 import com.google.android.youtube.player.YouTubePlayer;
 import com.google.android.youtube.player.YouTubePlayerSupportFragment;
 import com.odd.ostrinov2.dialogFragments.AddOstDialog;
-import com.odd.ostrinov2.dialogFragments.PlaylistPicker;
 import com.odd.ostrinov2.fragmentsLogic.AboutFragment;
 import com.odd.ostrinov2.fragmentsLogic.LibraryFragment;
 import com.odd.ostrinov2.fragmentsLogic.PlaylistFragment;
@@ -96,6 +95,12 @@ public class MainActivity extends AppCompatActivity implements
     private Handler handler = new Handler();
     private SearchView searchView = null;
     private ViewPager fragPager;
+
+    private static Runnable permissionCallback;
+
+    public static void setPermissionCallback(Runnable permissionCallback) {
+        MainActivity.permissionCallback = permissionCallback;
+    }
 
     public static void setShoudlRefreshList(boolean shoudlRefreshList) {
         MainActivity.shoudlRefreshList = shoudlRefreshList;
@@ -388,9 +393,14 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onActivityResult(final int requestCode, final int resultCode, Intent data) {
-        PermissionHandlerKt.checkPermission(this);
-        onRequestCode(requestCode, resultCode, data);
+    public void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
+        Runnable callback = new Runnable() {
+            @Override
+            public void run() {
+                onRequestCode(requestCode, resultCode, data);
+            }
+        };
+        PermissionHandlerKt.checkPermission(this, callback);
         super.onActivityResult(requestCode, resultCode, data);
     }
 
@@ -492,15 +502,31 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
+        System.out.println("Requestcode: " + requestCode);
         switch (requestCode) {
             case Constants.MY_PERMISSIONS_REQUEST_READWRITE_EXTERNAL_STORAGE: {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
+                    if (permissionCallback != null) {
+                        permissionCallback.run();
+                    }
+                }
+                break;
+            }
+            case Constants.MY_PERMISSIONS_REQUEST_SYSTEM_OVERLAY: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    if (permissionCallback != null) {
+                        permissionCallback.run();
+                    }
                 } else {
 
+
+                    Toast.makeText(this, "I'm sorry, can't play anything without this request :C",
+                            Toast.LENGTH_SHORT).show();
                 }
+                break;
             }
         }
     }
@@ -750,8 +776,13 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onAddButtonClick(@NotNull final Ost ostToAdd, @NotNull DialogFragment dialog) {
 
-        PermissionHandlerKt.checkPermission(this);
-        addnewOst(ostToAdd);
+        Runnable callback = new Runnable() {
+            @Override
+            public void run() {
+                addnewOst(ostToAdd);
+            }
+        };
+        PermissionHandlerKt.checkPermission(this, callback);
     }
 
     private void addnewOst(Ost ostToAdd) {
@@ -765,6 +796,7 @@ public class MainActivity extends AppCompatActivity implements
                 Toast.makeText(getApplicationContext(), ostToAdd.getTitle() + " added",
                         Toast.LENGTH_SHORT).show();
                 libraryFragment.addOst(ostToAdd);
+                UtilMeths.INSTANCE.downloadThumbnail(ostToAdd.getUrl(), this);
             }
         } else {
             Toast.makeText(this, ostToAdd.getTitle() + " From " + ostToAdd.getShow()
