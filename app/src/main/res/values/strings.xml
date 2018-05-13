@@ -72,4 +72,5 @@
     <string name="create_new_playlist">Create new Playlist</string>
     <string name="playlist_name">Playlist Name</string>
     <string name="chooser_add_to_playlist">Add to Playlist</string>
+    <string name="choose_delete_playlist">Delete</string>
 </resources>
