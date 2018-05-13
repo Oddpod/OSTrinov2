@@ -21,10 +21,9 @@ import com.odd.ostrinov2.tools.SortHandler
 import com.odd.ostrinov2.tools.UtilMeths
 import com.odd.ostrinov2.tools.checkPermission
 import com.squareup.picasso.Picasso
-import java.util.jar.Manifest
 
-class PlaylistRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
-        RecyclerView.Adapter<PlaylistRVAdapter.RowViewHolder>(), PlayerListener,
+class OstsRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
+        RecyclerView.Adapter<OstsRVAdapter.RowViewHolder>(), PlayerListener,
         EditOstDialog.EditOstDialogListener {
 
     private var ostList: MutableList<Ost> = ArrayList()
@@ -59,8 +58,6 @@ class PlaylistRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
     override fun getItemCount(): Int = ostList.size
 
     override fun onBindViewHolder(holder: RowViewHolder, position: Int) {
-        println("relaunching views")
-
         val ost = getItem(position)
         println("""SearchString: ${ost.searchString}""")
         val tnFile = UtilMeths.getThumbnailLocal(ost.url, mContext)
@@ -78,7 +75,7 @@ class PlaylistRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
         }
         holder.btnOptions.setOnClickListener {
             val pum = PopupMenu(mContext, holder.btnOptions)
-            pum.inflate(R.menu.btn_search_chooser_popup)
+            pum.inflate(R.menu.lib_chooser_popup)
             pum.setOnMenuItemClickListener { item ->
                 when (item?.itemId) {
                     R.id.chooser_addToQueue -> {
@@ -100,11 +97,6 @@ class PlaylistRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
                         picker.arguments = bundl
                         picker.show((mContext as MainActivity).supportFragmentManager,
                                 "PlaylistPicker")
-                        /*val mIntent = Intent(mContext, MainActivity::class.java)
-                        mIntent.putExtra("ostId", ost.id)
-                        mIntent.action = Constants.ADD_OST_TO_PLAYLIST
-                        mContext.startActivity(mIntent)*/
-
                     }
                 }
                 true
@@ -169,8 +161,8 @@ class PlaylistRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
         unFilteredOstList[replaceIndex2] = editedOst
         ostList[replaceIndex] = editedOst
         MainActivity.getDbHandler().updateOst(editedOst)
-        checkPermission(mContext as MainActivity)
-        UtilMeths.downloadThumbnail(editedOst.url, mContext)
+        val callback = Runnable { UtilMeths.downloadThumbnail(editedOst.url, mContext) }
+        checkPermission(mContext as MainActivity, callback)
         notifyDataSetChanged()
     }
 
