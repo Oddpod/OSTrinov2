@@ -1,5 +1,6 @@
 package com.odd.ostrinov2.tools
 
+import android.util.Log
 import android.widget.SeekBar
 import com.google.android.youtube.player.YouTubeInitializationResult
 import com.google.android.youtube.player.YouTubePlayer
@@ -88,7 +89,10 @@ class YoutubePlayerHandler(private var playerNotification:
     }
 
     override fun onError(p0: YouTubePlayer.ErrorReason?) {
-        println(p0.toString())
+        Log.e("YoutubeplayerHandler", p0.toString())
+        if (!isSystemAlertPermissionGranted(mainActivity)) {
+            launchOverlayPermissionNotGrantedDialog(mainActivity)
+        }
     }
 
     override fun onSeekTo(p0: Int) {}
