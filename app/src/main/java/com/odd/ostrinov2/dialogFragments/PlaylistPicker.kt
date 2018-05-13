@@ -39,46 +39,44 @@ class PlaylistPicker : DialogFragment() {
         rvPlaylists.layoutManager = mLayoutManager
 
         val ostId = arguments?.getInt("ostId")
-        rvPlaylists.adapter = TextAdapter(playlists, ostId, this)
+        val ostIds = arguments?.getIntegerArrayList("ostIds")
+        rvPlaylists.adapter = TextAdapter(playlists, this, ostId, ostIds)
 
         builder.setView(dialogView)
         return builder.create()
     }
 
-    class TextAdapter(private val playlists: List<Playlist>, private val ostId: Int?,
-                      val dialog: PlaylistPicker) :
+    class TextAdapter(private val playlists: List<Playlist>, val dialog: PlaylistPicker,
+                      private val ostId: Int?,
+                      private val ostIds: List<Int>?) :
             RecyclerView.Adapter<TextAdapter.ViewHolder>() {
 
-        // Provide a reference to the views for each data item
-        // Complex data items may need more than one view per item, and
-        // you provide access to all the views for a data item in a view holder.
-        // Each data item is just a string in this case that is shown in a TextView.
         class ViewHolder(val textView: TextView) : RecyclerView.ViewHolder(textView)
 
-        // Create new views (invoked by the layout manager)
         override fun onCreateViewHolder(parent: ViewGroup,
                                         viewType: Int): TextAdapter.ViewHolder {
-            // create a new view
+
             val textView = TextView(parent.context)
             textView.layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
+            textView.textSize = 18.0F
+            textView.setPadding(0, 7, 0, 7)
             return ViewHolder(textView)
         }
 
-        // Replace the contents of a view (invoked by the layout manager)
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            // - get element from your dataset at this position
-            // - replace the contents of the view with that element
             val playlist = playlists[position]
             holder.textView.text = playlist.name
             holder.textView.setOnClickListener {
                 async {
-                    MainActivity.getDbHandler().addOstToPlaylist(ostId, playlist.id)
+                    if (ostId != null)
+                        MainActivity.getDbHandler().addOstToPlaylist(ostId, playlist.id)
+                    else
+                        MainActivity.getDbHandler().addOstsToPlaylist(ostIds, playlist.id)
                 }
                 dialog.dismiss()
             }
         }
 
-        // Return the size of your dataset (invoked by the layout manager)
         override fun getItemCount() = playlists.size
     }
 }
