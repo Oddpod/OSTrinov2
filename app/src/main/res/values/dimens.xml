@@ -19,5 +19,5 @@
     <dimen name="notification_expanded_height">120.0dip</dimen>
     <dimen name="play_controls_notification">48.0dip</dimen>
     <dimen name="notification_padding">8.0dip</dimen>
-    <dimen name="scrollbar_width">20dp</dimen>
+    <dimen name="scrollbar_width">15dp</dimen>
 </resources>
