@@ -28,7 +28,7 @@ public class LibraryFragment extends Fragment implements
     private String filterText;
     AddOstDialog dialog;
     boolean playerDocked;
-    private PlaylistRVAdapter libListAdapter;
+    private OstsRVAdapter libListAdapter;
     private MainActivity mainActivity;
     public TableLayout tlTop;
     public boolean shouldRefreshList;
@@ -174,14 +174,14 @@ public class LibraryFragment extends Fragment implements
 
         this.mainActivity = mainAcitivity;
         List<Ost> allOsts = MainActivity.getDbHandler().getAllOsts();
-        libListAdapter = new PlaylistRVAdapter(mainAcitivity, allOsts);
+        libListAdapter = new OstsRVAdapter(mainAcitivity, allOsts);
     }
 
     public void addOst(Ost ost) {
         libListAdapter.addNewOst(ost);
     }
 
-    public PlaylistRVAdapter getLibListAdapter() {
+    public OstsRVAdapter getLibListAdapter() {
         return libListAdapter;
     }
 }

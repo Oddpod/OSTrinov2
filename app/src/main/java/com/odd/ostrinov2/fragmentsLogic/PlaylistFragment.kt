@@ -50,7 +50,7 @@ class PlaylistFragment: Fragment() {
     }
 
     fun changeAdapter(osts: List<Ost>) {
-        rvPlaylists.adapter = PlaylistRVAdapter(applicationContext, osts)
+        rvPlaylists.adapter = OstsRVAdapter(applicationContext, osts)
         isViewingPlaylist = true
     }
 

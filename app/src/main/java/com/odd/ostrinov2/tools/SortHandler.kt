@@ -1,9 +1,9 @@
 package com.odd.ostrinov2.tools
 
 import com.odd.ostrinov2.Ost
-import com.odd.ostrinov2.fragmentsLogic.PlaylistRVAdapter
+import com.odd.ostrinov2.fragmentsLogic.OstsRVAdapter
 
-class SortHandler(private val rvAdapter: PlaylistRVAdapter) {
+class SortHandler(private val rvAdapter: OstsRVAdapter) {
 
     private var prevSortedMode = SortMode.None
 
