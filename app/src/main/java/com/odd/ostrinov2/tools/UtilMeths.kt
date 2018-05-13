@@ -92,6 +92,13 @@ internal object UtilMeths {
         context.startService(intent)
     }
 
+    fun addPlaylistToYTPServiceQueue(context: Context?, ostList: ArrayList<Ost>) {
+        val intent = Intent(context, YTplayerService::class.java)
+        intent.putParcelableArrayListExtra("ost_extra", ostList)
+        intent.action = Constants.ADD_OSTS_TO_QUEUE
+        context?.startService(intent)
+    }
+
     private fun downloadAndSave(url: String, dir: String, saveName: String, context: Context) {
         val saveString = "/$saveName.jpg"
         val downloadUri = Uri.parse(url)
