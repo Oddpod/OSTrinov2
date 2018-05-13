@@ -128,6 +128,11 @@ class YTplayerService : Service(),
                 Toast.makeText(applicationContext, ost.title + " added to queue", Toast.LENGTH_SHORT).show()
                 yPlayerHandler!!.getQueueHandler().addToQueue(ost)
             }
+            action.equals(Constants.ADD_OSTS_TO_QUEUE, ignoreCase = true) -> {
+                val osts = intent.getParcelableArrayListExtra<Ost>("ost_extra")
+                Toast.makeText(applicationContext, " added playlist to queue", Toast.LENGTH_SHORT).show()
+                yPlayerHandler!!.getQueueHandler().addToQueue(osts)
+            }
         //TODO Consider renaming start ost to init or somthing
             action.equals(Constants.START_OST, ignoreCase = true) -> {
                 val startIndex = intent.getIntExtra("startIndex", 0)
@@ -177,6 +182,7 @@ class YTplayerService : Service(),
         this.mainActivity = activity
         if (!isSystemAlertPermissionGranted(activity)) {
             requestSystemAlertPermission(activity, 3)
+            MainActivity.setPermissionCallback { launchFloater(floatingPlayer, mainActivity) }
         } else {
             wm = getSystemService(Context.WINDOW_SERVICE) as WindowManager
             val params = smallWindowParams

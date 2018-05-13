@@ -2,8 +2,8 @@ package com.odd.ostrinov2.tools
 
 import com.odd.ostrinov2.Ost
 import com.odd.ostrinov2.QueueAdapter
-import java.util.*
 import com.odd.ostrinov2.listeners.PlayerListener
+import java.util.*
 
 
 data class QueueHandler(var ostList: MutableList<Ost>, var startIndex : Int, var shuffle
@@ -77,6 +77,10 @@ data class QueueHandler(var ostList: MutableList<Ost>, var startIndex : Int, var
         ostList.add(currPlayingIndex + 1, ost)
         currPlayingIndex = ostList.indexOf(currentlyPlaying)
         notifyPlayerListeners()
+    }
+
+    fun addToQueue(ostList: List<Ost>) {
+        ostList.forEach { addToQueue(it) }
     }
 
     fun removeFromQueue(ost : Ost) {
