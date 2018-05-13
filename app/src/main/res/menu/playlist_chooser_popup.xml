@@ -1,13 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-
     <item
         android:id="@+id/chooser_addToQueue"
         android:title="@string/chooser_add_to_queue"
         android:titleCondensed="camera"
         android:visible="true"/>
     <item
-        android:id="@+id/chooser_addToLibrary"
-        android:title="@string/chooser_add_to_library"
+        android:id="@+id/chooser_delete_playlist"
+        android:title="@string/choose_delete_playlist"
         android:titleCondensed="string"
         android:visible="true" />
 </menu>
