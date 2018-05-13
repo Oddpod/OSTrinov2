@@ -39,14 +39,15 @@ class SearchAdapter(private val mContext: Context, val mainActivity: MainActivit
         viewWrapper.tvViews.text = video.uploader
         viewWrapper.btnOptions.setOnClickListener {
             val pum = PopupMenu(mContext, viewWrapper.btnOptions)
-            pum.inflate(R.menu.btn_search_chooser_popup)
+            pum.inflate(R.menu.search_chooser_popup)
             pum.setOnMenuItemClickListener { item ->
                 when (item?.itemId) {
                     R.id.chooser_addToQueue -> {
                         UtilMeths.addToYTPServiceQueue(mContext,
                                 Ost(video.title, "", "", video.url))
                     }
-                    R.id.chooser_addToLibrary -> {UtilMeths.parseAddOst(video.title, mContext, video.url)
+                    R.id.chooser_addToLibrary -> {
+                        UtilMeths.parseAddOst(video.title, mainActivity, video.url)
                         mainActivity.libraryFragment.shouldRefreshList = true
                     }
                     R.id.chooser_copyLink ->{
