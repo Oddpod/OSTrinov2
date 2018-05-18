@@ -84,7 +84,7 @@ class OstsRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
                     R.id.chooser_copyLink -> {
                         val clipboard = mContext.getSystemService(Context.CLIPBOARD_SERVICE)
                                 as ClipboardManager?
-                        val clip = ClipData.newPlainText("Ost url", ost.url)
+                        val clip = ClipData.newPlainText("Ost id", ost.url)
                         clipboard!!.primaryClip = clip
                         Toast.makeText(mContext, "Link Copied to Clipboard", Toast.LENGTH_SHORT)
                                 .show()
