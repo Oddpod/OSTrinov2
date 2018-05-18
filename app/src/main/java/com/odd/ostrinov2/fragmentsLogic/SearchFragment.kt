@@ -9,7 +9,8 @@ import android.view.View
 import android.view.ViewGroup
 import com.odd.ostrinov2.MainActivity
 import com.odd.ostrinov2.R
-import com.odd.ostrinov2.tools.YoutubeSearch
+import com.odd.ostrinov2.asynctasks.YGetPlaylistItems
+import com.odd.ostrinov2.asynctasks.YoutubeSearch
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.playlist_layout.view.*
 
@@ -19,6 +20,8 @@ class SearchFragment: Fragment() {
     private lateinit var searchAdapter: SearchAdapter
     private lateinit var rvSearchResults: RecyclerView
     private lateinit var youtubeSearch: YoutubeSearch
+    private lateinit var yPlaylistRetriever: YGetPlaylistItems
+    var isInPlaylist: Boolean = false
     private var loading = true
     private val visibleThreshold = 0
     private var previousTotal: Int = 0
@@ -27,6 +30,8 @@ class SearchFragment: Fragment() {
     private var totalItemCount:Int = 0
     private var isFromBackStack: Boolean = false
     private lateinit var rootView: View
+    private var lastQuery: String = ""
+    private var lastSearchResults: List<SearchAdapter.SearchObject> = ArrayList(20)
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
 
@@ -54,7 +59,10 @@ class SearchFragment: Fragment() {
                 if (!loading && totalItemCount - visibleItemCount <= firstVisibleItem + visibleThreshold) {
                     // End of ListView has been reached
 
-                    youtubeSearch.getMoreSearchResults()
+                    if (isInPlaylist)
+                        yPlaylistRetriever.getMoreResults()
+                    else
+                        youtubeSearch.getMoreSearchResults()
                     loading = true
                 }
             }
@@ -71,11 +79,11 @@ class SearchFragment: Fragment() {
 
     fun setMainActivity(mainActivity: MainActivity){
         this.mainActivity = mainActivity
-        searchAdapter = SearchAdapter(mainActivity.applicationContext, mainActivity)
+        searchAdapter = SearchAdapter(mainActivity.applicationContext, mainActivity, this)
     }
 
-    fun updateSearchresult(videoObjects: MutableList<SearchAdapter.VideoObject>, extend: Boolean){
-        searchAdapter.updateVideoObjects(videoObjects, extend)
+    fun updateSearchResults(searchObjects: List<SearchAdapter.SearchObject>, extend: Boolean) {
+        searchAdapter.updateVideoObjects(searchObjects, extend)
         if (searchAdapter.itemCount == 0) {
             rootView.ivArchives.visibility = View.VISIBLE
             Picasso.with(context).load(
@@ -87,7 +95,20 @@ class SearchFragment: Fragment() {
     }
 
     fun performSearch( query: String){
+        lastQuery = query
             youtubeSearch = YoutubeSearch(mainActivity, query, this)
+    }
+
+    //Used to get out of playlist and back to search
+    fun backPress() {
+        isInPlaylist = false
+        updateSearchResults(lastSearchResults, false)
+    }
+
+    fun getPlaylistItems(pListId: String) {
+        lastSearchResults = searchAdapter.searchResults.take(20)
+        yPlaylistRetriever = YGetPlaylistItems(pListId, this)
+        isInPlaylist = true
     }
 
     fun isFromBackStack(): Boolean = isFromBackStack
