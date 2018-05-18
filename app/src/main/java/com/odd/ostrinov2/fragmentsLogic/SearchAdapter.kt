@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.support.constraint.ConstraintLayout
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -15,10 +16,11 @@ import com.odd.ostrinov2.R
 import com.odd.ostrinov2.tools.UtilMeths
 import com.squareup.picasso.Picasso
 
-class SearchAdapter(private val mContext: Context, val mainActivity: MainActivity) :
+class SearchAdapter(private val mContext: Context, val mainActivity: MainActivity,
+                    val searchFragment: SearchFragment) :
         RecyclerView.Adapter<SearchAdapter.ObjectViewWrapper>() {
 
-    private var searchResults: MutableList<VideoObject> = ArrayList(20)
+    var searchResults: MutableList<SearchObject> = ArrayList(20)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ObjectViewWrapper {
         // create a new view
@@ -30,13 +32,15 @@ class SearchAdapter(private val mContext: Context, val mainActivity: MainActivit
 
     override fun getItemCount(): Int = searchResults.size
 
-    class VideoObject(val title: String, val uploader: String,
-                      val thumbnailUrl: String, val url: String)
+    //The SearchObject from YoutubeSearch, is either a playlist or a video
+    class SearchObject(val title: String, val uploader: String,
+                       val thumbnailUrl: String, val id: String, val playlist: Boolean,
+                       val numVideos: Int = 0)
 
     override fun onBindViewHolder(viewWrapper: ObjectViewWrapper, position: Int) {
         val video = searchResults[position]
         viewWrapper.tvVideoTitle.text = video.title
-        viewWrapper.tvViews.text = video.uploader
+        viewWrapper.tvUploader.text = video.uploader
         viewWrapper.btnOptions.setOnClickListener {
             val pum = PopupMenu(mContext, viewWrapper.btnOptions)
             pum.inflate(R.menu.search_chooser_popup)
@@ -44,19 +48,20 @@ class SearchAdapter(private val mContext: Context, val mainActivity: MainActivit
                 when (item?.itemId) {
                     R.id.chooser_addToQueue -> {
                         UtilMeths.addToYTPServiceQueue(mContext,
-                                Ost(video.title, "", "", video.url))
+                                Ost(video.title, "", "", video.id))
                     }
                     R.id.chooser_addToLibrary -> {
-                        UtilMeths.parseAddOst(video.title, mainActivity, video.url)
+                        UtilMeths.parseAddOst(video.title, mainActivity, video.id)
                         mainActivity.libraryFragment.shouldRefreshList = true
                     }
-                    R.id.chooser_copyLink ->{
+                    R.id.chooser_copyLink -> {
                         val clipboard = mContext.getSystemService(Context.CLIPBOARD_SERVICE)
                                 as ClipboardManager?
-                        val clip = ClipData.newPlainText("Ost url", video.url)
+                        val clip = ClipData.newPlainText("Ost id", video.id)
                         clipboard!!.primaryClip = clip
-                            Toast.makeText(mContext, "Link Copied to Clipboard", Toast.LENGTH_SHORT)
-                        .show()}
+                        Toast.makeText(mContext, "Link Copied to Clipboard", Toast.LENGTH_SHORT)
+                                .show()
+                    }
                 }
                 true
             }
@@ -65,26 +70,31 @@ class SearchAdapter(private val mContext: Context, val mainActivity: MainActivit
         Picasso.with(mContext)
                 .load(video.thumbnailUrl)
                 .into(viewWrapper.ivThumbnail)
+        if (video.playlist) {
+            viewWrapper.clPlaylistOverlay.visibility = View.VISIBLE
+            viewWrapper.tvPlaylistOverlay.text = video.numVideos.toString()
+        } else {
+            viewWrapper.clPlaylistOverlay.visibility = View.GONE
+        }
         viewWrapper.baseView.setOnClickListener {
-            val ostList = searchResults.map { Ost(it.title, "", "", it.url) }
-            UtilMeths.initYTPServiceQueue(mContext, ostList, startPos = position)
+            if (video.playlist)
+                searchFragment.getPlaylistItems(video.id)
+            else {
+                val ostList = searchResults.map { Ost(it.title, "", "", it.id) }
+                UtilMeths.initYTPServiceQueue(mContext, ostList, startPos = position)
+            }
         }
     }
+
     class ObjectViewWrapper(base: View) : RecyclerView.ViewHolder(base), View.OnClickListener {
 
-        var tvVideoTitle: TextView
-        var tvViews: TextView
-        var ivThumbnail: ImageView
-        val btnOptions: ImageButton
-        val baseView: View
-
-        init {
-            baseView = base
-            tvVideoTitle = base.findViewById(R.id.tvVideoTitle) as TextView
-            tvViews = base.findViewById(R.id.tvViews) as TextView
-            ivThumbnail = base.findViewById(R.id.ivThumbnail) as ImageView
-            btnOptions = base.findViewById(R.id.btnOptions) as ImageButton
-        }
+        var tvVideoTitle: TextView = base.findViewById(R.id.tvVideoTitle) as TextView
+        var tvUploader: TextView = base.findViewById(R.id.tvUploader) as TextView
+        var ivThumbnail: ImageView = base.findViewById(R.id.ivThumbnail) as ImageView
+        val btnOptions: ImageButton = base.findViewById(R.id.btnOptions) as ImageButton
+        val tvPlaylistOverlay = base.findViewById(R.id.tvPlaylist) as TextView
+        val clPlaylistOverlay = base.findViewById(R.id.clPlaylist) as ConstraintLayout
+        val baseView: View = base
 
         override fun onClick(v: View?) {
 
@@ -92,11 +102,11 @@ class SearchAdapter(private val mContext: Context, val mainActivity: MainActivit
 
     }
 
-    fun updateVideoObjects(videoObjects: MutableList<VideoObject>, extend: Boolean) {
-        if(!extend){
+    fun updateVideoObjects(searchObjects: List<SearchObject>, extend: Boolean) {
+        if (!extend) {
             searchResults.clear()
         }
-        searchResults.addAll(videoObjects)
+        searchResults.addAll(searchObjects)
         notifyDataSetChanged()
     }
 
