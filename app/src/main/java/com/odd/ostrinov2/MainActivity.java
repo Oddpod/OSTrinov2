@@ -114,7 +114,6 @@ public class MainActivity extends AppCompatActivity implements
             // service that we know is running in our own process, we can
             // cast its IBinder to a concrete class and directly access it.
             yTplayerService = ((YTplayerService.LocalBinder) service).getService();
-            yTplayerService.registerBroadcastReceiver();
             if (ostFromWidget) {
                 startWidgetOst(ostFromWidgetId);
                 ostFromWidget = false;
@@ -297,7 +296,7 @@ public class MainActivity extends AppCompatActivity implements
         } else if (about) {
             super.onBackPressed();
             about = false;
-        } else if (playlistFragment.isViewingPlaylist()) {
+        } else if (playlistFragment.isViewingPlaylist() && fragPager.getCurrentItem() == 2) {
             playlistFragment.resetAdapter();
         } else {
             backPress += 1;
@@ -347,10 +346,10 @@ public class MainActivity extends AppCompatActivity implements
             }
 
             case R.id.hide_SearchBar: {
-                if (libraryFragment.tlTop.getVisibility() == View.GONE) {
-                    libraryFragment.tlTop.setVisibility(View.VISIBLE);
+                if (libraryFragment.getTlTop().getVisibility() == View.GONE) {
+                    libraryFragment.getTlTop().setVisibility(View.VISIBLE);
                 } else {
-                    libraryFragment.tlTop.setVisibility(View.GONE);
+                    libraryFragment.getTlTop().setVisibility(View.GONE);
                 }
                 break;
             }
