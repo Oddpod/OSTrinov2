@@ -429,7 +429,7 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
         private const val KEY_OST_ID = "ostid"
         private const val KEY_OST_TITLE = "title"
         private const val KEY_SHOW = "show"
-        private const val KEY_OST_URL = "id"
+        private const val KEY_OST_URL = "url"
         private const val KEY_OST_TAG = "tag"
 
         private const val KEY_PLAYLIST_ID = "playlistId"
