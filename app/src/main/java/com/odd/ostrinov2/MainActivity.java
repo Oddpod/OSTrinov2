@@ -47,6 +47,7 @@ import android.widget.Toast;
 
 import com.google.android.youtube.player.YouTubePlayer;
 import com.google.android.youtube.player.YouTubePlayerSupportFragment;
+import com.odd.ostrinov2.asynctasks.YParsePlaylist;
 import com.odd.ostrinov2.dialogFragments.AddOstDialog;
 import com.odd.ostrinov2.fragmentsLogic.AboutFragment;
 import com.odd.ostrinov2.fragmentsLogic.LibraryFragment;
@@ -58,7 +59,6 @@ import com.odd.ostrinov2.tools.IOHandler;
 import com.odd.ostrinov2.tools.PagerAdapter;
 import com.odd.ostrinov2.tools.PermissionHandlerKt;
 import com.odd.ostrinov2.tools.UtilMeths;
-import com.odd.ostrinov2.tools.YParsePlaylist;
 import com.odd.ostrinov2.tools.YoutubeShare;
 
 import org.jetbrains.annotations.NotNull;
@@ -298,6 +298,8 @@ public class MainActivity extends AppCompatActivity implements
             about = false;
         } else if (playlistFragment.isViewingPlaylist() && fragPager.getCurrentItem() == 2) {
             playlistFragment.resetAdapter();
+        } else if (searchFragment.isInPlaylist() && fragPager.getCurrentItem() == 1) {
+            searchFragment.backPress();
         } else {
             backPress += 1;
             Toast.makeText(getApplicationContext(), " Press Back again to Exit ", Toast.LENGTH_SHORT).show();
@@ -338,7 +340,7 @@ public class MainActivity extends AppCompatActivity implements
                     Toast.makeText(this, "Nothing is playing", Toast.LENGTH_SHORT).show();
                 } else {
                     Ost ost = yTplayerService.getQueueHandler().getCurrentlyPlaying();
-                    ClipData clip = ClipData.newPlainText("Ost url", ost.getUrl());
+                    ClipData clip = ClipData.newPlainText("Ost id", ost.getUrl());
                     clipboard.setPrimaryClip(clip);
                     Toast.makeText(this, "Link Copied to Clipboard", Toast.LENGTH_SHORT).show();
                 }
@@ -744,7 +746,7 @@ public class MainActivity extends AppCompatActivity implements
         StringBuilder stringBuilder = new StringBuilder();
         for (Ost ost : yTplayerService.getQueueHandler().getOstList()
                 ) {
-            if (ost.getId() == 0) { //appends the url of the ost since it has been added from search
+            if (ost.getId() == 0) { //appends the id of the ost since it has been added from search
                 stringBuilder.append(ost.getUrl()).append(",");
             } else {
                 stringBuilder.append(ost.getId()).append(",");
