@@ -13,7 +13,10 @@ import android.widget.*
 import com.odd.ostrinov2.MainActivity
 import com.odd.ostrinov2.Ost
 import com.odd.ostrinov2.R
+import com.odd.ostrinov2.asynctasks.YParsePlaylist
+import com.odd.ostrinov2.asynctasks.YPlaylistToOstList
 import com.odd.ostrinov2.tools.UtilMeths
+import com.odd.ostrinov2.tools.checkPermission
 import com.squareup.picasso.Picasso
 
 class SearchAdapter(private val mContext: Context, val mainActivity: MainActivity,
@@ -47,12 +50,25 @@ class SearchAdapter(private val mContext: Context, val mainActivity: MainActivit
             pum.setOnMenuItemClickListener { item ->
                 when (item?.itemId) {
                     R.id.chooser_addToQueue -> {
-                        UtilMeths.addToYTPServiceQueue(mContext,
+                        if (video.playlist) {
+                            YPlaylistToOstList(video.id, mContext).execute()
+                        } else {
+                            UtilMeths.addToYTPServiceQueue(mContext,
                                 Ost(video.title, "", "", video.id))
                     }
+                    }
                     R.id.chooser_addToLibrary -> {
-                        UtilMeths.parseAddOst(video.title, mainActivity, video.id)
-                        mainActivity.libraryFragment.shouldRefreshList = true
+                        if (video.playlist)
+                            checkPermission(mainActivity, Runnable {
+                                YParsePlaylist(video.id, mContext)
+                                mainActivity.libraryFragment.shouldRefreshList = true
+                            })
+                        else {
+                            checkPermission(mainActivity, Runnable {
+                                UtilMeths.parseAddOst(video.title, mainActivity, video.id)
+                                mainActivity.libraryFragment.shouldRefreshList = true
+                            })
+                        }
                     }
                     R.id.chooser_copyLink -> {
                         val clipboard = mContext.getSystemService(Context.CLIPBOARD_SERVICE)
@@ -99,7 +115,6 @@ class SearchAdapter(private val mContext: Context, val mainActivity: MainActivit
         override fun onClick(v: View?) {
 
         }
-
     }
 
     fun updateVideoObjects(searchObjects: List<SearchObject>, extend: Boolean) {
