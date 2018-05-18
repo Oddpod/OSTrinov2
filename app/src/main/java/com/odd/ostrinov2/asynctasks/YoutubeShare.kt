@@ -13,7 +13,7 @@ class YoutubeShare(private val url: String) : AsyncTask<Void, Void, Void>() {
 
     private var title: String? = null
     private var parsedTitle: String? = null
-    lateinit private var wContext: WeakReference<Context>
+    private lateinit var wContext: WeakReference<Context>
 
     fun setContext( context: Context){
         wContext = WeakReference(context)

@@ -1,4 +1,4 @@
-package com.odd.ostrinov2.tools
+package com.odd.ostrinov2.asynctasks
 
 import android.content.Context
 import android.os.AsyncTask
@@ -6,6 +6,9 @@ import android.util.Log
 import android.widget.Toast
 import com.odd.ostrinov2.Constants
 import com.odd.ostrinov2.MainActivity
+import com.odd.ostrinov2.tools.HttpHandler
+import com.odd.ostrinov2.tools.ProgressNotification
+import com.odd.ostrinov2.tools.UtilMeths
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -43,7 +46,7 @@ class YParsePlaylist(url: String, context: Context) : AsyncTask<Void, Int, Void>
                 "maxResults=" + maxResults + "&playlistId=" + pListId +
                 "&key=" + Constants.YDATA_API_TOKEN
 
-        // Making a request to url and getting response
+        // Making a request to id and getting response
         val jsonStr = sh.makeServiceCall(jsonUrl)
         val pageInfo = JSONObject(jsonStr).getJSONObject("pageInfo")
         totalItems = pageInfo.getString("totalResults").toInt()

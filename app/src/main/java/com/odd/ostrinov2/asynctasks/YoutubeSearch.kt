@@ -1,28 +1,26 @@
-package com.odd.ostrinov2.tools
+package com.odd.ostrinov2.asynctasks
 
 import android.app.Activity
 import android.os.AsyncTask
 import android.util.Log
-import android.widget.Toast
 import com.odd.ostrinov2.Constants
 import com.odd.ostrinov2.fragmentsLogic.SearchAdapter
 import com.odd.ostrinov2.fragmentsLogic.SearchFragment
+import com.odd.ostrinov2.tools.HttpHandler
+import com.odd.ostrinov2.tools.YDataHandler
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 
 class YoutubeSearch(private val activity: Activity, private val searchQuery: String, var searchFragment: SearchFragment) {
 
-    var resultList: MutableList<SearchAdapter.VideoObject>
-    var moreResults: MutableList<SearchAdapter.VideoObject>
+    var resultList: MutableList<SearchAdapter.SearchObject> = ArrayList()
+    var moreResults: MutableList<SearchAdapter.SearchObject> = ArrayList()
     var nextPagetoken: String
-    val maxResults: Int
+    val maxResults: Int = 20
     var loadNextPage: Boolean
 
     init {
-        maxResults = 20
-        resultList = ArrayList()
-        moreResults = ArrayList()
         loadNextPage = false
         nextPagetoken = ""
         val youtubeGetInfo = YoutubeGetInfo()
@@ -43,7 +41,7 @@ class YoutubeSearch(private val activity: Activity, private val searchQuery: Str
             if(loadNextPage){
                 println("Loading more results")
                 val queryString = "https://www.googleapis.com/youtube/v3/search?q=" +
-                        "$searchQuery&type=video&pageToken=$nextPagetoken&part=" +
+                        "$searchQuery&pageToken=$nextPagetoken&part=" +
                         "snippet&maxResults=$maxResults"
                 val jsonUrl = ( queryString + "&key=" + Constants.YDATA_API_TOKEN)
                 val jsonStr = sh.makeServiceCall(jsonUrl)
@@ -52,13 +50,13 @@ class YoutubeSearch(private val activity: Activity, private val searchQuery: Str
             }else{
                 println("Searching first time")
                 val queryString = "https://www.googleapis.com/youtube/v3/search?q=" +
-                        "$searchQuery&type=video&part=snippet&maxResults=$maxResults"
+                        "$searchQuery&part=snippet&maxResults=$maxResults"
                 val jsonUrl = ( queryString + "&key=" + Constants.YDATA_API_TOKEN)
 
                 // Making a request to url and getting response
                 val jsonStr = sh.makeServiceCall(jsonUrl)
 
-                //  Log.e(TAG, "Response from url: " + jsonStr);
+                //Log.e(TAG, "Response from url: $jsonStr");
                 parseResponseItems(jsonStr)
 
                 return null
@@ -69,10 +67,10 @@ class YoutubeSearch(private val activity: Activity, private val searchQuery: Str
         override fun onPostExecute(result: Void?) {
             super.onPostExecute(result)
             if(loadNextPage){
-                searchFragment.updateSearchresult(moreResults, extend = true)
+                searchFragment.updateSearchResults(moreResults, extend = true)
                 loadNextPage = false
             } else{
-                searchFragment.updateSearchresult(resultList, extend = false)
+                searchFragment.updateSearchResults(resultList, extend = false)
             }
         }
 
@@ -85,12 +83,25 @@ class YoutubeSearch(private val activity: Activity, private val searchQuery: Str
                     var i = 0
                     while (i < maxResults) {
                         val jsonItemObject = items.getJSONObject(i)
-                        val videoId = jsonItemObject.getJSONObject("id").
-                                getString("videoId")
+                        val id = jsonItemObject.getJSONObject("id")
+                        val itemType = id.getString("kind")
+                        var playlist = false
+                        var numVideosInPlaylist = 0
+                        var videoId: String
+                        if (itemType == "youtube#playlist") {
+                            playlist = true
+                            videoId = id.getString("playlistId")
+                            numVideosInPlaylist = YDataHandler.getNumVideosInPlaylist(videoId)
+                        } else {
+                            videoId = id.getString("videoId")
+                        }
+
                         val snippet = jsonItemObject.getJSONObject("snippet")
-                        val videoObject = SearchAdapter.VideoObject(snippet.
+                        val thumbNailUrl = snippet.getJSONObject("thumbnails")
+                                .getJSONObject("medium").getString("url")
+                        val videoObject = SearchAdapter.SearchObject(snippet.
                                 getString("title"), snippet.getString("channelTitle"),
-                                UtilMeths.getThumbNailUrl(videoId), UtilMeths.idToUrl(videoId))
+                                thumbNailUrl, videoId, playlist, numVideosInPlaylist)
                         if(loadNextPage){
                             moreResults.add(videoObject)
                         } else{
@@ -100,19 +111,12 @@ class YoutubeSearch(private val activity: Activity, private val searchQuery: Str
                     }
 
                 } catch (e: JSONException) {
-                    activity.runOnUiThread {
-                        Log.e("SearchError","Json parsing error ${e.message}")
-                    }
+                    Log.e("SearchError", "Json parsing error ${e.message}")
 
                 }
             } else {
-                //Log.e(TAG, "Couldn't get json from server.");
-                activity.runOnUiThread {
-                    Toast.makeText(activity,
-                            "Couldn't get json from server. Check LogCat for possible errors!",
-                            Toast.LENGTH_LONG)
-                            .show()
-                }
+                Log.e("SearchError", "Couldn't get json from server. " +
+                        "JsonString was null")
             }
         }
     }
