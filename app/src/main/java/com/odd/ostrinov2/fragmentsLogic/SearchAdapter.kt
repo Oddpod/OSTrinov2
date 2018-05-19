@@ -16,8 +16,8 @@ import com.odd.ostrinov2.R
 import com.odd.ostrinov2.asynctasks.YParsePlaylist
 import com.odd.ostrinov2.asynctasks.YPlaylistToOstList
 import com.odd.ostrinov2.tools.UtilMeths
-import com.odd.ostrinov2.tools.checkPermission
 import com.squareup.picasso.Picasso
+import kotlinx.coroutines.experimental.async
 
 class SearchAdapter(private val mContext: Context, val mainActivity: MainActivity,
                     val searchFragment: SearchFragment) :
@@ -59,15 +59,15 @@ class SearchAdapter(private val mContext: Context, val mainActivity: MainActivit
                     }
                     R.id.chooser_addToLibrary -> {
                         if (video.playlist)
-                            checkPermission(mainActivity, Runnable {
+                            async {
                                 YParsePlaylist(video.id, video.title, mContext).execute()
                                 mainActivity.libraryFragment.shouldRefreshList = true
-                            })
+                            }
                         else {
-                            checkPermission(mainActivity, Runnable {
+                            async {
                                 UtilMeths.parseAddOst(video.title, video.id)
                                 mainActivity.libraryFragment.shouldRefreshList = true
-                            })
+                            }
                         }
                     }
                     R.id.chooser_copyLink -> {

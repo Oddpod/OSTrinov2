@@ -16,7 +16,10 @@ import com.odd.ostrinov2.R
 import com.odd.ostrinov2.dialogFragments.EditOstDialog
 import com.odd.ostrinov2.dialogFragments.PlaylistPicker
 import com.odd.ostrinov2.listeners.PlayerListener
-import com.odd.ostrinov2.tools.*
+import com.odd.ostrinov2.tools.FilterHandler
+import com.odd.ostrinov2.tools.SortHandler
+import com.odd.ostrinov2.tools.UtilMeths
+import com.odd.ostrinov2.tools.loadThumbnailInto
 
 class OstsRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
         RecyclerView.Adapter<OstsRVAdapter.RowViewHolder>(), PlayerListener,
@@ -153,8 +156,6 @@ class OstsRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
         unFilteredOstList[replaceIndex2] = editedOst
         ostList[replaceIndex] = editedOst
         MainActivity.getDbHandler().updateOst(editedOst)
-        val callback = Runnable { UtilMeths.downloadThumbnail(editedOst.url, mContext) }
-        checkPermission(mContext as MainActivity, callback)
         notifyDataSetChanged()
     }
 
