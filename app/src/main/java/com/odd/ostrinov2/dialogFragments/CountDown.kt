@@ -5,10 +5,9 @@ import android.app.Dialog
 import android.app.DialogFragment
 import android.net.Uri
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.view.LayoutInflater
 import android.view.View
-
-import android.os.CountDownTimer
 import com.odd.ostrinov2.R
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.ultra_timer.view.*
@@ -62,7 +61,7 @@ class CountDown : DialogFragment() {
 
                 val seconds: Int = TimeUnit.MILLISECONDS.toSeconds(millisUntilFinished).toInt()
 
-                val timerString: String = days.toString() + ":" + hours.toInt() + ":" + minutes.toInt() + ":" + seconds.toInt() //You can compute the millisUntilFinished on hours/minutes/seconds
+                val timerString: String = days.toString() + ":" + hours.toInt() + ":" + minutes.toInt() + ":" + seconds //You can compute the millisUntilFinished on hours/minutes/seconds
                 dialogView.tvTimer.text = timerString
             }
 

@@ -141,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         dbHandler = new DBHandler(this);
-        //dbHandler.emptyTable();
+        //dbHandler.recreateDatabase();
         rlContent = findViewById(R.id.rlContent);
         fragPager = findViewById(R.id.frag_pager);
 
@@ -358,7 +358,7 @@ public class MainActivity extends AppCompatActivity implements
             }
 
             case R.id.delete_allOsts: {
-                dbHandler.emptyTable();
+                dbHandler.recreateDatabase();
                 libraryFragment.refreshListView();
                 break;
             }

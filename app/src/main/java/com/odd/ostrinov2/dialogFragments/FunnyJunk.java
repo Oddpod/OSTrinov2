@@ -28,7 +28,7 @@ public class FunnyJunk extends DialogFragment{
             dialogView = inflater.inflate(R.layout.activity_yareyare, null);
 
             builder.setView(dialogView);
-            jojo = (ImageView) dialogView.findViewById(R.id.jojo);
+            jojo = dialogView.findViewById(R.id.jojo);
             return builder.create();
         }
     }

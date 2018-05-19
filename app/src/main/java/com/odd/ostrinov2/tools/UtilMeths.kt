@@ -30,11 +30,6 @@ internal object UtilMeths {
     fun idToUrl(videoId: String): String = "https://www.youtube.com/watch?v=$videoId"
 
     fun idToUrlMobile(videoId: String): String = "https://youtu.be/$videoId"
-    fun getVideoIdList(ostList: List<Ost>): MutableList<String> {
-        val queueList = ArrayList<String>()
-        ostList.forEach { queueList.add(urlToId(it.videoId)) }
-        return queueList
-    }
 
     fun initYTPServiceQueue(context: Context, ostList: List<Ost>, startPos: Int) {
         val intent = Intent(context, YTplayerService::class.java)

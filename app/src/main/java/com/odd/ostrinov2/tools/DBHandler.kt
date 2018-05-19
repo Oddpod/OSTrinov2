@@ -139,9 +139,7 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
 
-        db.execSQL("DROP TABLE IF EXISTS " + OST_TABLE)
-
-        onCreate(db)
+        recreateDatabase()
     }
 
 
@@ -247,7 +245,7 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
         Log.i("AddNewTag", "added new tag")
     }
 
-    fun emptyTable() {
+    fun recreateDatabase() {
         //Truncate does not work in sqllite
         val TRUNCATE_TABLE = "DROP TABLE IF EXISTS $OST_TABLE"
         writableDatabase.execSQL(TRUNCATE_TABLE)
