@@ -12,6 +12,7 @@ import com.odd.ostrinov2.MainActivity
 import com.odd.ostrinov2.Ost
 import com.odd.ostrinov2.R
 import com.odd.ostrinov2.tools.UtilMeths
+import com.squareup.picasso.NetworkPolicy
 import com.squareup.picasso.Picasso
 
 class PlayerNotificationService(private val service: YTplayerService) {
@@ -102,9 +103,12 @@ class PlayerNotificationService(private val service: YTplayerService) {
     }
 
     fun updateNotInfo(ost: Ost) {
-        val tnFile = UtilMeths.getThumbnailLocal(ost.url, service)
-        Picasso.with(service).load(tnFile).into(bigViews, R.id.status_bar_album_art,
-                Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, status.build())
+        val tnFile = UtilMeths.getThumbnailUrl(ost.videoId)
+        Picasso.with(service).load(tnFile)
+                .networkPolicy(NetworkPolicy.OFFLINE)
+                .into(bigViews, R.id.status_bar_album_art,
+                        Constants.NOTIFICATION_ID.FOREGROUND_SERVICE,
+                        status.build())
         views.setTextViewText(R.id.status_bar_track_name, ost.title)
         bigViews.setTextViewText(R.id.status_bar_track_name, ost.title)
 
