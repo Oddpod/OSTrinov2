@@ -9,6 +9,7 @@ import android.content.IntentFilter
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.os.IBinder
+import android.provider.Settings
 import android.util.Log
 import android.view.Gravity
 import android.view.MotionEvent
@@ -25,7 +26,7 @@ import com.odd.ostrinov2.listeners.PlayerListener
 import com.odd.ostrinov2.tools.QueueHandler
 import com.odd.ostrinov2.tools.YoutubePlayerHandler
 import com.odd.ostrinov2.tools.isSystemAlertPermissionGranted
-import com.odd.ostrinov2.tools.requestSystemAlertPermission
+import com.odd.ostrinov2.tools.requestSystemPermission
 
 class YTplayerService : Service(),
         YouTubePlayer.OnFullscreenListener {
@@ -181,7 +182,7 @@ class YTplayerService : Service(),
     fun launchFloater(floatingPlayer: FrameLayout, activity: MainActivity) {
         this.mainActivity = activity
         if (!isSystemAlertPermissionGranted(activity)) {
-            requestSystemAlertPermission(activity, 3)
+            requestSystemPermission(activity, Constants.REQUEST_SYSTEM_OVERLAY)
             MainActivity.setPermissionCallback { launchFloater(floatingPlayer, mainActivity) }
         } else {
             wm = getSystemService(Context.WINDOW_SERVICE) as WindowManager

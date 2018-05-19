@@ -14,11 +14,16 @@ import android.support.v7.app.AlertDialog
 import com.odd.ostrinov2.Constants
 import com.odd.ostrinov2.MainActivity
 
-fun requestSystemAlertPermission(context: Activity?, requestCode: Int) {
+fun requestSystemPermission(context: Activity?, requestCode: Int) {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
         return
+    val action: String = when (requestCode) {
+        Constants.REQUEST_READWRITE_EXTERNAL_STORAGE -> Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+        Constants.REQUEST_SYSTEM_OVERLAY -> Settings.ACTION_MANAGE_OVERLAY_PERMISSION
+        else -> return
+    }
     val packageName = context!!.packageName
-    val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
+    val intent = Intent(action, Uri.parse("package:$packageName"))
     intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
     context.startActivityForResult(intent, requestCode)
 }
@@ -33,12 +38,24 @@ fun launchOverlayPermissionNotGrantedDialog(mainActivity: MainActivity) {
             .setCancelable(false)
             .setNegativeButton("I don't want to play anything", null)
             .setPositiveButton("Give permission") { _, _ ->
-                requestSystemAlertPermission(
-                        mainActivity, 3)
+                requestSystemPermission(
+                        mainActivity, Constants.REQUEST_SYSTEM_OVERLAY)
             }
     val alert = builder.create()
     alert.show()
+}
 
+fun launchReadWriteExternalNotGrantedDialog(mainActivity: MainActivity){
+    val builder = AlertDialog.Builder(mainActivity)
+    builder.setMessage("Ooops, this app needs storage permission in " +
+            "order to show thumbnails in library and export/import files")
+            .setCancelable(false)
+            .setNegativeButton("I don't want thumbnails in my library", null)
+            .setPositiveButton("Give permission") { _, _ ->
+                requestSystemPermission(mainActivity, Constants.REQUEST_READWRITE_EXTERNAL_STORAGE)
+            }
+    val alert = builder.create()
+    alert.show()
 }
 
 fun checkPermission(mainActivity: MainActivity, callback: Runnable) {
@@ -50,7 +67,7 @@ fun checkPermission(mainActivity: MainActivity, callback: Runnable) {
         MainActivity.setPermissionCallback(callback)
         ActivityCompat.requestPermissions(mainActivity,
                 arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                Constants.MY_PERMISSIONS_REQUEST_READWRITE_EXTERNAL_STORAGE)
+                Constants.REQUEST_READWRITE_EXTERNAL_STORAGE)
     } else {
         callback.run()
     }

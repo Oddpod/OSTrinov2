@@ -494,27 +494,26 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
-        System.out.println("Requestcode: " + requestCode);
         switch (requestCode) {
-            case Constants.MY_PERMISSIONS_REQUEST_READWRITE_EXTERNAL_STORAGE: {
+            case Constants.REQUEST_READWRITE_EXTERNAL_STORAGE: {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     if (permissionCallback != null) {
                         permissionCallback.run();
                     }
+                } else{
+                    PermissionHandlerKt.launchReadWriteExternalNotGrantedDialog(this);
                 }
                 break;
             }
-            case Constants.MY_PERMISSIONS_REQUEST_SYSTEM_OVERLAY: {
+            case Constants.REQUEST_SYSTEM_OVERLAY: {
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     if (permissionCallback != null) {
                         permissionCallback.run();
                     }
                 } else {
-
-
                     Toast.makeText(this, "I'm sorry, can't play anything without this request :C",
                             Toast.LENGTH_SHORT).show();
                 }
@@ -601,11 +600,6 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-    }
-
-    @Override
     public void onStart() {
         if(shoudlRefreshList){
             libraryFragment.refreshListView();
@@ -679,6 +673,8 @@ public class MainActivity extends AppCompatActivity implements
                 initiatePlayer(osts, startPos);
                 break;
             }
+            default:
+                break;
         }
     }
 
