@@ -7,10 +7,7 @@ import android.support.v4.app.DialogFragment
 import android.support.v7.app.AlertDialog
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.ArrayAdapter
-import android.widget.AutoCompleteTextView
-import android.widget.EditText
-import android.widget.MultiAutoCompleteTextView
+import android.widget.*
 
 import com.odd.ostrinov2.MainActivity
 import com.odd.ostrinov2.Ost
@@ -88,8 +85,14 @@ class AddOstDialog : DialogFragment() {
         lastOst.title = edTitle.text.toString()
         lastOst.show = actvShow.text.toString()
         lastOst.tags = mactvTags.text.toString()
-        lastOst.url = edUrl.text.toString()
-        addDialogListener.onAddButtonClick(lastOst, this)
-        lastOst = Ost("", "", "", "")
+        val url = edUrl.text.toString()
+        if (!url.contains("youtu") || url.endsWith("="))
+            Toast.makeText(this.context, "You have to enter a valid link",
+                    Toast.LENGTH_SHORT).show()
+        else {
+            lastOst.url = edUrl.text.toString()
+            addDialogListener.onAddButtonClick(lastOst, this)
+            lastOst = Ost("", "", "", "")
+        }
     }
 }
