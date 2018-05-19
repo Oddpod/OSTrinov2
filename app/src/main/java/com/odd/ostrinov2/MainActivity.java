@@ -360,7 +360,6 @@ public class MainActivity extends AppCompatActivity implements
             case R.id.delete_allOsts: {
                 dbHandler.emptyTable();
                 libraryFragment.refreshListView();
-                UtilMeths.INSTANCE.nukeThumbnails(this);
                 break;
             }
 
@@ -491,6 +490,10 @@ public class MainActivity extends AppCompatActivity implements
         handler.removeCallbacks(seekbarUpdater);
     }
 
+    public void youtubePlayerLaunched() {
+        youtubePlayerLaunched = true;
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
@@ -502,7 +505,7 @@ public class MainActivity extends AppCompatActivity implements
                     if (permissionCallback != null) {
                         permissionCallback.run();
                     }
-                } else{
+                } else {
                     PermissionHandlerKt.launchReadWriteExternalNotGrantedDialog(this);
                 }
                 break;
@@ -532,7 +535,7 @@ public class MainActivity extends AppCompatActivity implements
         Boolean autoRotate = Settings.System.getInt(getContentResolver(), Settings.System.ACCELEROMETER_ROTATION, 0) == 1;
         if (autoRotate) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);
-        } else{
+        } else {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);
         }
     }
@@ -550,7 +553,6 @@ public class MainActivity extends AppCompatActivity implements
             yTplayerService.launchFloater(floatingPlayer, this);
             yTplayerService.startQueue(ostList, startId, shuffleActivated,
                     libraryFragment.getLibListAdapter(), queueAdapter, youTubePlayerFragment);
-            youtubePlayerLaunched = true;
         } else {
             yTplayerService.initiateQueue(ostList, startId, shuffleActivated);
         }
@@ -601,7 +603,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onStart() {
-        if(shoudlRefreshList){
+        if (shoudlRefreshList) {
             libraryFragment.refreshListView();
             shoudlRefreshList = false;
         }
@@ -619,13 +621,13 @@ public class MainActivity extends AppCompatActivity implements
         if (intent.getAction().equals(Intent.ACTION_SEND) && intent.getType().equals("text/plain")) {
             Bundle extras = intent.getExtras();
             String link = extras.getString(Intent.EXTRA_TEXT);
-            if(link.contains("playlist")){
+            if (link.contains("playlist")) {
 
                 String pListName = link.split(":")[0];
                 String pListId = link.split("list=")[1];
                 YParsePlaylist yPP = new YParsePlaylist(pListId, pListName, this);
                 yPP.execute();
-            } else{
+            } else {
                 YoutubeShare yShare = new YoutubeShare(link);
                 yShare.setContext(this);
                 yShare.execute();
@@ -736,7 +738,7 @@ public class MainActivity extends AppCompatActivity implements
         for (Ost ost : yTplayerService.getQueueHandler().getOstList()
                 ) {
             if (ost.getId() == 0) { //appends the id of the ost since it has been added from search
-                stringBuilder.append(ost.getUrl()).append(",");
+                stringBuilder.append(ost.getVideoId()).append(",");
             } else {
                 stringBuilder.append(ost.getId()).append(",");
             }
@@ -765,29 +767,16 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onAddButtonClick(@NotNull final Ost ostToAdd, @NotNull DialogFragment dialog) {
-
-        Runnable callback = new Runnable() {
-            @Override
-            public void run() {
-                addnewOst(ostToAdd);
-            }
-        };
-        PermissionHandlerKt.checkPermission(this, callback);
+        addnewOst(ostToAdd);
     }
 
     private void addnewOst(Ost ostToAdd) {
         boolean alreadyAdded = dbHandler.checkiIfOstInDB(ostToAdd);
         if (!alreadyAdded) {
-            if (!ostToAdd.getUrl().contains("https://")) {
-                Toast.makeText(this, "You have to put in a valid youtube link",
-                        Toast.LENGTH_SHORT).show();
-            } else {
-                dbHandler.addNewOst(ostToAdd);
-                Toast.makeText(getApplicationContext(), ostToAdd.getTitle() + " added",
-                        Toast.LENGTH_SHORT).show();
-                libraryFragment.addOst(ostToAdd);
-                UtilMeths.INSTANCE.downloadThumbnail(ostToAdd.getUrl(), this);
-            }
+            dbHandler.addNewOst(ostToAdd);
+            Toast.makeText(getApplicationContext(), ostToAdd.getTitle() + " added",
+                    Toast.LENGTH_SHORT).show();
+            libraryFragment.addOst(ostToAdd);
         } else {
             Toast.makeText(this, ostToAdd.getTitle() + " From " + ostToAdd.getShow()
                     + " has already been added", Toast.LENGTH_SHORT).show();

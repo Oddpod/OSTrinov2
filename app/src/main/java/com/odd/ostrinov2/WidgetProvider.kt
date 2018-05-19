@@ -24,8 +24,8 @@ class WidgetProvider : AppWidgetProvider() {
 
                 val remoteViews = RemoteViews(context.packageName,
                         R.layout.widget_layout)
-                val tnFile = UtilMeths.getThumbnailLocal(ostOfTheDay.url, context)
-                Picasso.with(context).load(tnFile).resize(500, 200).onlyScaleDown()
+                val tnUrl = UtilMeths.getThumbnailUrl(ostOfTheDay.videoId)
+                Picasso.with(context).load(tnUrl).resize(500, 200).onlyScaleDown()
                         .into(remoteViews, R.id.widgetThumbnail, appWidgetIds)
 
                 val intent = Intent(context, MainActivity::class.java)
