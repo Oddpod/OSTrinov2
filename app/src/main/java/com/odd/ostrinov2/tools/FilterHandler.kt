@@ -4,8 +4,6 @@ import com.odd.ostrinov2.Ost
 import java.util.*
 
 class FilterHandler {
-
-
     private var lastQuery: String = ""
 
     fun filter(charText: String = lastQuery, unFilteredOstList: MutableList<Ost>
