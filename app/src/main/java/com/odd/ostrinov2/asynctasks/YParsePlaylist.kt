@@ -14,7 +14,7 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.lang.ref.WeakReference
 
-class YParsePlaylist(url: String, context: Context) : AsyncTask<Void, Int, Void>() {
+class YParsePlaylist(private val pListId: String, val pListName: String, context: Context) : AsyncTask<Void, Int, Void>() {
 
     private var parsedTitle: String? = null
     private var wContext: WeakReference<Context> = WeakReference(context)
@@ -25,8 +25,6 @@ class YParsePlaylist(url: String, context: Context) : AsyncTask<Void, Int, Void>
     private var totalItems = maxResults
     private var progressNotification: ProgressNotification
 
-    val pListName = url.split(":")[0]
-    val pListId = url.split("list=")[1]
 
     private val mTitle = "Downloading$pListName"
 
