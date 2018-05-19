@@ -347,15 +347,6 @@ public class MainActivity extends AppCompatActivity implements
                 break;
             }
 
-            case R.id.hide_SearchBar: {
-                if (libraryFragment.getTlTop().getVisibility() == View.GONE) {
-                    libraryFragment.getTlTop().setVisibility(View.VISIBLE);
-                } else {
-                    libraryFragment.getTlTop().setVisibility(View.GONE);
-                }
-                break;
-            }
-
             case R.id.import_osts: {
                 UtilMeths.INSTANCE.chooseFileImport(this);
                 break;
@@ -634,9 +625,11 @@ public class MainActivity extends AppCompatActivity implements
         if (intent.getAction().equals(Intent.ACTION_SEND) && intent.getType().equals("text/plain")) {
             Bundle extras = intent.getExtras();
             String link = extras.getString(Intent.EXTRA_TEXT);
-            System.out.println("link: " + link);
             if(link.contains("playlist")){
-                YParsePlaylist yPP = new YParsePlaylist(link, this);
+
+                String pListName = link.split(":")[0];
+                String pListId = link.split("list=")[1];
+                YParsePlaylist yPP = new YParsePlaylist(pListId, pListName, this);
                 yPP.execute();
             } else{
                 YoutubeShare yShare = new YoutubeShare(link);
