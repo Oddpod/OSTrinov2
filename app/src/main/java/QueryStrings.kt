@@ -5,7 +5,7 @@ import QueryStrings.Fields.KEY_ENTRY
 import QueryStrings.Fields.KEY_OST_ID
 import QueryStrings.Fields.KEY_OST_TAG
 import QueryStrings.Fields.KEY_OST_TITLE
-import QueryStrings.Fields.KEY_OST_URL
+import QueryStrings.Fields.KEY_OST_VIDEO_ID
 import QueryStrings.Fields.KEY_SHOW
 import QueryStrings.Fields.KEY_SHOW_ID
 import QueryStrings.Fields.OST_TABLE
@@ -15,7 +15,7 @@ import QueryStrings.Fields.SHOW_TABLE
 object QueryStrings {
     //TODO Make Actual Not Garbage Query
     const val selectAllOstsInPlaylist = "SELECT $KEY_OST_ID,$KEY_OST_TITLE," +
-            "$KEY_SHOW,$KEY_OST_TAG, $KEY_OST_URL " +
+            "$KEY_SHOW,$KEY_OST_TAG, $KEY_OST_VIDEO_ID " +
             "FROM " +
             "$PLAYLIST_OST_TABLE " +
             "INNER JOIN $SHOW_TABLE ON $KEY_SHOW_ID = $FKEY_OST_SHOW_ID " +
@@ -24,13 +24,13 @@ object QueryStrings {
             "ORDER BY $KEY_ENTRY"
 
 
-    const val selectOstQuery = "SELECT $KEY_OST_ID,$KEY_OST_TITLE,$KEY_SHOW,$KEY_OST_TAG,$KEY_OST_URL " +
+    const val selectOstQuery = "SELECT $KEY_OST_ID,$KEY_OST_TITLE,$KEY_SHOW,$KEY_OST_TAG,$KEY_OST_VIDEO_ID " +
             "FROM " +
             "$OST_TABLE " +
             "INNER JOIN $SHOW_TABLE ON $KEY_SHOW_ID = $FKEY_OST_SHOW_ID " +
             "WHERE $KEY_OST_ID IS ?"
 
-    const val selectAllOsts = "SELECT $KEY_OST_ID,$KEY_OST_TITLE,$KEY_SHOW,$KEY_OST_TAG,$KEY_OST_URL " +
+    const val selectAllOsts = "SELECT $KEY_OST_ID,$KEY_OST_TITLE,$KEY_SHOW,$KEY_OST_TAG,$KEY_OST_VIDEO_ID " +
             "FROM " +
             "$OST_TABLE " +
             "INNER JOIN $SHOW_TABLE ON $KEY_SHOW_ID = $FKEY_OST_SHOW_ID"
@@ -50,7 +50,7 @@ object QueryStrings {
         const val KEY_OST_ID = "ostid"
         const val KEY_OST_TITLE = "title"
         const val KEY_SHOW = "show"
-        const val KEY_OST_URL = "url"
+        const val KEY_OST_VIDEO_ID = "videoId"
         const val KEY_OST_TAG = "tag"
 
         const val KEY_PLAYLIST_ID = "playlistId"

@@ -193,7 +193,7 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
         values.put(KEY_OST_TITLE, newOst.title)
         values.put(KEY_OST_TAG, tags)
         values.put(FKEY_OST_SHOW_ID, getShowId(show))
-        values.put(KEY_OST_URL, newOst.url)
+        values.put(KEY_OST_URL, newOst.videoId)
 
         //inserting Row
         writableDatabase.insert(OST_TABLE, null, values)
@@ -303,7 +303,7 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
         values.put(KEY_OST_TITLE, ost.title)
         values.put(FKEY_OST_SHOW_ID, getShowId(ost.show))
         values.put(KEY_OST_TAG, ost.tags)
-        values.put(KEY_OST_URL, ost.url)
+        values.put(KEY_OST_URL, ost.videoId)
 
         writableDatabase.update(OST_TABLE, values,"$KEY_OST_ID=?", arrayOf(ost.id.toString()) )
     }
@@ -383,8 +383,6 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
     }
 
     fun getOstsInPlaylist(id: Int): ArrayList<Ost> {
-
-        println(id)
         val ostList = ArrayList<Ost>()
 
         val cursor = writableDatabase.rawQuery(QueryStrings.selectAllOstsInPlaylist,
@@ -429,7 +427,7 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
         private const val KEY_OST_ID = "ostid"
         private const val KEY_OST_TITLE = "title"
         private const val KEY_SHOW = "show"
-        private const val KEY_OST_URL = "url"
+        private const val KEY_OST_URL = "videoId"
         private const val KEY_OST_TAG = "tag"
 
         private const val KEY_PLAYLIST_ID = "playlistId"
