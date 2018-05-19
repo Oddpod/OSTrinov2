@@ -86,7 +86,9 @@ internal object IOHandler {
                     val title = lineArray[0]
                     val show = lineArray[1]
                     val tags = lineArray[2]
-                    val url = lineArray[3]
+                    var url = lineArray[3]
+                    if (url.length > 12)
+                        url = UtilMeths.urlToId(url)
                     val ost = Ost(title, show, tags, url)
                     val alreadyInDB = db.checkiIfOstInDB(ost)
                     if (!alreadyInDB) {

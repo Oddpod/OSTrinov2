@@ -16,7 +16,8 @@ import com.squareup.picasso.NetworkPolicy
 import com.squareup.picasso.Picasso
 
 class PlayerNotificationService(private val service: YTplayerService) {
-    private var views: RemoteViews
+    private var views: RemoteViews = RemoteViews(service.packageName,
+            R.layout.status_bar)
     private var bigViews: RemoteViews
     private val packageName = service.packageName
     private var status: NotificationCompat.Builder
@@ -25,8 +26,6 @@ class PlayerNotificationService(private val service: YTplayerService) {
 
     init{
         // Using RemoteViews to bind custom layouts into Notification
-        views = RemoteViews(service.packageName,
-                R.layout.status_bar)
         bigViews = RemoteViews(packageName,
                 R.layout.status_bar_expanded)
 
