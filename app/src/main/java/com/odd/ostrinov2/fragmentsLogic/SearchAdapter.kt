@@ -13,6 +13,7 @@ import android.widget.*
 import com.odd.ostrinov2.MainActivity
 import com.odd.ostrinov2.Ost
 import com.odd.ostrinov2.R
+import com.odd.ostrinov2.asynctasks.DownloadTNImage
 import com.odd.ostrinov2.asynctasks.YParsePlaylist
 import com.odd.ostrinov2.asynctasks.YPlaylistToOstList
 import com.odd.ostrinov2.tools.UtilMeths
@@ -64,6 +65,7 @@ class SearchAdapter(private val mContext: Context, val mainActivity: MainActivit
                                 mainActivity.libraryFragment.shouldRefreshList = true
                             })
                         else {
+                            DownloadTNImage(mainActivity).execute(video.id)
                             checkPermission(mainActivity, Runnable {
                                 UtilMeths.parseAddOst(video.title, mainActivity, video.id)
                                 mainActivity.libraryFragment.shouldRefreshList = true
