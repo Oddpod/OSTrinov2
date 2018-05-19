@@ -60,7 +60,7 @@ class SearchAdapter(private val mContext: Context, val mainActivity: MainActivit
                     R.id.chooser_addToLibrary -> {
                         if (video.playlist)
                             checkPermission(mainActivity, Runnable {
-                                YParsePlaylist(video.id, mContext)
+                                YParsePlaylist(video.id, video.title, mContext).execute()
                                 mainActivity.libraryFragment.shouldRefreshList = true
                             })
                         else {

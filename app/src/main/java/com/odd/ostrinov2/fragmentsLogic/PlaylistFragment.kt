@@ -28,13 +28,12 @@ class PlaylistFragment: Fragment() {
         rootView.rvPlaylists.adapter = playlistAdapter
 
         if (rootView.rvPlaylists.adapter?.itemCount == 0) {
-            println(rootView.ivArchives.width)
             rootView.ivArchives.visibility = View.VISIBLE
             Picasso.with(context).load(
                     "http://i0.kym-cdn.com/entries/icons/original/000/023/967/obiwan.jpg")
                     .into(rootView.ivArchives)
         }
-        //rootView.ivArchives.setOnClickListener {  }
+        rootView.ivArchives.setOnClickListener { rootView.ivArchives.visibility = View.GONE }
 
         rootView.btnCreatePlaylist.setOnClickListener {
             val dbHandler = MainActivity.getDbHandler()

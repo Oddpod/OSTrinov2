@@ -19,6 +19,7 @@ import com.odd.ostrinov2.launchMeme
 import com.odd.ostrinov2.tools.SortHandler
 import java.util.*
 
+
 class LibraryFragment : Fragment(), View.OnClickListener {
 
     private var filterText: String? = null
@@ -30,7 +31,7 @@ class LibraryFragment : Fragment(), View.OnClickListener {
     lateinit var tlTop: TableLayout
     var shouldRefreshList: Boolean = false
 
-    val currDispOstList: List<Ost>
+    private val currDispOstList: List<Ost>
         get() = libListAdapter!!.getOstList()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -44,6 +45,18 @@ class LibraryFragment : Fragment(), View.OnClickListener {
 
         rvOst.adapter = libListAdapter
         rvOst.findViewById<View>(R.id.btnOptions)
+
+        rvOst.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+
+            override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                if (dy > 0) {
+                    tlTop.visibility = View.GONE
+                } else {
+                    tlTop.visibility = View.VISIBLE
+                }
+            }
+        })
 
         /*if(allOsts.isEmpty()){
             final TextView tv = new TextView(getContext());
@@ -123,14 +136,15 @@ class LibraryFragment : Fragment(), View.OnClickListener {
             R.id.btnShufflePlay -> {
                 val rnd = Random()
                 val currOstList = currDispOstList
-                val rndPos = rnd.nextInt(currOstList.size)
-                mainActivity!!.initiatePlayer(currOstList, rndPos)
-                mainActivity!!.shuffleOn()
+                if (!currOstList.isEmpty()) {
+                    val rndPos = rnd.nextInt(currOstList.size)
+                    mainActivity!!.initiatePlayer(currOstList, rndPos)
+                    mainActivity!!.shuffleOn()
+                }
             }
 
             R.id.btnAdd -> {
-                val TAG = "OstInfo"
-                dialog.show(fragmentManager!!, TAG)
+                dialog.show(fragmentManager!!, "OstInfo")
             }
 
             R.id.btnSort -> {
