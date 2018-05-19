@@ -117,7 +117,7 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
         db.execSQL(CREATE_TAGS_TABLE)
 
         val CREATE_OST_TABLE = "CREATE TABLE $OST_TABLE($KEY_OST_ID INTEGER PRIMARY KEY," +
-                "$KEY_OST_TITLE TEXT,$FKEY_OST_SHOW_ID INTEGER,$KEY_OST_TAG TEXT, $KEY_OST_URL TEXT," +
+                "$KEY_OST_TITLE TEXT,$FKEY_OST_SHOW_ID INTEGER,$KEY_OST_TAG TEXT, $KEY_OST_VIDEO_ID TEXT," +
                 "FOREIGN KEY($FKEY_OST_SHOW_ID) REFERENCES $SHOW_TABLE($KEY_SHOW_ID))"
         db.execSQL(CREATE_OST_TABLE)
 
@@ -138,8 +138,7 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-
-        recreateDatabase()
+        recreateDatabase(db)
     }
 
 
@@ -191,7 +190,7 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
         values.put(KEY_OST_TITLE, newOst.title)
         values.put(KEY_OST_TAG, tags)
         values.put(FKEY_OST_SHOW_ID, getShowId(show))
-        values.put(KEY_OST_URL, newOst.videoId)
+        values.put(KEY_OST_VIDEO_ID, newOst.videoId)
 
         //inserting Row
         writableDatabase.insert(OST_TABLE, null, values)
@@ -245,27 +244,27 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
         Log.i("AddNewTag", "added new tag")
     }
 
-    fun recreateDatabase() {
+    fun recreateDatabase(db: SQLiteDatabase) {
         //Truncate does not work in sqllite
         val TRUNCATE_TABLE = "DROP TABLE IF EXISTS $OST_TABLE"
-        writableDatabase.execSQL(TRUNCATE_TABLE)
+        db.execSQL(TRUNCATE_TABLE)
 
         val TRUNCATE_TABLE2 = "DROP TABLE IF EXISTS $SHOW_TABLE"
-        writableDatabase.execSQL(TRUNCATE_TABLE2)
+        db.execSQL(TRUNCATE_TABLE2)
 
         val TRUNCATE_TABLE3 = "DROP TABLE IF EXISTS $TAGS_TABLE"
-        writableDatabase.execSQL(TRUNCATE_TABLE3)
+        db.execSQL(TRUNCATE_TABLE3)
 
         val TRUNCATE_TABLE4 = "DROP TABLE IF EXISTS $PLAYLIST_TABLE"
-        writableDatabase.execSQL(TRUNCATE_TABLE4)
+        db.execSQL(TRUNCATE_TABLE4)
 
         val TRUNCATE_TABLE5 = "DROP TABLE IF EXISTS $PLAYLIST_OST_TABLE"
-        writableDatabase.execSQL(TRUNCATE_TABLE5)
+        db.execSQL(TRUNCATE_TABLE5)
 
         val TRUNCATE_TABLE6 = "DROP TABLE IF EXISTS $OST_TAGS_TABLE"
-        writableDatabase.execSQL(TRUNCATE_TABLE6)
+        db.execSQL(TRUNCATE_TABLE6)
 
-        onCreate(writableDatabase)
+        onCreate(db)
     }
 
     fun deleteOst(delID: Int): Boolean = writableDatabase.delete(OST_TABLE,
@@ -301,7 +300,7 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
         values.put(KEY_OST_TITLE, ost.title)
         values.put(FKEY_OST_SHOW_ID, getShowId(ost.show))
         values.put(KEY_OST_TAG, ost.tags)
-        values.put(KEY_OST_URL, ost.videoId)
+        values.put(KEY_OST_VIDEO_ID, ost.videoId)
 
         writableDatabase.update(OST_TABLE, values,"$KEY_OST_ID=?", arrayOf(ost.id.toString()) )
     }
@@ -412,7 +411,7 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
 
     companion object {
 
-        private const val DATABASE_VERSION = 1
+        private const val DATABASE_VERSION = 2
         private const val DATABASE_NAME = "ostdb"
         private const val OST_TABLE = "ostTable"
         private const val SHOW_TABLE = "showTable"
@@ -425,7 +424,7 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
         private const val KEY_OST_ID = "ostid"
         private const val KEY_OST_TITLE = "title"
         private const val KEY_SHOW = "show"
-        private const val KEY_OST_URL = "videoId"
+        private const val KEY_OST_VIDEO_ID = "videoId"
         private const val KEY_OST_TAG = "tag"
 
         private const val KEY_PLAYLIST_ID = "playlistId"

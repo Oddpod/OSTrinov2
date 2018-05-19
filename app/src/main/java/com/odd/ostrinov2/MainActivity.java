@@ -358,7 +358,7 @@ public class MainActivity extends AppCompatActivity implements
             }
 
             case R.id.delete_allOsts: {
-                dbHandler.recreateDatabase();
+                dbHandler.recreateDatabase(dbHandler.getWritableDatabase());
                 libraryFragment.refreshListView();
                 break;
             }
