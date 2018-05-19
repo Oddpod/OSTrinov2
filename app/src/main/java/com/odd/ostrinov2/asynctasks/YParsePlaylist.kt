@@ -93,8 +93,7 @@ class YParsePlaylist(private val pListId: String, val pListName: String, context
                     val title = snippet.getString("title")
                     val videoId = snippet.getJSONObject("resourceId").getString("videoId")
                     i++
-                    parsedTitle = UtilMeths.parseAddOst(title, wContext.get()!!,
-                            UtilMeths.idToUrlMobile(videoId)).title
+                    parsedTitle = UtilMeths.parseAddOst(title, UtilMeths.idToUrlMobile(videoId)).title
                     count++
                     publishProgress(count)
                 }

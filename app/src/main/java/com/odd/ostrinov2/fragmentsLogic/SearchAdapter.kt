@@ -65,7 +65,7 @@ class SearchAdapter(private val mContext: Context, val mainActivity: MainActivit
                             })
                         else {
                             checkPermission(mainActivity, Runnable {
-                                UtilMeths.parseAddOst(video.title, mainActivity, video.id)
+                                UtilMeths.parseAddOst(video.title, video.id)
                                 mainActivity.libraryFragment.shouldRefreshList = true
                             })
                         }

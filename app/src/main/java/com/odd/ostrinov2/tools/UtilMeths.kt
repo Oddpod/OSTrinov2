@@ -189,7 +189,7 @@ internal object UtilMeths {
         }
     }
 
-    fun parseAddOst(title: String, context: Context, url: String): Ost {
+    fun parseAddOst(title: String, url: String): Ost {
         val db = MainActivity.getDbHandler()
         var titleUC = title
         val shows = db.allShows

@@ -34,7 +34,7 @@ class YoutubeShare(private val url: String) : AsyncTask<Void, Void, Void>() {
                 val jsonObj = JSONObject(jsonStr)
                 Log.d("jsonObj", jsonObj.toString())
                 title = jsonObj.get("title").toString()
-                parsedTitle = UtilMeths.parseAddOst(title!!, wContext.get()!!, url).title
+                parsedTitle = UtilMeths.parseAddOst(title!!, url).title
 
             } catch (e: JSONException) {
                 Log.e("JSONException", "Json parsing error: " + e.message)
