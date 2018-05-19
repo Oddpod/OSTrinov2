@@ -11,6 +11,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.odd.ostrinov2.MainActivity
@@ -20,19 +22,20 @@ import kotlinx.coroutines.experimental.async
 
 class PlaylistPicker : DialogFragment() {
 
-    internal lateinit var builder: AlertDialog.Builder
-    internal lateinit var inflater: LayoutInflater
-    internal lateinit var dialogView: View
+    private lateinit var builder: AlertDialog.Builder
+    private lateinit var inflater: LayoutInflater
+    private lateinit var dialogView: View
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val dbHandler = MainActivity.getDbHandler()
-        val playlists = dbHandler.allPlaylists
+        val playlists = MainActivity.getDbHandler().allPlaylists
 
         builder = AlertDialog.Builder(activity)
 
         inflater = activity!!.layoutInflater
         dialogView = inflater.inflate(R.layout.playlist_picker, null)
 
+        val etPlaylistName = dialogView.findViewById<EditText>(R.id.etPlaylistName)
+        val btnCreatePlaylist = dialogView.findViewById<ImageButton>(R.id.btnCreatePlaylist)
 
         val rvPlaylists = dialogView.findViewById(R.id.rvPlaylists) as RecyclerView
         val mLayoutManager = LinearLayoutManager(context)
@@ -40,18 +43,31 @@ class PlaylistPicker : DialogFragment() {
 
         val ostId = arguments?.getInt("ostId")
         val ostIds = arguments?.getIntegerArrayList("ostIds")
-        rvPlaylists.adapter = TextAdapter(playlists, this, ostId, ostIds)
+
+        val pListAdapter = TextAdapter(playlists, this, ostId, ostIds)
+        rvPlaylists.adapter = pListAdapter
+
+        btnCreatePlaylist.setOnClickListener {
+            val dbHandler = MainActivity.getDbHandler()
+            dbHandler.addNewPlaylist(etPlaylistName.text.toString())
+            pListAdapter.refreshPlaylists()
+        }
 
         builder.setView(dialogView)
         return builder.create()
     }
 
-    class TextAdapter(private val playlists: List<Playlist>, val dialog: PlaylistPicker,
+    class TextAdapter(private var playlists: List<Playlist>, val dialog: PlaylistPicker,
                       private val ostId: Int?,
                       private val ostIds: List<Int>?) :
             RecyclerView.Adapter<TextAdapter.ViewHolder>() {
 
         class ViewHolder(val textView: TextView) : RecyclerView.ViewHolder(textView)
+
+        fun refreshPlaylists() {
+            playlists = MainActivity.getDbHandler().allPlaylists
+            notifyDataSetChanged()
+        }
 
         override fun onCreateViewHolder(parent: ViewGroup,
                                         viewType: Int): TextAdapter.ViewHolder {
