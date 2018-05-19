@@ -39,7 +39,6 @@ class YoutubeSearch(private val activity: Activity, private val searchQuery: Str
         override fun doInBackground(vararg arg0: Void): Void? {
             val sh = HttpHandler()
             if(loadNextPage){
-                println("Loading more results")
                 val queryString = "https://www.googleapis.com/youtube/v3/search?q=" +
                         "$searchQuery&pageToken=$nextPagetoken&part=" +
                         "snippet&maxResults=$maxResults"
@@ -48,7 +47,6 @@ class YoutubeSearch(private val activity: Activity, private val searchQuery: Str
                 parseResponseItems(jsonStr)
                 return null
             }else{
-                println("Searching first time")
                 val queryString = "https://www.googleapis.com/youtube/v3/search?q=" +
                         "$searchQuery&part=snippet&maxResults=$maxResults"
                 val jsonUrl = ( queryString + "&key=" + Constants.YDATA_API_TOKEN)

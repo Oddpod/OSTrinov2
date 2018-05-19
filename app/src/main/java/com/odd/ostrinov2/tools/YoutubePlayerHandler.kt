@@ -62,6 +62,7 @@ class YoutubePlayerHandler(private var playerNotification:
             mainActivity.seekBar.setOnSeekBarChangeListener(this)
 
             playerNotification.updateNotInfo(queueHandler.currentlyPlaying)
+            mainActivity.youtubePlayerLaunched()
         }
     }
 

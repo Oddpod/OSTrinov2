@@ -37,7 +37,7 @@ internal object IOHandler {
                     val title = ost.title
                     val show = ost.show
                     val tags = ost.tags
-                    val url = ost.url
+                    val url = ost.videoId
                     line = "$title; $show; $tags; $url"
                     osw.write(line + "\n")
                     progressNotification.updateProgress(counter + 1, numItems)
@@ -91,7 +91,6 @@ internal object IOHandler {
                     val alreadyInDB = db.checkiIfOstInDB(ost)
                     if (!alreadyInDB) {
                         db.addNewOst(ost)
-                        UtilMeths.downloadThumbnail(lineArray[3], wContext.get()!!)
                     }
                     progressNotification.updateProgress(++counter, numLines)
                 }
