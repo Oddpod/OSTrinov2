@@ -12,6 +12,9 @@ import android.widget.*
 import com.odd.ostrinov2.MainActivity
 import com.odd.ostrinov2.Ost
 import com.odd.ostrinov2.R
+import com.odd.ostrinov2.tools.UtilMeths
+import com.odd.ostrinov2.tools.YDataHandler
+import kotlinx.coroutines.experimental.async
 
 class AddOstDialog : DialogFragment() {
 
@@ -68,11 +71,19 @@ class AddOstDialog : DialogFragment() {
         actvShow.setText(lastOst.show)
         mactvTags.setText(lastOst.tags)
         edUrl.setText(lastOst.url)
+        edUrl.setOnFocusChangeListener { _, b ->
+            if (!b && edTitle.text.isEmpty()) {
+                async {
+                    val suggestedTitle = YDataHandler.getVideoTitle(UtilMeths.urlToId(
+                            edUrl.text.toString()))
+                    edTitle.setText(suggestedTitle)
+                }
+            }
+        }
 
         actvShow.setAdapter(showAdapter)
         mactvTags.setAdapter(tagsAdapter)
         mactvTags.setTokenizer(MultiAutoCompleteTextView.CommaTokenizer())
-
 
         return builder.create()
     }
