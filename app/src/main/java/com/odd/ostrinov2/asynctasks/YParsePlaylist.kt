@@ -14,7 +14,7 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.lang.ref.WeakReference
 
-class YParsePlaylist(private val pListId: String, val pListName: String, context: Context) : AsyncTask<Void, Int, Void>() {
+class YParsePlaylist(private val pListId: String, private val pListName: String, context: Context) : AsyncTask<Void, Int, Void>() {
 
     private var parsedTitle: String? = null
     private var wContext: WeakReference<Context> = WeakReference(context)
@@ -93,7 +93,7 @@ class YParsePlaylist(private val pListId: String, val pListName: String, context
                     val title = snippet.getString("title")
                     val videoId = snippet.getJSONObject("resourceId").getString("videoId")
                     i++
-                    parsedTitle = UtilMeths.parseAddOst(title, UtilMeths.idToUrlMobile(videoId)).title
+                    parsedTitle = UtilMeths.parseAddOst(title, videoId).title
                     count++
                     publishProgress(count)
                 }
