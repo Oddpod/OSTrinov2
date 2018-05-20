@@ -96,8 +96,10 @@ class SearchAdapter(private val mContext: Context, val mainActivity: MainActivit
             if (video.playlist)
                 searchFragment.getPlaylistItems(video.id)
             else {
-                val ostList = searchResults.map { Ost(it.title, "", "", it.id) }
-                UtilMeths.initYTPServiceQueue(mContext, ostList, startPos = position)
+                val videoList = searchResults.filter { !it.playlist }
+                val startPos = videoList.indexOf(video)
+                val ostList = videoList.map { Ost(it.title, "", "", it.id) }
+                UtilMeths.initYTPServiceQueue(mContext, ostList, startPos)
             }
         }
     }
