@@ -15,7 +15,7 @@ class Ost(var title: String, var show: String, var tags: String, var videoId: St
     val searchString: String
         get() = "$title, $show, $tags"
 
-    override fun toString(): String = "Ost{title='$title, show='$show, tags='$tags"
+    override fun toString(): String = "Ost{title='$title', show='$show', tags='$tags', videoId='$videoId'"
 
     override fun describeContents(): Int = 0
 
