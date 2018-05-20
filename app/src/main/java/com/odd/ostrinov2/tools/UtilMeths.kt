@@ -94,7 +94,7 @@ internal object UtilMeths {
         }
     }
 
-    fun parseAddOst(title: String, url: String): Ost {
+    fun parseAddOst(title: String, videoId: String): Ost {
         val db = MainActivity.getDbHandler()
         var titleUC = title
         val shows = db.allShows
@@ -107,10 +107,10 @@ internal object UtilMeths {
                 val showEnglish = lineArray[1].replace(")", "").trim { it <= ' ' }
                 if (titleLC.contains(showOriginal.toLowerCase()) || titleLC.contains(showEnglish.toLowerCase())) {
                     ostShow = showOriginal
-                    if (titleLC.contains(showOriginal.toLowerCase())) {
-                        titleUC = titleUC.replace(showOriginal, "").replace("-", "").trim { it <= ' ' }
+                    titleUC = if (titleLC.contains(showOriginal.toLowerCase())) {
+                        titleUC.replace(showOriginal, "").replace("-", "").trim { it <= ' ' }
                     } else {
-                        titleUC = titleUC.replace(showEnglish, "").replace("-", "").trim { it <= ' ' }
+                        titleUC.replace(showEnglish, "").replace("-", "").trim { it <= ' ' }
                     }
                 }
             } else if (titleLC.contains(show.toLowerCase()) && show != "") {
@@ -118,7 +118,7 @@ internal object UtilMeths {
                 titleUC = titleUC.replace(show, "").replace("-", "").trim { it <= ' ' }
             }
         }
-        val parsedOst = Ost(titleUC, ostShow, "", url)
+        val parsedOst = Ost(titleUC, ostShow, "", videoId)
         db.addNewOst(parsedOst)
         return parsedOst
     }
