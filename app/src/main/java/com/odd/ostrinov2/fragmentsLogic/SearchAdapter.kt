@@ -65,10 +65,8 @@ class SearchAdapter(private val mContext: Context, val mainActivity: MainActivit
                                 mainActivity.libraryFragment.shouldRefreshList = true
                             }
                         else {
-                            DownloadTNImage(mainActivity).execute(video.id)
-                            checkPermission(mainActivity, Runnable {
-                                UtilMeths.parseAddOst(video.title, mainActivity, video.id)
                             async {
+                                DownloadTNImage(mainActivity).execute(video.id)
                                 UtilMeths.parseAddOst(video.title, video.id)
                                 mainActivity.libraryFragment.shouldRefreshList = true
                             }

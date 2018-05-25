@@ -33,10 +33,10 @@ class DownloadTNImage(context: Context) : AsyncTask<String, Void, Bitmap>() {
         val foStream: FileOutputStream
         try {
             foStream = context.openFileOutput(videoId, Context.MODE_PRIVATE)
-            b.compress(Bitmap.CompressFormat.PNG, 100, foStream)
+            b.compress(Bitmap.CompressFormat.JPEG, 100, foStream)
             foStream.close()
         } catch (e: Exception) {
-            Log.d("saveImage", "Exception 2, Something went wrong!")
+            Log.d("saveImage", e.stackTrace.toString())
             e.printStackTrace()
         }
     }

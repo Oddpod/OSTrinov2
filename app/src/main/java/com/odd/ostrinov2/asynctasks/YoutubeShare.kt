@@ -1,10 +1,11 @@
-package com.odd.ostrinov2.tools
-
+package com.odd.ostrinov2.asynctasks
 import android.content.Context
 import android.os.AsyncTask
 import android.util.Log
 import android.widget.Toast
 import com.odd.ostrinov2.Constants
+import com.odd.ostrinov2.tools.HttpHandler
+import com.odd.ostrinov2.tools.UtilMeths
 import org.json.JSONException
 import org.json.JSONObject
 import java.lang.ref.WeakReference
@@ -34,7 +35,9 @@ class YoutubeShare(private val url: String) : AsyncTask<Void, Void, Void>() {
                 val jsonObj = JSONObject(jsonStr)
                 Log.d("jsonObj", jsonObj.toString())
                 title = jsonObj.get("title").toString()
-                parsedTitle = UtilMeths.parseAddOst(title!!, url).title
+                val videoId = UtilMeths.urlToId(url)
+                DownloadTNImage(wContext.get()!!).execute(videoId)
+                parsedTitle = UtilMeths.parseAddOst(title!!, videoId).title
 
             } catch (e: JSONException) {
                 Log.e("JSONException", "Json parsing error: " + e.message)

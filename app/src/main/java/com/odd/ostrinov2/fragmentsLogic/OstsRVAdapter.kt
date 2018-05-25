@@ -13,6 +13,7 @@ import android.widget.*
 import com.odd.ostrinov2.MainActivity
 import com.odd.ostrinov2.Ost
 import com.odd.ostrinov2.R
+import com.odd.ostrinov2.asynctasks.DownloadTNImage
 import com.odd.ostrinov2.dialogFragments.EditOstDialog
 import com.odd.ostrinov2.dialogFragments.PlaylistPicker
 import com.odd.ostrinov2.listeners.PlayerListener
@@ -31,8 +32,7 @@ class OstsRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
     private val sortHandler: SortHandler
     private val mInflater: LayoutInflater
     private var editOStDialog: EditOstDialog
-    var nowPlaying = -1
-        private set
+    private var nowPlaying = -1
     private var lastQuery = ""
 
     init {
@@ -156,6 +156,7 @@ class OstsRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
         unFilteredOstList[replaceIndex2] = editedOst
         ostList[replaceIndex] = editedOst
         MainActivity.getDbHandler().updateOst(editedOst)
+        DownloadTNImage(mContext).execute(editedOst.videoId)
         notifyDataSetChanged()
     }
 
