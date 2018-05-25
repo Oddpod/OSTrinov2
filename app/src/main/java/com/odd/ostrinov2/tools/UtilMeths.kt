@@ -55,6 +55,56 @@ internal object UtilMeths {
 
     fun getThumbnailUrl(videoId: String): String = "https://i.ytimg.com/vi/$videoId/mqdefault.jpg"
 
+            request.setAllowedNetworkTypes(
+                    DownloadManager.Request.NETWORK_WIFI or DownloadManager.Request.NETWORK_MOBILE)
+                    .setAllowedOverRoaming(false).setTitle("Downloading thumbnails")
+                    .setDescription(url)
+                    .setDestinationInExternalPublicDir(dir, saveString)
+            mgr.enqueue(request)
+        }
+        val settings = context.getSharedPreferences(Constants.TB_STORAGE_LOCATION, 0)
+        val editor = settings.edit()
+        //println(" dir: " + dir)
+        editor.putString(Constants.TB_STORAGE_LOCATION, dir)
+
+        // Commit the edits!
+        val success = editor.commit()
+        val successString = success.toString()
+        Log.i("Wrote Storage loc", successString)
+    }
+
+    fun downloadThumbnail(url: String, context: Context) {
+        val saveName = urlToId(url)
+        downloadFile(context, "http://img.youtube.com/vi/$saveName/0.jpg", saveName)
+    }
+
+    fun getThumbnailUrl(videoId: String): String = "https://i.ytimg.com/vi/$videoId/mqdefault.jpg"
+
+    fun getThumbnailLocal(url: String, context: Context): File {
+        val fileName = urlToId(url) + ".jpg"
+        //val preferences = mContext.getSharedPreferences(Constants.TB_STORAGE_LOCATION, 0)
+        return File(Environment.getExternalStorageDirectory().absolutePath + "/OSTthumbnails" + "/$fileName")
+    }
+
+    fun getThumbnailLocal2(url: String, context: Context): File {
+        val fileName = urlToId(url)
+        //val preferences = mContext.getSharedPreferences(Constants.TB_STORAGE_LOCATION, 0)
+        return File(context.filesDir, fileName)
+    }
+
+
+    fun deleteThumbnail(url: String, context: Context) {
+        val tnFile = getThumbnailLocal(url, context)
+        try {
+            tnFile.delete()
+        } catch (ex: NoSuchFileException) {
+            System.err.format("%s: no such" + " file or directory%n", tnFile.absolutePath)
+        } catch (exc: IOException) {
+            // File permission problems are caught here.
+            System.err.println(exc)
+        }
+    }
+
     fun chooseFileImport(mainActivity: MainActivity) {
         val intent: Intent
         if (Build.VERSION.SDK_INT < 19) {
