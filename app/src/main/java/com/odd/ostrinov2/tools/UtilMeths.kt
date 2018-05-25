@@ -8,6 +8,8 @@ import com.odd.ostrinov2.Constants
 import com.odd.ostrinov2.MainActivity
 import com.odd.ostrinov2.Ost
 import com.odd.ostrinov2.services.YTplayerService
+import java.io.File
+import java.io.IOException
 
 internal object UtilMeths {
 
@@ -55,38 +57,7 @@ internal object UtilMeths {
 
     fun getThumbnailUrl(videoId: String): String = "https://i.ytimg.com/vi/$videoId/mqdefault.jpg"
 
-            request.setAllowedNetworkTypes(
-                    DownloadManager.Request.NETWORK_WIFI or DownloadManager.Request.NETWORK_MOBILE)
-                    .setAllowedOverRoaming(false).setTitle("Downloading thumbnails")
-                    .setDescription(url)
-                    .setDestinationInExternalPublicDir(dir, saveString)
-            mgr.enqueue(request)
-        }
-        val settings = context.getSharedPreferences(Constants.TB_STORAGE_LOCATION, 0)
-        val editor = settings.edit()
-        //println(" dir: " + dir)
-        editor.putString(Constants.TB_STORAGE_LOCATION, dir)
-
-        // Commit the edits!
-        val success = editor.commit()
-        val successString = success.toString()
-        Log.i("Wrote Storage loc", successString)
-    }
-
-    fun downloadThumbnail(url: String, context: Context) {
-        val saveName = urlToId(url)
-        downloadFile(context, "http://img.youtube.com/vi/$saveName/0.jpg", saveName)
-    }
-
-    fun getThumbnailUrl(videoId: String): String = "https://i.ytimg.com/vi/$videoId/mqdefault.jpg"
-
     fun getThumbnailLocal(url: String, context: Context): File {
-        val fileName = urlToId(url) + ".jpg"
-        //val preferences = mContext.getSharedPreferences(Constants.TB_STORAGE_LOCATION, 0)
-        return File(Environment.getExternalStorageDirectory().absolutePath + "/OSTthumbnails" + "/$fileName")
-    }
-
-    fun getThumbnailLocal2(url: String, context: Context): File {
         val fileName = urlToId(url)
         //val preferences = mContext.getSharedPreferences(Constants.TB_STORAGE_LOCATION, 0)
         return File(context.filesDir, fileName)
@@ -103,6 +74,20 @@ internal object UtilMeths {
             // File permission problems are caught here.
             System.err.println(exc)
         }
+    }
+
+    fun deleteAllThumbnails(context: Context) {
+        deleteRecursive(context.filesDir)
+    }
+
+    fun deleteRecursive(fileOrDirectory: File) {
+
+        if (fileOrDirectory.isDirectory)
+            for (child in fileOrDirectory.listFiles())
+                deleteRecursive(child)
+
+        fileOrDirectory.delete()
+
     }
 
     fun chooseFileImport(mainActivity: MainActivity) {

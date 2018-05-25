@@ -48,6 +48,7 @@ import android.widget.Toast;
 import com.google.android.youtube.player.YouTubePlayer;
 import com.google.android.youtube.player.YouTubePlayerSupportFragment;
 import com.odd.ostrinov2.asynctasks.YParsePlaylist;
+import com.odd.ostrinov2.asynctasks.YoutubeShare;
 import com.odd.ostrinov2.dialogFragments.AddOstDialog;
 import com.odd.ostrinov2.fragmentsLogic.AboutFragment;
 import com.odd.ostrinov2.fragmentsLogic.LibraryFragment;
@@ -59,7 +60,6 @@ import com.odd.ostrinov2.tools.IOHandler;
 import com.odd.ostrinov2.tools.PagerAdapter;
 import com.odd.ostrinov2.tools.PermissionHandlerKt;
 import com.odd.ostrinov2.tools.UtilMeths;
-import com.odd.ostrinov2.tools.YoutubeShare;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -317,7 +317,6 @@ public class MainActivity extends AppCompatActivity implements
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         switch (id) {
             case R.id.action_settings: {
                 Toast.makeText(this, "Nothing here yet", Toast.LENGTH_SHORT).show();
@@ -377,6 +376,11 @@ public class MainActivity extends AppCompatActivity implements
                 dbHandler.reCreateTagsAndShowTables();
                 break;
             }
+
+            case R.id.clear_tn_storage: {
+                UtilMeths.INSTANCE.deleteAllThumbnails(this);
+                break;
+            }
             default:
                 return true;
         }
@@ -410,7 +414,7 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    public void initPlayerService() {
+    private void initPlayerService() {
         if (yTplayerService == null) {
             startService();
             doBindService();
@@ -479,7 +483,7 @@ public class MainActivity extends AppCompatActivity implements
         btnShuffle.setColorFilter(Color.GREEN, PorterDuff.Mode.SRC_ATOP);
     }
 
-    public void shuffleOff() {
+    private void shuffleOff() {
         shuffleActivated = false;
         yTplayerService.getQueueHandler().shuffleOff();
         btnShuffle.clearColorFilter();
@@ -666,7 +670,7 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    void startWidgetOst(int startId) {
+    private void startWidgetOst(int startId) {
         if (startId != -1) {
             if (dbHandler.getAllOsts().isEmpty()) {
                 Toast.makeText(this, "Uh oh, It seems your library is empty :C",
