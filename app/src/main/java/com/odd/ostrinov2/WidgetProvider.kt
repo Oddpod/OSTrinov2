@@ -34,16 +34,9 @@ class WidgetProvider : AppWidgetProvider() {
                 val pendingIntent = PendingIntent.getActivity(context,
                         0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
                 remoteViews.setOnClickPendingIntent(R.id.widgetThumbnail, pendingIntent)
-                remoteViews.setOnClickPendingIntent(R.id.widgetThumbnail, pendingIntent)
                 appWidgetManager.updateAppWidget(appWidgetId, remoteViews)
 
             }
         }
-
-    }
-
-    companion object {
-
-        val ACTION_AUTO_UPDATE = "AUTO_UPDATE"
     }
 }

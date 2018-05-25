@@ -565,24 +565,10 @@ public class MainActivity extends AppCompatActivity implements
         bindService(new Intent(this,
                 YTplayerService.class), mConnection, Context.BIND_AUTO_CREATE);
         mIsBound = true;
-        //mCallbackText.setText("Binding.");
     }
 
     public void doUnbindService() {
         if (mIsBound) {
-            // If we have received the service, and hence registered with
-            // it, then now is the time to unregister.
-            /*if (yTplayerService != null) {
-                try {
-                    Message msg = Message.obtain(null,
-                            MessengerService.MSG_UNREGISTER_CLIENT);
-                    msg.replyTo = mMessenger;
-                    mService.send(msg);
-                } catch (RemoteException e) {
-                    // There is nothing special we need to do if the service
-                    // has crashed.
-                }
-            }*/
 
             // Detach our existing connection.
             unbindService(mConnection);
