@@ -12,10 +12,10 @@ import com.odd.ostrinov2.R;
 
 public class FunnyJunk extends DialogFragment{
 
-        AlertDialog.Builder builder;
-        LayoutInflater inflater;
-        View dialogView;
-        ImageView jojo;
+    private AlertDialog.Builder builder;
+    private LayoutInflater inflater;
+    private View dialogView;
+    private ImageView jojo;
 
     public FunnyJunk(){}
 
@@ -25,7 +25,7 @@ public class FunnyJunk extends DialogFragment{
             builder = new AlertDialog.Builder(getActivity());
 
             inflater = getActivity().getLayoutInflater();
-            dialogView = inflater.inflate(R.layout.activity_yareyare, null);
+            dialogView = inflater.inflate(R.layout.yareyare_dialog, null);
 
             builder.setView(dialogView);
             jojo = dialogView.findViewById(R.id.jojo);

@@ -212,11 +212,11 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
         val cursor: Cursor = writableDatabase.rawQuery("SELECT $KEY_SHOW_ID " +
                 "FROM $SHOW_TABLE WHERE $KEY_SHOW = ?", arrayOf(show))
         val showId: Int
-        if (cursor.moveToFirst()) {
-            showId = cursor.getInt(0)
+        showId = if (cursor.moveToFirst()) {
+            cursor.getInt(0)
         } else {
             Log.i("Retrieveerror", "empty cursor, no entry with name \$show")
-            showId = 0
+            0
         }
         cursor.close()
         return showId
@@ -226,11 +226,11 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
         val cursor: Cursor = writableDatabase.rawQuery("SELECT $KEY_TAG_ID " +
                 "FROM $TAGS_TABLE WHERE $KEY_OST_TAG = ?", arrayOf(tagString))
         val tagsId: Int
-        if (cursor.moveToFirst()) {
-            tagsId = cursor.getInt(0)
+        tagsId = if (cursor.moveToFirst()) {
+            cursor.getInt(0)
         } else {
             Log.i("Retrieveerror", "empty cursor, no entry with name \$show")
-            tagsId = 0
+            0
         }
         cursor.close()
         return tagsId
@@ -361,9 +361,9 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
 
     fun reCreateTagsAndShowTables() {
         ostList = allOsts
-        val TRUNCATE_TABLE = "DROP TABLE " + TAGS_TABLE + ""
+        val TRUNCATE_TABLE = "DROP TABLE $TAGS_TABLE"
         writableDatabase.execSQL(TRUNCATE_TABLE)
-        val TRUNCATE_TABLE2 = "DROP TABLE " + SHOW_TABLE
+        val TRUNCATE_TABLE2 = "DROP TABLE $SHOW_TABLE"
         writableDatabase.execSQL(TRUNCATE_TABLE2)
 
         val CREATE_SHOW_TABLE = "CREATE TABLE $SHOW_TABLE($KEY_SHOW_ID INTEGER UNIQUE PRIMARY KEY," +

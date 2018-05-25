@@ -252,18 +252,16 @@ class YTplayerService : Service(),
     }
 
     private fun expandMinimizePlayer() {
-        if (!playerExpanded) {
+        playerExpanded = if (!playerExpanded) {
             Toast.makeText(applicationContext, "Expanding player", Toast.LENGTH_SHORT).show()
             rl.updateViewLayout(floatingPlayer, largePParams)
             wm.updateViewLayout(rl, largeWindowParams)
-            yPlayerHandler!!.yPlayer.setShowFullscreenButton(true)
-            playerExpanded = true
+            true
         } else {
             Toast.makeText(applicationContext, "Minimizing player", Toast.LENGTH_SHORT).show()
             rl.updateViewLayout(floatingPlayer, smallPParams)
             wm.updateViewLayout(rl, smallWindowParams)
-            yPlayerHandler!!.yPlayer.setShowFullscreenButton(false)
-            playerExpanded = false
+            false
         }
     }
 
