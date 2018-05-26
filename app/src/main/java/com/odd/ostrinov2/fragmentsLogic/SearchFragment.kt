@@ -22,12 +22,6 @@ class SearchFragment: Fragment() {
     private lateinit var youtubeSearch: YoutubeSearch
     private lateinit var yPlaylistRetriever: YGetPlaylistItems
     var isInPlaylist: Boolean = false
-    private var loading = true
-    private val visibleThreshold = 0
-    private var previousTotal: Int = 0
-    private var visibleItemCount:Int = 0
-    private var firstVisibleItem: Int = 0
-    private var totalItemCount:Int = 0
     private var isFromBackStack: Boolean = false
     private lateinit var rootView: View
     private var lastQuery: String = ""
@@ -43,27 +37,14 @@ class SearchFragment: Fragment() {
 
         rvSearchResults.addOnScrollListener( object: RecyclerView.OnScrollListener(){
 
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
 
-                visibleItemCount = mLayoutManager.childCount
-                totalItemCount = mLayoutManager.itemCount
-                firstVisibleItem = mLayoutManager.findFirstVisibleItemPosition()
-
-                if (loading) {
-                    if (totalItemCount > previousTotal) {
-                        loading = false
-                        previousTotal = totalItemCount
-                    }
-                }
-                if (!loading && totalItemCount - visibleItemCount <= firstVisibleItem + visibleThreshold) {
-                    // End of ListView has been reached
-
+                if (!recyclerView.canScrollVertically(1)) {
                     if (isInPlaylist)
                         yPlaylistRetriever.getMoreResults()
                     else
                         youtubeSearch.getMoreSearchResults()
-                    loading = true
                 }
             }
         })
