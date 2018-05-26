@@ -12,7 +12,6 @@ import com.odd.ostrinov2.MainActivity
 import com.odd.ostrinov2.Ost
 import com.odd.ostrinov2.R
 import com.odd.ostrinov2.tools.UtilMeths
-import com.squareup.picasso.NetworkPolicy
 import com.squareup.picasso.Picasso
 
 class PlayerNotificationService(private val service: YTplayerService) {
@@ -102,12 +101,9 @@ class PlayerNotificationService(private val service: YTplayerService) {
     }
 
     fun updateNotInfo(ost: Ost) {
-        val tnFile = UtilMeths.getThumbnailUrl(ost.videoId)
-        Picasso.with(service).load(tnFile)
-                .networkPolicy(NetworkPolicy.OFFLINE)
-                .into(bigViews, R.id.status_bar_album_art,
-                        Constants.NOTIFICATION_ID.FOREGROUND_SERVICE,
-                        status.build())
+
+        loadThumbnail(ost.videoId)
+
         views.setTextViewText(R.id.status_bar_track_name, ost.title)
         bigViews.setTextViewText(R.id.status_bar_track_name, ost.title)
 
@@ -137,5 +133,23 @@ class PlayerNotificationService(private val service: YTplayerService) {
 
     fun stopNotService(){
         mNotifyMgr.cancel(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE)
+    }
+
+    private fun loadThumbnail(videoId: String) {
+        val tnFile = UtilMeths.getThumbnailLocal(videoId, service)
+
+        //Loads thumbnail from url if not found in local storage
+        if (!tnFile.exists()) {
+            val tnUrl = UtilMeths.getThumbnailUrl(videoId)
+            Picasso.with(service).load(tnUrl)
+                    .into(bigViews, R.id.status_bar_album_art,
+                            Constants.NOTIFICATION_ID.FOREGROUND_SERVICE,
+                            status.build())
+        } else {
+            Picasso.with(service).load(tnFile)
+                    .into(bigViews, R.id.status_bar_album_art,
+                            Constants.NOTIFICATION_ID.FOREGROUND_SERVICE,
+                            status.build())
+        }
     }
 }
