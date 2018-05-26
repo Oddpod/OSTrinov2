@@ -97,6 +97,7 @@ public class MainActivity extends AppCompatActivity implements
     private ViewPager fragPager;
 
     private static Runnable permissionCallback;
+    public static boolean destroyingActivity = false;
 
     public static void setPermissionCallback(Runnable permissionCallback) {
         MainActivity.permissionCallback = permissionCallback;
@@ -589,6 +590,15 @@ public class MainActivity extends AppCompatActivity implements
         }
         handler.removeCallbacks(seekbarUpdater);
         doUnbindService();
+    }
+
+    @Override
+    public void onDestroy() {
+        Intent closeIntent = new Intent(this, YTplayerService.class);
+        closeIntent.setAction(Constants.STOPFOREGROUND_ACTION);
+        startService(closeIntent);
+        destroyingActivity = true;
+        super.onDestroy();
     }
 
     @Override
