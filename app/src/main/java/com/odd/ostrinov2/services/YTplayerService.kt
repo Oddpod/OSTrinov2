@@ -95,7 +95,7 @@ class YTplayerService : Service(),
 
         when {
             action == Constants.STARTFOREGROUND_ACTION -> return
-            isScreenLocked() -> Toast.makeText(applicationContext, "Can't play while on LockScreen! :C", Toast.LENGTH_SHORT).show()
+            isScreenLocked() -> Toast.makeText(this, "Can't play while on LockScreen! :C", Toast.LENGTH_SHORT).show()
             yPlayerHandler == null -> {
                 val osts = intent.getParcelableArrayListExtra<Ost>("osts_extra")
                         as ArrayList
@@ -125,12 +125,12 @@ class YTplayerService : Service(),
             action.equals(Constants.ADD_OST_TO_QUEUE, ignoreCase = true) -> {
                 Log.i(NOT_LOG_TAG, "Add ost to queue")
                 val ost = intent.getParcelableExtra<Ost>("ost_extra")
-                Toast.makeText(applicationContext, ost.title + " added to queue", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, ost.title + " added to queue", Toast.LENGTH_SHORT).show()
                 yPlayerHandler!!.getQueueHandler().addToQueue(ost)
             }
             action.equals(Constants.ADD_OSTS_TO_QUEUE, ignoreCase = true) -> {
                 val osts = intent.getParcelableArrayListExtra<Ost>("ost_extra")
-                Toast.makeText(applicationContext, " added playlist to queue", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, " added playlist to queue", Toast.LENGTH_SHORT).show()
                 yPlayerHandler!!.getQueueHandler().addToQueue(osts)
             }
         //TODO Consider renaming start ost to init or somthing
@@ -256,12 +256,12 @@ class YTplayerService : Service(),
 
     private fun expandMinimizePlayer() {
         playerExpanded = if (!playerExpanded) {
-            Toast.makeText(applicationContext, "Expanding player", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Expanding player", Toast.LENGTH_SHORT).show()
             rl.updateViewLayout(floatingPlayer, largePParams)
             wm.updateViewLayout(rl, largeWindowParams)
             true
         } else {
-            Toast.makeText(applicationContext, "Minimizing player", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Minimizing player", Toast.LENGTH_SHORT).show()
             rl.updateViewLayout(floatingPlayer, smallPParams)
             wm.updateViewLayout(rl, smallWindowParams)
             false
@@ -282,7 +282,7 @@ class YTplayerService : Service(),
 
     fun getQueueHandler(): QueueHandler = yPlayerHandler!!.getQueueHandler()
 
-    fun registerBroadcastReceiver() {
+    private fun registerBroadcastReceiver() {
         val theFilter = IntentFilter()
         /** System Defined Broadcast  */
         theFilter.addAction(Intent.ACTION_SCREEN_ON)
@@ -305,11 +305,11 @@ class YTplayerService : Service(),
             }
         }
 
-        applicationContext.registerReceiver(screenOnOffReceiver, theFilter)
+        this.registerReceiver(screenOnOffReceiver, theFilter)
     }
 
     private fun isScreenLocked(): Boolean {
-        val myKM = applicationContext.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+        val myKM = this.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
         return myKM.inKeyguardRestrictedInputMode()
     }
 
