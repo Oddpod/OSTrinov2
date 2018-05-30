@@ -18,7 +18,7 @@ import com.odd.ostrinov2.tools.UtilMeths
 
 class PlaylistAdapter(val mContext: Context?, val playFrag: PlaylistFragment) : RecyclerView.Adapter<PlaylistAdapter.ObjectViewWrapper>() {
 
-    private var playLists: List<Playlist> = MainActivity.getDbHandler().allPlaylists
+    private var playLists: List<Playlist> = MainActivity.dbHandler.allPlaylists
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int):
             PlaylistAdapter.ObjectViewWrapper {
@@ -30,7 +30,7 @@ class PlaylistAdapter(val mContext: Context?, val playFrag: PlaylistFragment) : 
     }
 
     fun refreshPlaylists() {
-        playLists = MainActivity.getDbHandler().allPlaylists
+        playLists = MainActivity.dbHandler.allPlaylists
         notifyDataSetChanged()
     }
 
@@ -42,7 +42,7 @@ class PlaylistAdapter(val mContext: Context?, val playFrag: PlaylistFragment) : 
         holder.tvPlaylistName.text = playlist.name
         holder.tvNumSongs.text = playlist.numOsts.toString()
         holder.baseView.setOnClickListener {
-            val ostList = MainActivity.getDbHandler().getOstsInPlaylist(playlist.id)
+            val ostList = MainActivity.dbHandler.getOstsInPlaylist(playlist.id)
             playFrag.changeAdapter(ostList)
         }
         holder.btnOptions.setOnClickListener {
@@ -51,17 +51,17 @@ class PlaylistAdapter(val mContext: Context?, val playFrag: PlaylistFragment) : 
             pum.setOnMenuItemClickListener { item ->
                 when (item?.itemId) {
                     R.id.chooser_addToQueue -> {
-                        val ostList = MainActivity.getDbHandler().getOstsInPlaylist(playlist.id)
+                        val ostList = MainActivity.dbHandler.getOstsInPlaylist(playlist.id)
                         UtilMeths.addPlaylistToYTPServiceQueue(mContext, ostList)
                     }
                     R.id.chooser_delete_playlist -> {
-                        MainActivity.getDbHandler().deletePlaylist(playlist.id)
+                        MainActivity.dbHandler.deletePlaylist(playlist.id)
                         refreshPlaylists()
                     }
                     R.id.add_to_playlist -> {
                         val picker = PlaylistPicker()
                         val bundl = Bundle()
-                        val ostList = MainActivity.getDbHandler().getOstsInPlaylist(playlist.id)
+                        val ostList = MainActivity.dbHandler.getOstsInPlaylist(playlist.id)
                         bundl.putParcelableArrayList("ostIds", ostList)
                         picker.arguments = bundl
                         picker.show((mContext as MainActivity).supportFragmentManager,

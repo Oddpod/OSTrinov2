@@ -195,7 +195,7 @@ class YTplayerService : Service(),
         this.mainActivity = activity
         if (!isSystemAlertPermissionGranted(activity)) {
             requestSystemPermission(activity, Constants.REQUEST_SYSTEM_OVERLAY)
-            MainActivity.setPermissionCallback { launchFloater(floatingPlayer, mainActivity) }
+            MainActivity.setPermissionCallback(Runnable { launchFloater(floatingPlayer, mainActivity) })
         } else {
             wm = getSystemService(Context.WINDOW_SERVICE) as WindowManager
             val params = smallWindowParams

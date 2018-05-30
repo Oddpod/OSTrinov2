@@ -21,7 +21,7 @@ import kotlinx.coroutines.experimental.async
 class PlaylistPicker : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val playlists = MainActivity.getDbHandler().allPlaylists
+        val playlists = MainActivity.dbHandler.allPlaylists
 
         val builder = AlertDialog.Builder(activity)
 
@@ -42,7 +42,7 @@ class PlaylistPicker : DialogFragment() {
         rvPlaylists.adapter = pListAdapter
 
         btnCreatePlaylist.setOnClickListener {
-            val dbHandler = MainActivity.getDbHandler()
+            val dbHandler = MainActivity.dbHandler
             dbHandler.addNewPlaylist(etPlaylistName.text.toString())
             pListAdapter.refreshPlaylists()
         }
@@ -59,7 +59,7 @@ class PlaylistPicker : DialogFragment() {
         class ViewHolder(val textView: TextView) : RecyclerView.ViewHolder(textView)
 
         fun refreshPlaylists() {
-            playlists = MainActivity.getDbHandler().allPlaylists
+            playlists = MainActivity.dbHandler.allPlaylists
             notifyDataSetChanged()
         }
 
@@ -79,9 +79,9 @@ class PlaylistPicker : DialogFragment() {
             holder.textView.setOnClickListener {
                 async {
                     if (ostId != null)
-                        MainActivity.getDbHandler().addOstToPlaylist(ostId, playlist.id)
+                        MainActivity.dbHandler.addOstToPlaylist(ostId, playlist.id)
                     else
-                        MainActivity.getDbHandler().addOstsToPlaylist(ostIds, playlist.id)
+                        MainActivity.dbHandler.addOstsToPlaylist(ostIds, playlist.id)
                 }
                 dialog.dismiss()
             }

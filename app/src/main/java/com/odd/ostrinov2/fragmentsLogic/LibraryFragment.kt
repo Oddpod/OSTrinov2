@@ -162,14 +162,14 @@ class LibraryFragment : Fragment(), View.OnClickListener, AddOstDialog.AddDialog
     }
 
     fun refreshListView() {
-        val allOsts = MainActivity.getDbHandler().allOsts
+        val allOsts = MainActivity.dbHandler.allOsts
         libListAdapter!!.updateList(allOsts)
     }
 
     fun setMainActivity(mainActivity: MainActivity) {
 
         this.mainActivity = mainActivity
-        val allOsts = MainActivity.getDbHandler().allOsts
+        val allOsts = MainActivity.dbHandler.allOsts
         libListAdapter = OstsRVAdapter(mainActivity, allOsts)
     }
 
@@ -182,7 +182,7 @@ class LibraryFragment : Fragment(), View.OnClickListener, AddOstDialog.AddDialog
     }
 
     private fun addNewOst(ostToAdd: Ost) {
-        val dbHandler = MainActivity.getDbHandler()
+        val dbHandler = MainActivity.dbHandler
         val alreadyAdded = dbHandler.checkiIfOstInDB(ostToAdd)
         if (!alreadyAdded) {
             dbHandler.addNewOst(ostToAdd)

@@ -35,7 +35,7 @@ class EditOstDialog : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val dbHandler = MainActivity.getDbHandler()
+        val dbHandler = MainActivity.dbHandler
 
         val builder = AlertDialog.Builder(activity!!)
 

@@ -59,7 +59,7 @@ class YoutubePlayerHandler(private var playerNotification:
             //yPlayer.setOnFullscreenListener(this)
 
             yPlayer.addFullscreenControlFlag(YouTubePlayer.FULLSCREEN_FLAG_CUSTOM_LAYOUT)
-            mainActivity.seekBar.setOnSeekBarChangeListener(this)
+            mainActivity.seekBar?.setOnSeekBarChangeListener(this)
 
             playerNotification.updateNotInfo(queueHandler.currentlyPlaying)
             mainActivity.youtubePlayerLaunched()
@@ -77,7 +77,7 @@ class YoutubePlayerHandler(private var playerNotification:
     override fun onVideoStarted() {}
 
     override fun onLoaded(p0: String?) {
-        mainActivity.seekBar.max = yPlayer.durationMillis
+        mainActivity.seekBar?.max = yPlayer.durationMillis
     }
 
     override fun onVideoEnded() {
@@ -185,8 +185,8 @@ class YoutubePlayerHandler(private var playerNotification:
     fun loadLastSession(load: Boolean, playbackPos: Int, duration: Int){
         loadLastSession = load
         lastSessionTimeStamp = playbackPos
-        mainActivity.seekBar.max = duration
-        mainActivity.seekBar.progress = playbackPos
+        mainActivity.seekBar?.max = duration
+        mainActivity.seekBar?.progress = playbackPos
 
     }
 }

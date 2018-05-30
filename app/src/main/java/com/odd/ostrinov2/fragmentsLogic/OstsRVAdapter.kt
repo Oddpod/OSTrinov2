@@ -154,13 +154,13 @@ class OstsRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
         val replaceIndex2 = unFilteredOstList.indexOf(editedOst)
         unFilteredOstList[replaceIndex2] = editedOst
         ostList[replaceIndex] = editedOst
-        MainActivity.getDbHandler().updateOst(editedOst)
+        MainActivity.dbHandler.updateOst(editedOst)
         DownloadTNImage(mContext).execute(editedOst.videoId)
         notifyDataSetChanged()
     }
 
     override fun onDeleteButtonClick(deletedOst: Ost, dialog: EditOstDialog) {
-        MainActivity.getDbHandler().deleteOst(deletedOst.id)
+        MainActivity.dbHandler.deleteOst(deletedOst.id)
         ostList.remove(deletedOst)
         unFilteredOstList.remove(deletedOst)
         notifyDataSetChanged()

@@ -38,7 +38,7 @@ class AddOstDialog : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val dbHandler = MainActivity.getDbHandler()
+        val dbHandler = MainActivity.dbHandler
         val showList = dbHandler.allShows
         val tagList = dbHandler.allTags
 

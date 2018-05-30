@@ -130,7 +130,7 @@ internal object UtilMeths {
     }
 
     fun parseAddOst(title: String, videoId: String): Ost {
-        val db = MainActivity.getDbHandler()
+        val db = MainActivity.dbHandler
         var titleUC = title
         val shows = db.allShows
         val titleLC = titleUC.toLowerCase()

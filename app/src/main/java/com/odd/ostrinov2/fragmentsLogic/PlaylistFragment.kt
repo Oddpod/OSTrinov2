@@ -36,7 +36,7 @@ class PlaylistFragment: Fragment() {
         rootView.ivArchives.setOnClickListener { rootView.ivArchives.visibility = View.GONE }
 
         rootView.btnCreatePlaylist.setOnClickListener {
-            val dbHandler = MainActivity.getDbHandler()
+            val dbHandler = MainActivity.dbHandler
             dbHandler.addNewPlaylist(rootView.etPlaylistName.text.toString())
             playlistAdapter.refreshPlaylists()
         }
