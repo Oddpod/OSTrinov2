@@ -8,6 +8,8 @@ import com.odd.ostrinov2.Constants
 import com.odd.ostrinov2.MainActivity
 import com.odd.ostrinov2.Ost
 import com.odd.ostrinov2.services.YTplayerService
+import java.io.File
+import java.io.IOException
 
 internal object UtilMeths {
 
@@ -54,6 +56,39 @@ internal object UtilMeths {
     }
 
     fun getThumbnailUrl(videoId: String): String = "https://i.ytimg.com/vi/$videoId/mqdefault.jpg"
+
+    fun getThumbnailLocal(url: String, context: Context): File {
+        val fileName = urlToId(url)
+        //val preferences = mContext.getSharedPreferences(Constants.TB_STORAGE_LOCATION, 0)
+        return File(context.filesDir, fileName)
+    }
+
+
+    fun deleteThumbnail(url: String, context: Context) {
+        val tnFile = getThumbnailLocal(url, context)
+        try {
+            tnFile.delete()
+        } catch (ex: NoSuchFileException) {
+            System.err.format("%s: no such" + " file or directory%n", tnFile.absolutePath)
+        } catch (exc: IOException) {
+            // File permission problems are caught here.
+            System.err.println(exc)
+        }
+    }
+
+    fun deleteAllThumbnails(context: Context) {
+        deleteRecursive(context.filesDir)
+    }
+
+    fun deleteRecursive(fileOrDirectory: File) {
+
+        if (fileOrDirectory.isDirectory)
+            for (child in fileOrDirectory.listFiles())
+                deleteRecursive(child)
+
+        fileOrDirectory.delete()
+
+    }
 
     fun chooseFileImport(mainActivity: MainActivity) {
         val intent: Intent

@@ -1,6 +1,5 @@
 package com.odd.ostrinov2.asynctasks
 
-import android.app.Activity
 import android.os.AsyncTask
 import android.util.Log
 import com.odd.ostrinov2.Constants
@@ -12,7 +11,7 @@ import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 
-class YoutubeSearch(private val activity: Activity, private val searchQuery: String, var searchFragment: SearchFragment) {
+class YoutubeSearch(private val searchQuery: String, var searchFragment: SearchFragment) {
 
     var resultList: MutableList<SearchAdapter.SearchObject> = ArrayList()
     var moreResults: MutableList<SearchAdapter.SearchObject> = ArrayList()
@@ -66,7 +65,6 @@ class YoutubeSearch(private val activity: Activity, private val searchQuery: Str
             super.onPostExecute(result)
             if(loadNextPage){
                 searchFragment.updateSearchResults(moreResults, extend = true)
-                loadNextPage = false
             } else{
                 searchFragment.updateSearchResults(resultList, extend = false)
             }
@@ -78,8 +76,7 @@ class YoutubeSearch(private val activity: Activity, private val searchQuery: Str
                     val jsonObj = JSONObject(jsonStr)
                     nextPagetoken = jsonObj.getString("nextPageToken")
                     val items : JSONArray = jsonObj.getJSONArray("items")
-                    var i = 0
-                    while (i < maxResults) {
+                    for (i in 0..items.length()) {
                         val jsonItemObject = items.getJSONObject(i)
                         val id = jsonItemObject.getJSONObject("id")
                         val itemType = id.getString("kind")
@@ -90,8 +87,10 @@ class YoutubeSearch(private val activity: Activity, private val searchQuery: Str
                             playlist = true
                             videoId = id.getString("playlistId")
                             numVideosInPlaylist = YDataHandler.getNumVideosInPlaylist(videoId)
-                        } else {
+                        } else if (itemType == "youtube#video") {
                             videoId = id.getString("videoId")
+                        } else {
+                            continue
                         }
 
                         val snippet = jsonItemObject.getJSONObject("snippet")
@@ -105,7 +104,6 @@ class YoutubeSearch(private val activity: Activity, private val searchQuery: Str
                         } else{
                             resultList.add(videoObject)
                         }
-                        i++
                     }
 
                 } catch (e: JSONException) {

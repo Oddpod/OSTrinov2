@@ -21,7 +21,6 @@ import android.os.IBinder;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -48,7 +47,7 @@ import android.widget.Toast;
 import com.google.android.youtube.player.YouTubePlayer;
 import com.google.android.youtube.player.YouTubePlayerSupportFragment;
 import com.odd.ostrinov2.asynctasks.YParsePlaylist;
-import com.odd.ostrinov2.dialogFragments.AddOstDialog;
+import com.odd.ostrinov2.asynctasks.YoutubeShare;
 import com.odd.ostrinov2.fragmentsLogic.AboutFragment;
 import com.odd.ostrinov2.fragmentsLogic.LibraryFragment;
 import com.odd.ostrinov2.fragmentsLogic.PlaylistFragment;
@@ -59,15 +58,12 @@ import com.odd.ostrinov2.tools.IOHandler;
 import com.odd.ostrinov2.tools.PagerAdapter;
 import com.odd.ostrinov2.tools.PermissionHandlerKt;
 import com.odd.ostrinov2.tools.UtilMeths;
-import com.odd.ostrinov2.tools.YoutubeShare;
-
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements
-        AddOstDialog.AddDialogListener, View.OnClickListener {
+        View.OnClickListener {
 
     private final static String PREFS_NAME = "Saved queue";
     private static DBHandler dbHandler;
@@ -97,6 +93,7 @@ public class MainActivity extends AppCompatActivity implements
     private ViewPager fragPager;
 
     private static Runnable permissionCallback;
+    public static boolean destroyingActivity = false;
 
     public static void setPermissionCallback(Runnable permissionCallback) {
         MainActivity.permissionCallback = permissionCallback;
@@ -178,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements
         rvQueue.setItemAnimator(new DefaultItemAnimator());
 
         libraryFragment = new LibraryFragment();
-        libraryFragment.setMainAcitivity(this);
+        libraryFragment.setMainActivity(this);
         libraryFragment.setRetainInstance(true);
         manager = getSupportFragmentManager();
 
@@ -317,7 +314,6 @@ public class MainActivity extends AppCompatActivity implements
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         switch (id) {
             case R.id.action_settings: {
                 Toast.makeText(this, "Nothing here yet", Toast.LENGTH_SHORT).show();
@@ -377,6 +373,11 @@ public class MainActivity extends AppCompatActivity implements
                 dbHandler.reCreateTagsAndShowTables();
                 break;
             }
+
+            case R.id.clear_tn_storage: {
+                UtilMeths.INSTANCE.deleteAllThumbnails(this);
+                break;
+            }
             default:
                 return true;
         }
@@ -410,7 +411,7 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    public void initPlayerService() {
+    private void initPlayerService() {
         if (yTplayerService == null) {
             startService();
             doBindService();
@@ -479,7 +480,7 @@ public class MainActivity extends AppCompatActivity implements
         btnShuffle.setColorFilter(Color.GREEN, PorterDuff.Mode.SRC_ATOP);
     }
 
-    public void shuffleOff() {
+    private void shuffleOff() {
         shuffleActivated = false;
         yTplayerService.getQueueHandler().shuffleOff();
         btnShuffle.clearColorFilter();
@@ -588,6 +589,15 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
+    public void onDestroy() {
+        Intent closeIntent = new Intent(this, YTplayerService.class);
+        closeIntent.setAction(Constants.STOPFOREGROUND_ACTION);
+        startService(closeIntent);
+        destroyingActivity = true;
+        super.onDestroy();
+    }
+
+    @Override
     public void onStart() {
         if (shoudlRefreshList) {
             libraryFragment.refreshListView();
@@ -666,7 +676,7 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    void startWidgetOst(int startId) {
+    private void startWidgetOst(int startId) {
         if (startId != -1) {
             if (dbHandler.getAllOsts().isEmpty()) {
                 Toast.makeText(this, "Uh oh, It seems your library is empty :C",
@@ -751,22 +761,5 @@ public class MainActivity extends AppCompatActivity implements
         return libraryFragment;
     }
 
-    @Override
-    public void onAddButtonClick(@NotNull final Ost ostToAdd, @NotNull DialogFragment dialog) {
-        addnewOst(ostToAdd);
-    }
 
-    private void addnewOst(Ost ostToAdd) {
-        boolean alreadyAdded = dbHandler.checkiIfOstInDB(ostToAdd);
-        if (!alreadyAdded) {
-            dbHandler.addNewOst(ostToAdd);
-            Toast.makeText(getApplicationContext(), ostToAdd.getTitle() + " added",
-                    Toast.LENGTH_SHORT).show();
-            libraryFragment.addOst(ostToAdd);
-        } else {
-            Toast.makeText(this, ostToAdd.getTitle() + " From " + ostToAdd.getShow()
-                    + " has already been added", Toast.LENGTH_SHORT).show();
-            //lastAddedOst = null;
-        }
-    }
 }

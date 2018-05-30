@@ -1,6 +1,7 @@
 package com.odd.ostrinov2.fragmentsLogic
 
 import android.os.Bundle
+import android.support.v4.app.DialogFragment
 import android.support.v4.app.Fragment
 import android.support.v7.widget.RecyclerView
 import android.text.Editable
@@ -11,6 +12,7 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TableLayout
+import android.widget.Toast
 import com.odd.ostrinov2.MainActivity
 import com.odd.ostrinov2.Ost
 import com.odd.ostrinov2.R
@@ -20,7 +22,7 @@ import com.odd.ostrinov2.tools.SortHandler
 import java.util.*
 
 
-class LibraryFragment : Fragment(), View.OnClickListener {
+class LibraryFragment : Fragment(), View.OnClickListener, AddOstDialog.AddDialogListener {
 
     private var filterText: String? = null
     internal var dialog = AddOstDialog()
@@ -37,7 +39,7 @@ class LibraryFragment : Fragment(), View.OnClickListener {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         playerDocked = true
         val rootView = inflater.inflate(R.layout.fragment_library, container, false)
-        dialog.setAddScreenListener(mainActivity!!)
+        dialog.setAddScreenListener(this)
 
         tlTop = rootView.findViewById(R.id.tlTop)
 
@@ -166,14 +168,32 @@ class LibraryFragment : Fragment(), View.OnClickListener {
         libListAdapter!!.updateList(allOsts)
     }
 
-    fun setMainAcitivity(mainAcitivity: MainActivity) {
+    fun setMainActivity(mainActivity: MainActivity) {
 
-        this.mainActivity = mainAcitivity
+        this.mainActivity = mainActivity
         val allOsts = MainActivity.getDbHandler().allOsts
-        libListAdapter = OstsRVAdapter(mainAcitivity, allOsts)
+        libListAdapter = OstsRVAdapter(mainActivity, allOsts)
     }
 
-    fun addOst(ost: Ost) {
+    private fun addOst(ost: Ost) {
         libListAdapter!!.addNewOst(ost)
+    }
+
+    override fun onAddButtonClick(ostToAdd: Ost, dialog: DialogFragment) {
+        addNewOst(ostToAdd)
+    }
+
+    private fun addNewOst(ostToAdd: Ost) {
+        val dbHandler = MainActivity.getDbHandler()
+        val alreadyAdded = dbHandler.checkiIfOstInDB(ostToAdd)
+        if (!alreadyAdded) {
+            dbHandler.addNewOst(ostToAdd)
+            Toast.makeText(context, ostToAdd.title + " added",
+                    Toast.LENGTH_SHORT).show()
+            addOst(ostToAdd)
+        } else {
+            Toast.makeText(context, ostToAdd.title + " From " + ostToAdd.show
+                    + " has already been added", Toast.LENGTH_SHORT).show()
+        }
     }
 }

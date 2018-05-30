@@ -105,29 +105,31 @@
             android:layout_gravity="start"
             android:id="@+id/status_bar_track_name"
             android:focusable="true"
+            android:singleLine="true"
             android:fadingEdge="horizontal"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:maxLines="1" />
+            android:textColor="@color/white" />
 
         <TextView
             android:id="@+id/status_bar_artist_name"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="start"
+            android:singleLine="true"
             android:ellipsize="marquee"
             android:fadingEdge="horizontal"
-            android:maxLines="1" />
+            android:textColor="@color/white" />
 
         <TextView
             android:ellipsize="marquee"
             android:layout_gravity="start"
             android:id="@+id/status_bar_album_name"
             android:fadingEdge="horizontal"
+            android:singleLine="true"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:maxLines="1"
-            />
+            android:textColor="@color/white" />
     </LinearLayout>
 
     <ImageButton

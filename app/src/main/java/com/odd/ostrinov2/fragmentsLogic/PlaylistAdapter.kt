@@ -76,17 +76,10 @@ class PlaylistAdapter(val mContext: Context?, val playFrag: PlaylistFragment) : 
 
     class ObjectViewWrapper(base: View) : RecyclerView.ViewHolder(base), View.OnClickListener {
 
-        var tvPlaylistName: TextView
-        var tvNumSongs: TextView
-        val btnOptions: ImageButton
-        val baseView: View
-
-        init {
-            baseView = base
-            tvPlaylistName = base.findViewById(R.id.tvPlaylistName)
-            tvNumSongs = base.findViewById(R.id.tvNumOsts)
-            btnOptions = base.findViewById(R.id.btnOptions) as ImageButton
-        }
+        var tvPlaylistName: TextView = base.findViewById(R.id.tvPlaylistName)
+        var tvNumSongs: TextView = base.findViewById(R.id.tvNumOsts)
+        val btnOptions: ImageButton = base.findViewById(R.id.btnOptions)
+        val baseView: View = base
 
         override fun onClick(v: View?) {
 
