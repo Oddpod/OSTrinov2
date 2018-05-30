@@ -20,8 +20,8 @@ import com.odd.ostrinov2.tools.UtilMeths
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.experimental.async
 
-class SearchAdapter(private val mContext: Context, val mainActivity: MainActivity,
-                    val searchFragment: SearchFragment) :
+class SearchAdapter(private val mContext: Context, private val mainActivity: MainActivity,
+                    private val searchFragment: SearchFragment) :
         RecyclerView.Adapter<SearchAdapter.ObjectViewWrapper>() {
 
     var searchResults: MutableList<SearchObject> = ArrayList(20)

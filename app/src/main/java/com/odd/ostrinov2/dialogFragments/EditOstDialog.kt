@@ -4,8 +4,6 @@ import android.app.Dialog
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
 import android.support.v7.app.AlertDialog
-import android.view.LayoutInflater
-import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.EditText
@@ -16,9 +14,6 @@ import com.odd.ostrinov2.R
 
 class EditOstDialog : DialogFragment() {
 
-    private lateinit var builder: AlertDialog.Builder
-    private lateinit var inflater: LayoutInflater
-    private lateinit var dialogView: View
     private var lastOst = Ost("", "", "", "")
 
     private lateinit var edTitle: EditText
@@ -32,7 +27,6 @@ class EditOstDialog : DialogFragment() {
         lastOst.id = -1
     }
 
-
     interface EditOstDialogListener {
 
         fun onSaveButtonClick(editedOst: Ost, dialog: EditOstDialog)
@@ -42,13 +36,11 @@ class EditOstDialog : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dbHandler = MainActivity.getDbHandler()
-        val showList = dbHandler.allShows
-        val tagList = dbHandler.allTags
 
-        builder = AlertDialog.Builder(activity!!)
+        val builder = AlertDialog.Builder(activity!!)
 
-        inflater = activity!!.layoutInflater
-        dialogView = inflater.inflate(R.layout.dialog_addscreen, null)
+        val inflater = activity!!.layoutInflater
+        val dialogView = inflater.inflate(R.layout.dialog_addscreen, null)
 
         builder.setView(dialogView)
                 .setPositiveButton("Save") { _, _ -> saveOst() }
@@ -56,10 +48,10 @@ class EditOstDialog : DialogFragment() {
         builder.setNegativeButton("Delete") { _, _ -> deleteOst() }
 
         val tagsAdapter = ArrayAdapter(activity!!,
-                android.R.layout.simple_spinner_dropdown_item, tagList)
+                android.R.layout.simple_spinner_dropdown_item, dbHandler.allTags)
 
         val showAdapter = ArrayAdapter(activity!!,
-                android.R.layout.simple_spinner_dropdown_item, showList)
+                android.R.layout.simple_spinner_dropdown_item, dbHandler.allShows)
 
         edTitle = dialogView.findViewById(R.id.edtTitle)
         actvShow = dialogView.findViewById(R.id.actvShow)

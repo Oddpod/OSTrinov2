@@ -8,13 +8,11 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
 import com.odd.ostrinov2.Ost
-import java.util.*
 
 class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
-    private var ostList: List<Ost>? = null
-    private var showList: List<String>? = null
-    private var tagsList: List<String>? = null
+    private var showList: List<String>? = ArrayList()
+    private var tagsList: List<String>? = ArrayList()
 
     val allOsts: List<Ost>
         get() {
@@ -100,12 +98,6 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
             return tagsTable
         }
 
-    init {
-        ostList = ArrayList()
-        showList = ArrayList()
-        tagsList = ArrayList()
-    }
-
     //creating Tables
     override fun onCreate(db: SQLiteDatabase) {
         val CREATE_SHOW_TABLE = "CREATE TABLE $SHOW_TABLE($KEY_SHOW_ID INTEGER UNIQUE PRIMARY KEY," +
@@ -180,17 +172,15 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
 
 
     fun addNewOst(newOst: Ost) {
-        val values = ContentValues()
+        val values = ContentValues(4)
 
-        val show = newOst.show
-        val tags = newOst.tags
-
-        addNewTagsandShows(show, tags)
-
-        values.put(KEY_OST_TITLE, newOst.title)
-        values.put(KEY_OST_TAG, tags)
-        values.put(FKEY_OST_SHOW_ID, getShowId(show))
-        values.put(KEY_OST_VIDEO_ID, newOst.videoId)
+        with(newOst) {
+            addNewTagsandShows(show, tags)
+            values.put(KEY_OST_TITLE, title)
+            values.put(KEY_OST_TAG, tags)
+            values.put(FKEY_OST_SHOW_ID, getShowId(show))
+            values.put(KEY_OST_VIDEO_ID, videoId)
+        }
 
         //inserting Row
         writableDatabase.insert(OST_TABLE, null, values)
@@ -215,7 +205,7 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
         showId = if (cursor.moveToFirst()) {
             cursor.getInt(0)
         } else {
-            Log.i("Retrieveerror", "empty cursor, no entry with name \$show")
+            Log.i("Retrieve error", "empty cursor, no entry with name \$show")
             0
         }
         cursor.close()
@@ -229,7 +219,7 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
         tagsId = if (cursor.moveToFirst()) {
             cursor.getInt(0)
         } else {
-            Log.i("Retrieveerror", "empty cursor, no entry with name \$show")
+            Log.i("Retrieve error", "empty cursor, no entry with name \$show")
             0
         }
         cursor.close()
@@ -285,7 +275,7 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
             cursor.close()
             return ost
         } else {
-            Log.i("Retrieveerror", "empty cursor, no entry with id \$id")
+            Log.i("Retrieve error", "empty cursor, no entry with id \$id")
 
         }
         return null
@@ -293,22 +283,22 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
 
     fun updateOst(ost: Ost) {
 
-        addNewTagsandShows(ost.show, ost.tags)
-
         val values = ContentValues()
 
-        values.put(KEY_OST_TITLE, ost.title)
-        values.put(FKEY_OST_SHOW_ID, getShowId(ost.show))
-        values.put(KEY_OST_TAG, ost.tags)
-        values.put(KEY_OST_VIDEO_ID, ost.videoId)
+        with(ost) {
+            addNewTagsandShows(ost.show, ost.tags)
+            values.put(KEY_OST_TITLE, title)
+            values.put(FKEY_OST_SHOW_ID, getShowId(show))
+            values.put(KEY_OST_TAG, tags)
+            values.put(KEY_OST_VIDEO_ID, videoId)
+        }
 
         writableDatabase.update(OST_TABLE, values,"$KEY_OST_ID=?", arrayOf(ost.id.toString()) )
     }
 
     fun checkiIfOstInDB(ost: Ost): Boolean {
-        ostList = allOsts
         val ostString = ost.toString().toLowerCase()
-        for (ostFromDB in ostList!!) {
+        for (ostFromDB in allOsts) {
             if (ostFromDB.toString().toLowerCase() == ostString) {
                 return true
             }
@@ -360,7 +350,7 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
     }
 
     fun reCreateTagsAndShowTables() {
-        ostList = allOsts
+        val ostList = allOsts
         val TRUNCATE_TABLE = "DROP TABLE $TAGS_TABLE"
         writableDatabase.execSQL(TRUNCATE_TABLE)
         val TRUNCATE_TABLE2 = "DROP TABLE $SHOW_TABLE"
@@ -374,7 +364,7 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
                 "$KEY_OST_TAG TEXT )"
         writableDatabase.execSQL(CREATE_TAGS_TABLE)
 
-        for (ost in ostList!!) {
+        for (ost in ostList) {
             addNewTagsandShows(ost.show, ost.tags)
         }
     }

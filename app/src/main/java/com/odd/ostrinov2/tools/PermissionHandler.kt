@@ -60,7 +60,8 @@ fun launchReadWriteExternalNotGrantedDialog(mainActivity: MainActivity){
 
 fun checkPermission(mainActivity: MainActivity, callback: Runnable) =
         if (ContextCompat.checkSelfPermission(mainActivity,
-                        Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(mainActivity,
+                        Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(mainActivity,
                         Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 
             // No explanation needed, we can request the permission.

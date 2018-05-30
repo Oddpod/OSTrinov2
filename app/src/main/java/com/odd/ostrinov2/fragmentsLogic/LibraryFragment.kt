@@ -24,9 +24,8 @@ import java.util.*
 
 class LibraryFragment : Fragment(), View.OnClickListener, AddOstDialog.AddDialogListener {
 
-    private var filterText: String? = null
-    internal var dialog = AddOstDialog()
-    internal var playerDocked: Boolean = false
+    private var dialog = AddOstDialog()
+    private var playerDocked: Boolean = false
     var libListAdapter: OstsRVAdapter? = null
         private set
     private var mainActivity: MainActivity? = null
@@ -109,15 +108,14 @@ class LibraryFragment : Fragment(), View.OnClickListener, AddOstDialog.AddDialog
         }*/
 
         val filter = rootView.findViewById<EditText>(R.id.edtFilter)
-        filterText = ""
         val textWatcher = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
 
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
 
             override fun afterTextChanged(s: Editable) {
-                filterText = s.toString()
-                launchMeme(filterText!!, mainActivity!!)
+                val filterText = s.toString()
+                launchMeme(filterText, mainActivity!!)
                 libListAdapter!!.filter(s.toString())
             }
         }

@@ -6,8 +6,6 @@ import android.os.Bundle
 import android.support.v4.app.DialogFragment
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
@@ -22,17 +20,13 @@ import kotlinx.coroutines.experimental.async
 
 class PlaylistPicker : DialogFragment() {
 
-    private lateinit var builder: AlertDialog.Builder
-    private lateinit var inflater: LayoutInflater
-    private lateinit var dialogView: View
-
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val playlists = MainActivity.getDbHandler().allPlaylists
 
-        builder = AlertDialog.Builder(activity)
+        val builder = AlertDialog.Builder(activity)
 
-        inflater = activity!!.layoutInflater
-        dialogView = inflater.inflate(R.layout.playlist_picker, null)
+        val inflater = activity!!.layoutInflater
+        val dialogView = inflater.inflate(R.layout.playlist_picker, null)
 
         val etPlaylistName = dialogView.findViewById<EditText>(R.id.etPlaylistName)
         val btnCreatePlaylist = dialogView.findViewById<ImageButton>(R.id.btnCreatePlaylist)
@@ -57,7 +51,7 @@ class PlaylistPicker : DialogFragment() {
         return builder.create()
     }
 
-    class TextAdapter(private var playlists: List<Playlist>, val dialog: PlaylistPicker,
+    class TextAdapter(private var playlists: List<Playlist>, private val dialog: PlaylistPicker,
                       private val ostId: Int?,
                       private val ostIds: List<Int>?) :
             RecyclerView.Adapter<TextAdapter.ViewHolder>() {

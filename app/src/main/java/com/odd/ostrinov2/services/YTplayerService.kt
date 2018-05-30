@@ -28,7 +28,6 @@ import com.odd.ostrinov2.tools.YoutubePlayerHandler
 import com.odd.ostrinov2.tools.isSystemAlertPermissionGranted
 import com.odd.ostrinov2.tools.requestSystemPermission
 
-
 class YTplayerService : Service(),
         YouTubePlayer.OnFullscreenListener {
 

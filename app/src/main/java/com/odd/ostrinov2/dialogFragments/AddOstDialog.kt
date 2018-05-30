@@ -5,10 +5,7 @@ import android.content.DialogInterface
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
 import android.support.v7.app.AlertDialog
-import android.view.LayoutInflater
-import android.view.View
 import android.widget.*
-
 import com.odd.ostrinov2.MainActivity
 import com.odd.ostrinov2.Ost
 import com.odd.ostrinov2.R
@@ -18,9 +15,6 @@ import kotlinx.coroutines.experimental.async
 
 class AddOstDialog : DialogFragment() {
 
-    private lateinit var builder: AlertDialog.Builder
-    private lateinit var inflater: LayoutInflater
-    private lateinit var dialogView: View
     private var lastOst = Ost("", "", "", "")
 
     private lateinit var edTitle: EditText
@@ -48,10 +42,10 @@ class AddOstDialog : DialogFragment() {
         val showList = dbHandler.allShows
         val tagList = dbHandler.allTags
 
-        builder = AlertDialog.Builder(activity!!)
+        val builder = AlertDialog.Builder(activity!!)
 
-        inflater = activity!!.layoutInflater
-        dialogView = inflater.inflate(R.layout.dialog_addscreen, null)
+        val inflater = activity!!.layoutInflater
+        val dialogView = inflater.inflate(R.layout.dialog_addscreen, null)
 
         builder.setView(dialogView)
                 .setPositiveButton("Add") { _, _ -> addOst() }

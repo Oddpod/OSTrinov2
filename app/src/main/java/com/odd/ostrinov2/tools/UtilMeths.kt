@@ -80,7 +80,7 @@ internal object UtilMeths {
         deleteRecursive(context.filesDir)
     }
 
-    fun deleteRecursive(fileOrDirectory: File) {
+    private fun deleteRecursive(fileOrDirectory: File) {
 
         if (fileOrDirectory.isDirectory)
             for (child in fileOrDirectory.listFiles())

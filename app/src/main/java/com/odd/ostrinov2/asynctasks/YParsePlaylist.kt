@@ -18,7 +18,7 @@ class YParsePlaylist(private val pListId: String, private val pListName: String,
 
     private var parsedTitle: String? = null
     private var wContext: WeakReference<Context> = WeakReference(context)
-    private lateinit var nextPagetoken: String
+    private lateinit var nextPageToken: String
     private var hasNextPage: Boolean = false
     private val maxResults = 20
     private var count = 0
@@ -51,7 +51,7 @@ class YParsePlaylist(private val pListId: String, private val pListName: String,
 
         parseResponseItems(jsonStr)
         while (hasNextPage) {
-            val jsonUrl2 = "$jsonUrl&pageToken=$nextPagetoken"
+            val jsonUrl2 = "$jsonUrl&pageToken=$nextPageToken"
 
             val jsonStr2 = sh.makeServiceCall(jsonUrl2)
             parseResponseItems(jsonStr2)
@@ -72,7 +72,7 @@ class YParsePlaylist(private val pListId: String, private val pListName: String,
         progressNotification.updateProgress(values[0], totalItems)
     }
 
-    fun parseResponseItems(jsonStr: String?) {
+    private fun parseResponseItems(jsonStr: String?) {
         if (jsonStr != null) {
             try {
                 val jsonObj = JSONObject(jsonStr)
@@ -83,7 +83,7 @@ class YParsePlaylist(private val pListId: String, private val pListName: String,
                 if (!jsonObj.has("nextPageToken")) {
                     hasNextPage = false
                 } else {
-                    nextPagetoken = jsonObj.getString("nextPageToken")
+                    nextPageToken = jsonObj.getString("nextPageToken")
                     hasNextPage = true
                 }
 

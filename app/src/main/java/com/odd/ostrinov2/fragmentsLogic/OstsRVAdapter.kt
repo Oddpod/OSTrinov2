@@ -99,7 +99,6 @@ class OstsRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
             pum.show()
         }
         holder.base.setOnClickListener {
-            ostList.forEach { print("$it, ") }
             UtilMeths.initYTPServiceQueue(mContext, ostList, position)
         }
         holder.base.setOnLongClickListener {
@@ -111,7 +110,7 @@ class OstsRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
     }
 
     fun getOstList() = ostList
-    fun getItem(position: Int): Ost = ostList[position]
+    private fun getItem(position: Int): Ost = ostList[position]
     override fun getItemId(position: Int): Long = ostList[position].id.toLong()
 
     class RowViewHolder(val base: View) : RecyclerView.ViewHolder(base) {
@@ -161,11 +160,11 @@ class OstsRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
     }
 
     override fun onDeleteButtonClick(deletedOst: Ost, dialog: EditOstDialog) {
-        println("Deleting ost")
         MainActivity.getDbHandler().deleteOst(deletedOst.id)
         ostList.remove(deletedOst)
         unFilteredOstList.remove(deletedOst)
         notifyDataSetChanged()
+        UtilMeths.deleteThumbnail(deletedOst.videoId, mContext)
         Toast.makeText(mContext, "Deleted " + deletedOst.title, Toast.LENGTH_SHORT).show()
     }
 
@@ -173,9 +172,4 @@ class OstsRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
         unFilteredOstList.add(ost)
         filter(lastQuery)
     }
-
-    /*companion object Statics {
-        lateinit var ostList: MutableList<Ost>
-        lateinit var unFilteredOstList: MutableList<Ost>
-    }*/
 }

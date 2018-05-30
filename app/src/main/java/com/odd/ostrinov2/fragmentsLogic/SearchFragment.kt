@@ -18,7 +18,6 @@ class SearchFragment: Fragment() {
 
     private lateinit var mainActivity: MainActivity
     private lateinit var searchAdapter: SearchAdapter
-    private lateinit var rvSearchResults: RecyclerView
     private lateinit var youtubeSearch: YoutubeSearch
     private lateinit var yPlaylistRetriever: YGetPlaylistItems
     var isInPlaylist: Boolean = false
@@ -31,7 +30,7 @@ class SearchFragment: Fragment() {
 
         rootView = inflater.inflate(R.layout.search_layout, container, false)
 
-        rvSearchResults = rootView.findViewById(R.id.rvSearchresults) as RecyclerView
+        val rvSearchResults = rootView.findViewById(R.id.rvSearchresults) as RecyclerView
         val mLayoutManager = LinearLayoutManager(mainActivity)
         rvSearchResults.layoutManager = mLayoutManager
 
