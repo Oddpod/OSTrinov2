@@ -58,20 +58,19 @@ fun launchReadWriteExternalNotGrantedDialog(mainActivity: MainActivity){
     alert.show()
 }
 
-fun checkPermission(mainActivity: MainActivity, callback: Runnable) {
-    if (ContextCompat.checkSelfPermission(mainActivity,
-                    Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(mainActivity,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+fun checkPermission(mainActivity: MainActivity, callback: Runnable) =
+        if (ContextCompat.checkSelfPermission(mainActivity,
+                        Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(mainActivity,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 
-        // No explanation needed, we can request the permission.
-        MainActivity.setPermissionCallback(callback)
-        ActivityCompat.requestPermissions(mainActivity,
-                arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                Constants.REQUEST_READWRITE_EXTERNAL_STORAGE)
-    } else {
-        callback.run()
-    }
-}
+            // No explanation needed, we can request the permission.
+            MainActivity.setPermissionCallback(callback)
+            ActivityCompat.requestPermissions(mainActivity,
+                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                    Constants.REQUEST_READWRITE_EXTERNAL_STORAGE)
+        } else {
+            callback.run()
+        }
 
 fun launchAppSettingsIntent(context: Context) {
     val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,

@@ -392,7 +392,11 @@ public class MainActivity extends AppCompatActivity implements
                 onRequestCode(requestCode, resultCode, data);
             }
         };
-        PermissionHandlerKt.checkPermission(this, callback);
+        if (requestCode == 1 || requestCode == 2) {
+            PermissionHandlerKt.checkPermission(this, callback);
+        } else {
+            onRequestCode(requestCode, resultCode, data);
+        }
         super.onActivityResult(requestCode, resultCode, data);
     }
 
