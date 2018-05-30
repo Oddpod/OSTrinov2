@@ -77,7 +77,7 @@ class SearchFragment: Fragment() {
 
     fun performSearch( query: String){
         lastQuery = query
-            youtubeSearch = YoutubeSearch(mainActivity, query, this)
+        youtubeSearch = YoutubeSearch(query, this)
     }
 
     //Used to get out of playlist and back to search
