@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Color
 import android.graphics.PixelFormat
+import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import android.view.Gravity
@@ -27,6 +28,7 @@ import com.odd.ostrinov2.tools.YoutubePlayerHandler
 import com.odd.ostrinov2.tools.isSystemAlertPermissionGranted
 import com.odd.ostrinov2.tools.requestSystemPermission
 
+
 class YTplayerService : Service(),
         YouTubePlayer.OnFullscreenListener {
 
@@ -42,10 +44,16 @@ class YTplayerService : Service(),
     private lateinit var playerNotification: PlayerNotificationService
     private var yPlayerHandler: YoutubePlayerHandler? = null
 
+    private val LAYOUT_FLAG = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+    } else {
+        WindowManager.LayoutParams.TYPE_PHONE
+    }
+
     private val smallWindowParams = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.TYPE_PHONE,
+            LAYOUT_FLAG,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT)
     private val largePParams = RelativeLayout.LayoutParams(
@@ -53,22 +61,25 @@ class YTplayerService : Service(),
             RelativeLayout.LayoutParams.WRAP_CONTENT)
 
     private lateinit var smallPParams: RelativeLayout.LayoutParams
+
     private val largeWindowParams = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.TYPE_PHONE,
+            LAYOUT_FLAG,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT)
+
     private val fullScreenParams = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.TYPE_PHONE,
+            LAYOUT_FLAG,
             WindowManager.LayoutParams.FLAG_FULLSCREEN,
             PixelFormat.TRANSLUCENT)
 
     override fun onCreate() {
         super.onCreate()
         registerBroadcastReceiver()
+
     }
 
     inner class LocalBinder : android.os.Binder() {
