@@ -16,7 +16,7 @@ class YPlaylistToOstList(private val pListId: String, context: Context) :
         AsyncTask<Void, Int, Void>() {
 
     private var wContext: WeakReference<Context> = WeakReference(context)
-    private lateinit var nextPagetoken: String
+    private lateinit var nextPageToken: String
     private var hasNextPage: Boolean = false
     private var ostList: ArrayList<Ost> = ArrayList(20)
     private val maxResults = 20
@@ -32,7 +32,7 @@ class YPlaylistToOstList(private val pListId: String, context: Context) :
 
         parseResponseItems(jsonStr)
         while (hasNextPage) {
-            val jsonUrl2 = "$jsonUrl&pageToken=$nextPagetoken"
+            val jsonUrl2 = "$jsonUrl&pageToken=$nextPageToken"
 
             val jsonStr2 = sh.makeServiceCall(jsonUrl2)
             parseResponseItems(jsonStr2)
@@ -45,7 +45,7 @@ class YPlaylistToOstList(private val pListId: String, context: Context) :
         UtilMeths.addPlaylistToYTPServiceQueue(wContext.get(), ostList)
     }
 
-    fun parseResponseItems(jsonStr: String?) {
+    private fun parseResponseItems(jsonStr: String?) {
         if (jsonStr != null) {
             try {
                 val jsonObj = JSONObject(jsonStr)
@@ -55,7 +55,7 @@ class YPlaylistToOstList(private val pListId: String, context: Context) :
                 if (!jsonObj.has("nextPageToken")) {
                     hasNextPage = false
                 } else {
-                    nextPagetoken = jsonObj.getString("nextPageToken")
+                    nextPageToken = jsonObj.getString("nextPageToken")
                     hasNextPage = true
                 }
 

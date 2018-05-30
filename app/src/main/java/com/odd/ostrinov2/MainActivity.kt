@@ -47,7 +47,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     private var floatingPlayer: FrameLayout? = null
     private var rlContent: RelativeLayout? = null
-    private var youtubePlayerLaunched = false
+
     private var about = false
     private var ostFromWidget = false
     private var ostFromWidgetId: Int = 0
@@ -653,6 +653,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     companion object {
 
+        var youtubePlayerLaunched = false
         private val PREFS_NAME = "Saved queue"
         lateinit var dbHandler: DBHandler
             private set

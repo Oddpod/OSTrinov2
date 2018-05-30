@@ -1,16 +1,18 @@
-import QueryStrings.Fields.FKEY_OST_ID
-import QueryStrings.Fields.FKEY_OST_SHOW_ID
-import QueryStrings.Fields.FKEY_PLAYLIST_ID
-import QueryStrings.Fields.KEY_ENTRY
-import QueryStrings.Fields.KEY_OST_ID
-import QueryStrings.Fields.KEY_OST_TAG
-import QueryStrings.Fields.KEY_OST_TITLE
-import QueryStrings.Fields.KEY_OST_VIDEO_ID
-import QueryStrings.Fields.KEY_SHOW
-import QueryStrings.Fields.KEY_SHOW_ID
-import QueryStrings.Fields.OST_TABLE
-import QueryStrings.Fields.PLAYLIST_OST_TABLE
-import QueryStrings.Fields.SHOW_TABLE
+package com.odd.ostrinov2.tools
+
+import com.odd.ostrinov2.tools.QueryStrings.Fields.FKEY_OST_ID
+import com.odd.ostrinov2.tools.QueryStrings.Fields.FKEY_OST_SHOW_ID
+import com.odd.ostrinov2.tools.QueryStrings.Fields.FKEY_PLAYLIST_ID
+import com.odd.ostrinov2.tools.QueryStrings.Fields.KEY_ENTRY
+import com.odd.ostrinov2.tools.QueryStrings.Fields.KEY_OST_ID
+import com.odd.ostrinov2.tools.QueryStrings.Fields.KEY_OST_TAG
+import com.odd.ostrinov2.tools.QueryStrings.Fields.KEY_OST_TITLE
+import com.odd.ostrinov2.tools.QueryStrings.Fields.KEY_OST_VIDEO_ID
+import com.odd.ostrinov2.tools.QueryStrings.Fields.KEY_SHOW
+import com.odd.ostrinov2.tools.QueryStrings.Fields.KEY_SHOW_ID
+import com.odd.ostrinov2.tools.QueryStrings.Fields.OST_TABLE
+import com.odd.ostrinov2.tools.QueryStrings.Fields.PLAYLIST_OST_TABLE
+import com.odd.ostrinov2.tools.QueryStrings.Fields.SHOW_TABLE
 
 object QueryStrings {
     //TODO Make Actual Not Garbage Query

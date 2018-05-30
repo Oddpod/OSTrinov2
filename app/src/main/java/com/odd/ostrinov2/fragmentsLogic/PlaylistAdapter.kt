@@ -16,7 +16,8 @@ import com.odd.ostrinov2.dialogFragments.PlaylistPicker
 import com.odd.ostrinov2.tools.Playlist
 import com.odd.ostrinov2.tools.UtilMeths
 
-class PlaylistAdapter(val mContext: Context?, val playFrag: PlaylistFragment) : RecyclerView.Adapter<PlaylistAdapter.ObjectViewWrapper>() {
+class PlaylistAdapter(private val mContext: Context?, private val playFrag: PlaylistFragment) :
+        RecyclerView.Adapter<PlaylistAdapter.ObjectViewWrapper>() {
 
     private var playLists: List<Playlist> = MainActivity.dbHandler.allPlaylists
 

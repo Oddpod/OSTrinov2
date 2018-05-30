@@ -51,34 +51,13 @@ class SearchAdapter(private val mContext: Context, private val mainActivity: Mai
             pum.setOnMenuItemClickListener { item ->
                 when (item?.itemId) {
                     R.id.chooser_addToQueue -> {
-                        if (video.playlist) {
-                            YPlaylistToOstList(video.id, mContext).execute()
-                        } else {
-                            UtilMeths.addToYTPServiceQueue(mContext,
-                                Ost(video.title, "", "", video.id))
-                    }
+                        addToQueue(video, mContext)
                     }
                     R.id.chooser_addToLibrary -> {
-                        if (video.playlist)
-                            async {
-                                YParsePlaylist(video.id, video.title, mContext).execute()
-                                mainActivity.libraryFragment.shouldRefreshList = true
-                            }
-                        else {
-                            async {
-                                DownloadTNImage(mainActivity).execute(video.id)
-                                UtilMeths.parseAddOst(video.title, video.id)
-                                mainActivity.libraryFragment.shouldRefreshList = true
-                            }
-                        }
+                        addToLibrary(video, mContext, mainActivity)
                     }
                     R.id.chooser_copyLink -> {
-                        val clipboard = mContext.getSystemService(Context.CLIPBOARD_SERVICE)
-                                as ClipboardManager?
-                        val clip = ClipData.newPlainText("Ost id", video.id)
-                        clipboard!!.primaryClip = clip
-                        Toast.makeText(mContext, "Link Copied to Clipboard", Toast.LENGTH_SHORT)
-                                .show()
+                        copyLink(mContext, video)
                     }
                 }
                 true
@@ -127,6 +106,46 @@ class SearchAdapter(private val mContext: Context, private val mainActivity: Mai
         }
         searchResults.addAll(searchObjects)
         notifyDataSetChanged()
+    }
+
+    companion object {
+        fun addToQueue(video: SearchAdapter.SearchObject, mContext: Context) {
+            if (MainActivity.youtubePlayerLaunched) {
+                if (video.playlist) {
+                    YPlaylistToOstList(video.id, mContext).execute()
+                } else {
+                    UtilMeths.addToYTPServiceQueue(mContext,
+                            Ost(video.title, "", "", video.id))
+                }
+            } else {
+                Toast.makeText(mContext, "You have nothing playing :C",
+                        Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        fun addToLibrary(video: SearchAdapter.SearchObject, mContext: Context, mainActivity: MainActivity) {
+            if (video.playlist)
+                async {
+                    YParsePlaylist(video.id, video.title, mContext).execute()
+                    mainActivity.libraryFragment.shouldRefreshList = true
+                }
+            else {
+                async {
+                    DownloadTNImage(mainActivity).execute(video.id)
+                    UtilMeths.parseAddOst(video.title, video.id)
+                    mainActivity.libraryFragment.shouldRefreshList = true
+                }
+            }
+        }
+
+        fun copyLink(mContext: Context, video: SearchAdapter.SearchObject) {
+            val clipboard = mContext.getSystemService(Context.CLIPBOARD_SERVICE)
+                    as ClipboardManager?
+            val clip = ClipData.newPlainText("Ost id", video.id)
+            clipboard!!.primaryClip = clip
+            Toast.makeText(mContext, "Link Copied to Clipboard", Toast.LENGTH_SHORT)
+                    .show()
+        }
     }
 
 }
