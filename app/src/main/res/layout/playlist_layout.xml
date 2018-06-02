@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
@@ -11,12 +10,18 @@
         android:id="@+id/rvPlaylists"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:fastScrollEnabled="true"
-        app:fastScrollHorizontalThumbDrawable="@drawable/scrollbar"
-        app:fastScrollHorizontalTrackDrawable="@drawable/line_drawable"
-        app:fastScrollVerticalThumbDrawable="@drawable/scrollbar"
-        app:fastScrollVerticalTrackDrawable="@drawable/line_drawable"
+        android:layout_above="@id/llCreatePlaylist"
+        android:scrollbars="none"
         app:layoutManager="android.support.v7.widget.LinearLayoutManager" />
+
+    <com.odd.ostrinov2.FastScroller
+        android:id="@+id/fast_scroller"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_above="@id/llCreatePlaylist"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true" />
 
     <ImageView
         android:id="@+id/ivArchives"
@@ -28,9 +33,15 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:id="@+id/llCreatePlaylist"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+
         android:orientation="horizontal"
-        tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="190dp">
+        android:layout_alignParentStart="true"
+        android:background="@color/colorPrimary">
 
         <EditText
             android:id="@+id/etPlaylistName"
@@ -54,4 +65,4 @@
 
     </LinearLayout>
 
-</LinearLayout>
+</RelativeLayout>

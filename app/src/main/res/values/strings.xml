@@ -75,4 +75,6 @@
     <string name="choose_delete_playlist">Delete</string>
     <string name="playlist_icon">playlist icon</string>
     <string name="label_clear_tn_storage">Clear thumbnail files</string>
+    <string name="fastscroller_handle">fastscroll handle</string>
+    <string name="fastscroller_track">fastscroll track</string>
 </resources>

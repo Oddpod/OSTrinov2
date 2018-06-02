@@ -6,6 +6,7 @@ import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.odd.ostrinov2.FastScroller
 import com.odd.ostrinov2.MainActivity
 import com.odd.ostrinov2.Ost
 import com.odd.ostrinov2.R
@@ -23,6 +24,10 @@ class PlaylistFragment: Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
 
         val rootView = inflater.inflate(R.layout.playlist_layout, container, false)
+
+
+        val fastScroller = rootView.findViewById(R.id.fast_scroller) as FastScroller
+        fastScroller.setRecyclerView(rootView.rvPlaylists)
 
         playlistAdapter = PlaylistAdapter(context, this)
         rootView.rvPlaylists.adapter = playlistAdapter

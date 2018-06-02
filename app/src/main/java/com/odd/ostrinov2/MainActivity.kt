@@ -38,6 +38,8 @@ import com.odd.ostrinov2.fragmentsLogic.SearchFragment
 import com.odd.ostrinov2.services.YTplayerService
 import com.odd.ostrinov2.tools.*
 
+private const val PREFS_NAME = "Saved queue"
+
 class MainActivity : AppCompatActivity(), View.OnClickListener {
     private var backPress: Int = 0
     lateinit var libraryFragment: LibraryFragment
@@ -234,6 +236,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     override fun onBackPressed() {
+        Toast.makeText(this, "isInPlaylist: " + searchFragment.isInPlaylist.toString(), Toast.LENGTH_SHORT).show()
         val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START)
@@ -246,7 +249,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             searchFragment.backPress()
         } else {
             backPress += 1
-            Toast.makeText(applicationContext, " Press Back again to Exit ", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, " Press Back again to Exit ", Toast.LENGTH_SHORT).show()
 
             if (backPress > 1) {
                 super.onBackPressed()
@@ -505,22 +508,20 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     public override fun onDestroy() {
-        val closeIntent = Intent(this, YTplayerService::class.java)
-        closeIntent.action = Constants.STOPFOREGROUND_ACTION
-        startService(closeIntent)
-        destroyingActivity = true
+        if (youtubePlayerLaunched) {
+            val closeIntent = Intent(this, YTplayerService::class.java)
+            closeIntent.action = Constants.STOPFOREGROUND_ACTION
+            startService(closeIntent)
+            destroyingActivity = true
+        }
         super.onDestroy()
     }
 
     public override fun onStart() {
-        if (shouldRefreshList) {
-            libraryFragment.refreshListView()
-            shouldRefreshList = false
-        }
         super.onStart()
         checkAutorotate()
         doBindService()
-        if (!youtubePlayerLaunched) {
+        if (!youtubePlayerLaunched && !addingOstLink) {
             initPlayerService()
         } else {
             handler.postDelayed(seekbarUpdater, 1000)
@@ -570,6 +571,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             }
             Intent.ACTION_SEND -> {
                 addOstLink(intent)
+                addingOstLink = true
             }
             Constants.INITPLAYER -> {
                 val osts = intent.getParcelableArrayListExtra<Ost>("osts_extra")
@@ -654,20 +656,15 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     companion object {
 
         var youtubePlayerLaunched = false
-        private val PREFS_NAME = "Saved queue"
         lateinit var dbHandler: DBHandler
             private set
-        private var shouldRefreshList = false
+        private var addingOstLink: Boolean = false
 
         private var permissionCallback: Runnable? = null
         var destroyingActivity = false
 
         fun setPermissionCallback(permissionCallback: Runnable) {
             MainActivity.permissionCallback = permissionCallback
-        }
-
-        fun setShoudlRefreshList(shouldRefreshList: Boolean) {
-            MainActivity.shouldRefreshList = shouldRefreshList
         }
     }
 
