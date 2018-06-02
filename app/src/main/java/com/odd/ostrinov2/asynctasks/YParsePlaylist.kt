@@ -5,7 +5,7 @@ import android.os.AsyncTask
 import android.util.Log
 import android.widget.Toast
 import com.odd.ostrinov2.Constants
-import com.odd.ostrinov2.MainActivity
+import com.odd.ostrinov2.fragmentsLogic.LibraryFragment
 import com.odd.ostrinov2.tools.HttpHandler
 import com.odd.ostrinov2.tools.ProgressNotification
 import com.odd.ostrinov2.tools.UtilMeths
@@ -61,7 +61,7 @@ class YParsePlaylist(private val pListId: String, private val pListName: String,
 
     override fun onPostExecute(result: Void?) {
         super.onPostExecute(result)
-        MainActivity.setShoudlRefreshList(true)
+        LibraryFragment.shouldRefreshList = true
         progressNotification.setCompletedNotification()
         Toast.makeText(wContext.get(), "Added $pListName to your OST library", Toast.LENGTH_SHORT).show()
     }

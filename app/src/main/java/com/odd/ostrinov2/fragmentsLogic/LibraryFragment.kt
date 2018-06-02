@@ -13,11 +13,8 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TableLayout
 import android.widget.Toast
-import com.odd.ostrinov2.MainActivity
-import com.odd.ostrinov2.Ost
-import com.odd.ostrinov2.R
+import com.odd.ostrinov2.*
 import com.odd.ostrinov2.dialogFragments.AddOstDialog
-import com.odd.ostrinov2.launchMeme
 import com.odd.ostrinov2.tools.SortHandler
 import java.util.*
 
@@ -25,18 +22,16 @@ import java.util.*
 class LibraryFragment : Fragment(), View.OnClickListener, AddOstDialog.AddDialogListener {
 
     private var dialog = AddOstDialog()
-    private var playerDocked: Boolean = false
     var libListAdapter: OstsRVAdapter? = null
         private set
     private var mainActivity: MainActivity? = null
     lateinit var tlTop: TableLayout
-    var shouldRefreshList: Boolean = false
 
     private val currDispOstList: List<Ost>
         get() = libListAdapter!!.getOstList()
+    private var isScrollingUp = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        playerDocked = true
         val rootView = inflater.inflate(R.layout.fragment_library, container, false)
         dialog.setAddScreenListener(this)
 
@@ -44,18 +39,25 @@ class LibraryFragment : Fragment(), View.OnClickListener, AddOstDialog.AddDialog
 
         val rvOst = rootView.findViewById<RecyclerView>(R.id.rvOstList)
 
+        val fastScroller = rootView.findViewById(R.id.fast_scroller) as FastScroller
+        fastScroller.setRecyclerView(rvOst)
+
         rvOst.adapter = libListAdapter
-        rvOst.findViewById<View>(R.id.btnOptions)
 
         rvOst.addOnScrollListener(object : RecyclerView.OnScrollListener() {
 
             override fun onScrolled(recyclerView: RecyclerView?, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
-                if (dy > 0) {
-                    tlTop.visibility = View.GONE
-                } else {
+                isScrollingUp = dy < 0
+            }
+
+            override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
+                if (newState == RecyclerView.SCROLL_STATE_IDLE && isScrollingUp) {
                     tlTop.visibility = View.VISIBLE
+                } else if (newState == RecyclerView.SCROLL_STATE_DRAGGING && !isScrollingUp) {
+                    tlTop.visibility = View.GONE
                 }
+                super.onScrollStateChanged(recyclerView, newState)
             }
         })
 
@@ -193,5 +195,9 @@ class LibraryFragment : Fragment(), View.OnClickListener, AddOstDialog.AddDialog
             Toast.makeText(context, ostToAdd.title + " From " + ostToAdd.show
                     + " has already been added", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    companion object {
+        var shouldRefreshList: Boolean = false
     }
 }
