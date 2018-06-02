@@ -1,8 +1,6 @@
 package com.odd.ostrinov2.fragmentsLogic
 
 import android.annotation.SuppressLint
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
 import android.os.Bundle
 import android.support.v7.widget.RecyclerView
@@ -77,18 +75,12 @@ class OstsRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
                         UtilMeths.addToYTPServiceQueue(mContext, ost)
                     }
                     R.id.chooser_copyLink -> {
-                        val clipboard = mContext.getSystemService(Context.CLIPBOARD_SERVICE)
-                                as ClipboardManager?
-                        val clip = ClipData.newPlainText("Ost id", ost.url)
-                        clipboard!!.primaryClip = clip
-                        Toast.makeText(mContext, "Link Copied to Clipboard", Toast.LENGTH_SHORT)
-                                .show()
+                        UtilMeths.copyToClipBoard(mContext, ost.url)
                     }
                     R.id.add_to_playlist -> {
                         val picker = PlaylistPicker()
                         val bundl = Bundle()
                         bundl.putInt("ostId", ost.id)
-                        println("ostId: ${ost.id}")
                         picker.arguments = bundl
                         picker.show((mContext as MainActivity).supportFragmentManager,
                                 "PlaylistPicker")

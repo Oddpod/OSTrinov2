@@ -1,5 +1,7 @@
 package com.odd.ostrinov2.tools
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -169,5 +171,14 @@ internal object UtilMeths {
             }
         }
         return ostList
+    }
+
+    fun copyToClipBoard(mContext: Context, data: String) {
+        val clipboard = mContext.getSystemService(Context.CLIPBOARD_SERVICE)
+                as ClipboardManager?
+        val clip = ClipData.newPlainText("video url", data)
+        clipboard!!.primaryClip = clip
+        Toast.makeText(mContext, "Link Copied to Clipboard", Toast.LENGTH_SHORT)
+                .show()
     }
 }

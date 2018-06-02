@@ -1,8 +1,6 @@
 package com.odd.ostrinov2.fragmentsLogic
 
 import android.annotation.SuppressLint
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
 import android.support.constraint.ConstraintLayout
 import android.support.v7.widget.RecyclerView
@@ -57,7 +55,7 @@ class SearchAdapter(private val mContext: Context, private val mainActivity: Mai
                         addToLibrary(video, mContext, mainActivity)
                     }
                     R.id.chooser_copyLink -> {
-                        copyLink(mContext, video)
+                        UtilMeths.copyToClipBoard(mContext, video.id)
                     }
                 }
                 true
@@ -127,24 +125,15 @@ class SearchAdapter(private val mContext: Context, private val mainActivity: Mai
             if (video.playlist)
                 async {
                     YParsePlaylist(video.id, video.title, mContext).execute()
-                    mainActivity.libraryFragment.shouldRefreshList = true
+                    LibraryFragment.shouldRefreshList = true
                 }
             else {
                 async {
                     DownloadTNImage(mainActivity).execute(video.id)
                     UtilMeths.parseAddOst(video.title, video.id)
-                    mainActivity.libraryFragment.shouldRefreshList = true
+                    LibraryFragment.shouldRefreshList = true
                 }
             }
-        }
-
-        fun copyLink(mContext: Context, video: SearchAdapter.SearchObject) {
-            val clipboard = mContext.getSystemService(Context.CLIPBOARD_SERVICE)
-                    as ClipboardManager?
-            val clip = ClipData.newPlainText("Ost id", video.id)
-            clipboard!!.primaryClip = clip
-            Toast.makeText(mContext, "Link Copied to Clipboard", Toast.LENGTH_SHORT)
-                    .show()
         }
     }
 
