@@ -1,9 +1,11 @@
 package com.odd.ostrinov2.services
 
+import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
+import android.os.Build
 import android.support.v4.app.NotificationCompat
 import android.view.View
 import android.widget.RemoteViews
@@ -14,19 +16,18 @@ import com.odd.ostrinov2.R
 import com.odd.ostrinov2.tools.UtilMeths
 import com.squareup.picasso.Picasso
 
+
 class PlayerNotificationService(private val service: YTplayerService) {
     private var views: RemoteViews = RemoteViews(service.packageName,
             R.layout.status_bar)
-    private var bigViews: RemoteViews
-    private val packageName = service.packageName
+    private var bigViews: RemoteViews = RemoteViews(service.packageName,
+            R.layout.status_bar_expanded)
     private var status: NotificationCompat.Builder
     private var mNotifyMgr: NotificationManager
     private val channedId = "PlayerNotService"
 
     init{
         // Using RemoteViews to bind custom layouts into Notification
-        bigViews = RemoteViews(packageName,
-                R.layout.status_bar_expanded)
 
         // showing default album image
         views.setViewVisibility(R.id.status_bar_icon, View.VISIBLE)
@@ -92,6 +93,13 @@ class PlayerNotificationService(private val service: YTplayerService) {
 
         mNotifyMgr = service.getSystemService(Service.NOTIFICATION_SERVICE) as NotificationManager
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val importance = NotificationManager.IMPORTANCE_HIGH
+            val name = "OSTrino player"
+            val mChannel = NotificationChannel(channedId, name, importance)
+            mNotifyMgr.createNotificationChannel(mChannel)
+        }
+
         status = NotificationCompat.Builder(service, channedId)
                 .setCustomContentView(views)
                 .setCustomBigContentView(bigViews)
@@ -121,12 +129,8 @@ class PlayerNotificationService(private val service: YTplayerService) {
         if(playing){
             Picasso.with(service).load(R.drawable.ic_pause_black_24dp).into(bigViews,
                     R.id.status_bar_play, Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, status.build())
-            Picasso.with(service).load(R.drawable.ic_pause_black_24dp).into(views,
-                    R.id.status_bar_play, Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, status.build())
         } else{
             Picasso.with(service).load(R.drawable.ic_play_arrow_black_24dp).into(bigViews,
-                    R.id.status_bar_play, Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, status.build())
-            Picasso.with(service).load(R.drawable.ic_play_arrow_black_24dp).into(views,
                     R.id.status_bar_play, Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, status.build())
         }
     }

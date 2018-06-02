@@ -206,7 +206,6 @@ class YTplayerService : Service(),
             if (!floatingPlayerInitialized) {
                 floatingPlayer.visibility = View.VISIBLE
                 this.floatingPlayer = floatingPlayer
-                this.floatingPlayer
                 floatingPlayerInitialized = true
                 smallPParams = floatingPlayer.layoutParams as RelativeLayout.LayoutParams
             }
@@ -307,9 +306,6 @@ class YTplayerService : Service(),
                 if (strAction == Intent.ACTION_SCREEN_OFF || strAction == Intent.ACTION_SCREEN_ON) {
                     if (myKM.inKeyguardRestrictedInputMode()) {
                         yPlayerHandler!!.yPlayer.pause()
-                        println("Screen off " + "LOCKED")
-                    } else {
-                        println("Screen off " + "UNLOCKED")
                     }
                 }
             }
