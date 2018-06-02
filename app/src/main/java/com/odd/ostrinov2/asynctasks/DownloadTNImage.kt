@@ -29,11 +29,11 @@ class DownloadTNImage(context: Context) : AsyncTask<String, Void, Bitmap>() {
         return bitmap
     }
 
-    private fun saveImage(context: Context, b: Bitmap, videoId: String) {
+    private fun saveImage(context: Context, b: Bitmap?, videoId: String) {
         val foStream: FileOutputStream
         try {
             foStream = context.openFileOutput(videoId, Context.MODE_PRIVATE)
-            b.compress(Bitmap.CompressFormat.JPEG, 100, foStream)
+            b?.compress(Bitmap.CompressFormat.JPEG, 100, foStream)
             foStream.close()
         } catch (e: Exception) {
             Log.d("saveImage", e.stackTrace.toString())
@@ -46,7 +46,7 @@ class DownloadTNImage(context: Context) : AsyncTask<String, Void, Bitmap>() {
         return downloadImageBitmap(params[0])
     }
 
-    override fun onPostExecute(result: Bitmap) {
+    override fun onPostExecute(result: Bitmap?) {
         saveImage(wContext.get()!!, result, videoId)
     }
 

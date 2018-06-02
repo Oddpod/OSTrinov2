@@ -292,7 +292,7 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
             values.put(KEY_OST_VIDEO_ID, videoId)
         }
 
-        writableDatabase.update(OST_TABLE, values,"$KEY_OST_ID=?", arrayOf(ost.id.toString()) )
+        writableDatabase.update(OST_TABLE, values, "$KEY_OST_ID=?", arrayOf(ost.id.toString()))
     }
 
     fun checkiIfOstInDB(ost: Ost): Boolean {
@@ -309,7 +309,7 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
     private fun checkIfShowInDB(show: String): Boolean {
         showList = allShows
         val showString = show.toLowerCase()
-        allShows.forEach{print("$it, ")}
+        allShows.forEach { print("$it, ") }
         showList!!.forEach {
             if (it.toLowerCase() == showString) {
                 return true
@@ -340,7 +340,7 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
             tagStr = tagString.trim(',') //substring(0, tagString.length - 1)
         }
         val tags = tagStr.split(", ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-        tags.forEach { print("$it, ")}
+        tags.forEach { print("$it, ") }
         tags.forEach {
             if (!checkIfTagInDB(it)) {
                 addNewTag(it)
@@ -375,15 +375,16 @@ class DBHandler(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, nul
                 arrayOf(id.toString()))
         if (cursor.moveToFirst()) {
             do {
-                val id = cursor.getInt(0)
-                val title = cursor.getString(1)
-                val show = cursor.getString(2)
-                val tags = cursor.getString(3)
-                val url = cursor.getString(4)
-                val ost = Ost(title, show, tags, url)
-                ost.id = id
-                println(ost.toString())
-                ostList.add(ost)
+                with(cursor) {
+
+                    val title = getString(1)
+                    val show = getString(2)
+                    val tags = getString(3)
+                    val url = getString(4)
+                    val ost = Ost(title, show, tags, url)
+                    ost.id = getInt(0)
+                    ostList.add(ost)
+                }
 
             } while (cursor.moveToNext())
         }
