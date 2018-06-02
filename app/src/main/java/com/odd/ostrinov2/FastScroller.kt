@@ -11,8 +11,14 @@ import android.widget.LinearLayout
 class FastScroller : LinearLayout {
     private var scrollHandle: View? = null
     private var recyclerView: RecyclerView? = null
+    private val hideHandle: Runnable = Runnable {
+        println(currScrollState)
+        if (currScrollState != RecyclerView.SCROLL_STATE_DRAGGING)
+            scrollHandle!!.visibility = View.GONE
+    }
 
     private var fsHeight: Int = 0
+    private var currScrollState: Int = 0
 
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
         initialise(context)
@@ -65,14 +71,17 @@ class FastScroller : LinearLayout {
                 else -> firstVisiblePosition
             }
             val proportion = position.toFloat() / itemCount.toFloat()
-            scrollHandle!!.visibility = View.VISIBLE
             setPosition(fsHeight * proportion)
         }
 
         override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
-            if (newState == RecyclerView.SCROLL_STATE_IDLE)
-                handler.postDelayed({ scrollHandle!!.visibility = View.GONE },
-                        HANDLE_HIDE_DELAY.toLong())
+            currScrollState = newState
+            if (newState == RecyclerView.SCROLL_STATE_SETTLING)
+                handler.postDelayed(hideHandle, HANDLE_HIDE_DELAY.toLong())
+            else if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
+                scrollHandle!!.visibility = View.VISIBLE
+                handler.removeCallbacks(hideHandle)
+            }
             super.onScrollStateChanged(recyclerView, newState)
         }
     }
@@ -81,8 +90,10 @@ class FastScroller : LinearLayout {
         if (event.action == MotionEvent.ACTION_DOWN || event.action == MotionEvent.ACTION_MOVE) {
             setPosition(event.y)
             setRecyclerViewPosition(event.y)
+            handler.removeCallbacks(hideHandle)
             return true
-        }
+        } else if (event.action == MotionEvent.ACTION_UP)
+            handler.postDelayed(hideHandle, HANDLE_HIDE_DELAY.toLong())
         return super.onTouchEvent(event)
     }
 

@@ -52,7 +52,7 @@ class LibraryFragment : Fragment(), View.OnClickListener, AddOstDialog.AddDialog
             }
 
             override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
-                if (newState == RecyclerView.SCROLL_STATE_IDLE && isScrollingUp) {
+                if (newState == RecyclerView.SCROLL_STATE_SETTLING && isScrollingUp) {
                     tlTop.visibility = View.VISIBLE
                 } else if (newState == RecyclerView.SCROLL_STATE_DRAGGING && !isScrollingUp) {
                     tlTop.visibility = View.GONE
