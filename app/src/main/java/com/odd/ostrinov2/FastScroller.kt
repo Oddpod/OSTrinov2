@@ -82,8 +82,6 @@ class FastScroller : LinearLayout {
             setPosition(event.y)
             setRecyclerViewPosition(event.y)
             return true
-        } else if (event.action == MotionEvent.ACTION_UP) {
-            return true
         }
         return super.onTouchEvent(event)
     }
