@@ -13,7 +13,6 @@ import org.json.JSONObject
 class YGetPlaylistItems(private val pListId: String, var searchFragment: SearchFragment) {
 
     var resultList: MutableList<SearchAdapter.SearchObject> = ArrayList()
-    var moreResults: MutableList<SearchAdapter.SearchObject> = ArrayList()
     private var nextPagetoken: String
     private val maxResults = 20
     private var totalItems = maxResults
@@ -28,7 +27,7 @@ class YGetPlaylistItems(private val pListId: String, var searchFragment: SearchF
 
     fun getMoreResults() {
         loadNextPage = true
-        moreResults.clear()
+        resultList.clear()
         GetPlaylistItems().execute()
     }
 
@@ -54,19 +53,12 @@ class YGetPlaylistItems(private val pListId: String, var searchFragment: SearchF
                 parseResponseItems(jsonStr2)
             }
 
-
-
             return null
         }
 
         override fun onPostExecute(result: Void?) {
             super.onPostExecute(result)
-            if (loadNextPage) {
-                searchFragment.updateSearchResults(moreResults, extend = true)
-                loadNextPage = false
-            } else {
-                searchFragment.updateSearchResults(resultList, extend = false)
-            }
+            searchFragment.updateSearchResults(resultList, extend = loadNextPage)
         }
 
         fun parseResponseItems(jsonStr: String?) {
@@ -91,11 +83,7 @@ class YGetPlaylistItems(private val pListId: String, var searchFragment: SearchF
                         val videoObject = SearchAdapter.SearchObject(
                                 snippet.getString("title"), snippet.getString("channelTitle"),
                                 thumbNailUrl, videoId, false)
-                        if (loadNextPage) {
-                            moreResults.add(videoObject)
-                        } else {
-                            resultList.add(videoObject)
-                        }
+                        resultList.add(videoObject)
                         i++
                     }
 

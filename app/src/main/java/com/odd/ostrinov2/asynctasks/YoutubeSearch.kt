@@ -14,41 +14,36 @@ import org.json.JSONObject
 class YoutubeSearch(private val searchQuery: String, var searchFragment: SearchFragment) {
 
     var resultList: MutableList<SearchAdapter.SearchObject> = ArrayList()
-    var moreResults: MutableList<SearchAdapter.SearchObject> = ArrayList()
-    var nextPagetoken: String
+    var nextPagetoken: String = ""
     val maxResults: Int = 20
-    var loadNextPage: Boolean
+    var loadNextPage: Boolean = false
 
     init {
-        loadNextPage = false
-        nextPagetoken = ""
-        val youtubeGetInfo = YoutubeGetInfo()
-        youtubeGetInfo.execute()
+        YoutubeGetInfo().execute()
     }
 
-    fun getMoreSearchResults(){
+    fun getMoreSearchResults() {
         loadNextPage = true
-        moreResults.clear()
-        val youtubeGetInfo = YoutubeGetInfo()
-        youtubeGetInfo.execute()
+        resultList.clear()
+        YoutubeGetInfo().execute()
     }
 
     private inner class YoutubeGetInfo : AsyncTask<Void, Void, Void>() {
 
         override fun doInBackground(vararg arg0: Void): Void? {
             val sh = HttpHandler()
-            if(loadNextPage){
+            if (loadNextPage) {
                 val queryString = "https://www.googleapis.com/youtube/v3/search?q=" +
                         "$searchQuery&pageToken=$nextPagetoken&part=" +
                         "snippet&maxResults=$maxResults"
-                val jsonUrl = ( queryString + "&key=" + Constants.YDATA_API_TOKEN)
+                val jsonUrl = (queryString + "&key=" + Constants.YDATA_API_TOKEN)
                 val jsonStr = sh.makeServiceCall(jsonUrl)
                 parseResponseItems(jsonStr)
                 return null
-            }else{
+            } else {
                 val queryString = "https://www.googleapis.com/youtube/v3/search?q=" +
                         "$searchQuery&part=snippet&maxResults=$maxResults"
-                val jsonUrl = ( queryString + "&key=" + Constants.YDATA_API_TOKEN)
+                val jsonUrl = (queryString + "&key=" + Constants.YDATA_API_TOKEN)
 
                 // Making a request to url and getting response
                 val jsonStr = sh.makeServiceCall(jsonUrl)
@@ -63,19 +58,15 @@ class YoutubeSearch(private val searchQuery: String, var searchFragment: SearchF
 
         override fun onPostExecute(result: Void?) {
             super.onPostExecute(result)
-            if(loadNextPage){
-                searchFragment.updateSearchResults(moreResults, extend = true)
-            } else{
-                searchFragment.updateSearchResults(resultList, extend = false)
-            }
+            searchFragment.updateSearchResults(resultList, loadNextPage)
         }
 
-        fun parseResponseItems(jsonStr : String?){
+        fun parseResponseItems(jsonStr: String?) {
             if (jsonStr != null) {
                 try {
                     val jsonObj = JSONObject(jsonStr)
                     nextPagetoken = jsonObj.getString("nextPageToken")
-                    val items : JSONArray = jsonObj.getJSONArray("items")
+                    val items: JSONArray = jsonObj.getJSONArray("items")
                     for (i in 0..items.length()) {
                         val jsonItemObject = items.getJSONObject(i)
                         val id = jsonItemObject.getJSONObject("id")
@@ -96,14 +87,9 @@ class YoutubeSearch(private val searchQuery: String, var searchFragment: SearchF
                         val snippet = jsonItemObject.getJSONObject("snippet")
                         val thumbNailUrl = snippet.getJSONObject("thumbnails")
                                 .getJSONObject("medium").getString("url")
-                        val videoObject = SearchAdapter.SearchObject(snippet.
-                                getString("title"), snippet.getString("channelTitle"),
+                        val videoObject = SearchAdapter.SearchObject(snippet.getString("title"), snippet.getString("channelTitle"),
                                 thumbNailUrl, videoId, playlist, numVideosInPlaylist)
-                        if(loadNextPage){
-                            moreResults.add(videoObject)
-                        } else{
-                            resultList.add(videoObject)
-                        }
+                        resultList.add(videoObject)
                     }
 
                 } catch (e: JSONException) {
