@@ -113,7 +113,7 @@ class QueueHandler(var ostList: MutableList<Ost>, startIndex : Int, var shuffle
             queue.push(currentlyPlaying)
             currentlyPlaying = played.pop()
         }
-        notifyPlayerListeners()
+        notifyPlayerListeners(QueueUpdateAction.ADD)
         return currentlyPlaying.videoId
     }
 
@@ -125,17 +125,26 @@ class QueueHandler(var ostList: MutableList<Ost>, startIndex : Int, var shuffle
             played.push(currentlyPlaying)
             currentlyPlaying = queue.pop()
         }
+        notifyPlayerListeners(QueueUpdateAction.REMOVE)
         return currentlyPlaying.videoId
     }
 
-    fun notifyPlayerListeners() {
-        currPlayingIndex = ostList.indexOf(currentlyPlaying)
-        playerListener.updateCurrentlyPlaying(ostList[currPlayingIndex].id)
-        queueAdapter.notifyDataSetChanged()
+    private fun notifyPlayerListeners(change: QueueUpdateAction = QueueUpdateAction.REINITIALIZED, changeIndex: Int = 0) {
+        playerListener.updateCurrentlyPlaying(currentlyPlaying.id)
+
+        when(change) {
+            QueueUpdateAction.ADD -> queueAdapter.notifyQueueItemInserted(changeIndex)
+            QueueUpdateAction.REMOVE -> queueAdapter.notifyQueueItemRemoved(changeIndex)
+            QueueUpdateAction.REINITIALIZED -> queueAdapter.notifyDataSetChanged()
+        }
         }
     fun getCurrVideoId() : String? = currentlyPlaying.videoId
 
     fun getCurrPlayingIndex(): Int = ostList.indexOf(currentlyPlaying)
 
     fun hasNext(): Boolean = !queue.isEmpty()
+
+    enum class QueueUpdateAction{
+        ADD, REMOVE, REINITIALIZED // Add will indicate the same as previous
+    }
 }
