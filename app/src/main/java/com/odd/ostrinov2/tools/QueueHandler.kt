@@ -57,16 +57,15 @@ class QueueHandler(var ostList: MutableList<Ost>, startIndex : Int, var shuffle
     }
 
     fun shuffleOff() {
-        notifyPlayerListeners()
         currPlayingIndex = ostList.indexOf(currentlyPlaying)
         played = Stack()
         queue = Stack()
         for (i in ostList.indices) {
-            val videoId = ostList[i]
+            val ost = ostList[i]
             if (i < currPlayingIndex) {
-                played.add(videoId)
+                played.add(ost)
             } else if (i > currPlayingIndex) {
-                queue.add(0, videoId)
+                queue.add(0, ost)
             }
         }
         shuffle = false
