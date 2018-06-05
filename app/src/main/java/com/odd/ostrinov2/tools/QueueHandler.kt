@@ -5,11 +5,8 @@ import com.odd.ostrinov2.QueueAdapter
 import com.odd.ostrinov2.listeners.PlayerListener
 import java.util.*
 
-
 class QueueHandler(var ostList: MutableList<Ost>, startIndex : Int, var shuffle
 : Boolean, var playerListener: PlayerListener, private var queueAdapter: QueueAdapter ){
-
-
 
     private var userQueue = ArrayDeque<Ost>()
     private var queue: Stack<Ost> = Stack()
@@ -91,7 +88,6 @@ class QueueHandler(var ostList: MutableList<Ost>, startIndex : Int, var shuffle
     }
 
     fun removeFromQueue(index: Int) {
-        println(index)
         if(index < userQueue.size){
             val ostIterator = userQueue.descendingIterator()
             var i = 0
