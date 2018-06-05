@@ -79,4 +79,14 @@ class QueueAdapter internal constructor(private val mContext: Context) : Recycle
         this.queueHandler = queueHandler
         notifyDataSetChanged()
     }
+
+    fun notifyQueueItemRemoved(position: Int){
+        notifyItemRemoved(position)
+        notifyItemRangeChanged(position, itemCount - position)
+    }
+
+    fun notifyQueueItemInserted(position: Int){
+        notifyItemInserted(position)
+        notifyItemRangeChanged(position, itemCount - position)
+    }
 }
