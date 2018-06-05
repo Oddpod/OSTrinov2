@@ -26,15 +26,15 @@ class QueueAdapter internal constructor(private val mContext: Context) : Recycle
 
     override fun onBindViewHolder(viewWrapper: ViewWrapper, position: Int) {
 
-        val ost = queueHandler!!.queue[itemCount - position - 1]
+        val ost = queueHandler!!.getQueueItem(position)
         viewWrapper.tvTitle.text = ost.title
         viewWrapper.tvShow.text = ost.show
         viewWrapper.tvTags.text = ost.tags
         loadThumbnailInto(viewWrapper.thumbnail,
                 ost.videoId, mContext)
         viewWrapper.btnOptions.setOnClickListener {
-            queueHandler!!.removeFromQueue(ost)
-            notifyDataSetChanged()
+            queueHandler!!.removeFromQueue(position)
+            notifyQueueItemRemoved(position)
         }
     }
 
@@ -42,7 +42,7 @@ class QueueAdapter internal constructor(private val mContext: Context) : Recycle
         return if (queueHandler == null) {
             0
         } else {
-            queueHandler?.queue!!.size
+            queueHandler!!.queueSize
         }
     }
 
@@ -78,5 +78,15 @@ class QueueAdapter internal constructor(private val mContext: Context) : Recycle
     fun initiateQueue(queueHandler: QueueHandler) {
         this.queueHandler = queueHandler
         notifyDataSetChanged()
+    }
+
+    fun notifyQueueItemRemoved(position: Int){
+        notifyItemRemoved(position)
+        notifyItemRangeChanged(position, itemCount - position)
+    }
+
+    fun notifyQueueItemInserted(position: Int){
+        notifyItemInserted(position)
+        notifyItemRangeChanged(position, itemCount - position)
     }
 }
