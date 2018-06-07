@@ -67,7 +67,7 @@ class YoutubeSearch(private val searchQuery: String, var searchFragment: SearchF
                     val jsonObj = JSONObject(jsonStr)
                     nextPagetoken = jsonObj.getString("nextPageToken")
                     val items: JSONArray = jsonObj.getJSONArray("items")
-                    for (i in 0..items.length()) {
+                    for (i in 0 until items.length()) {
                         val jsonItemObject = items.getJSONObject(i)
                         val id = jsonItemObject.getJSONObject("id")
                         val itemType = id.getString("kind")
