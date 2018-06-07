@@ -102,7 +102,6 @@ class YTplayerService : Service(),
             isScreenLocked() -> Toast.makeText(this, "Can't play while on LockScreen! :C", Toast.LENGTH_SHORT).show()
             yPlayerHandler == null -> {
                 val osts = intent.getParcelableArrayListExtra<Ost>("osts_extra")
-                        as ArrayList
                 val startPos = intent.getIntExtra("startIndex", 0)
                 val mIntent = Intent(this, MainActivity::class.java)
                 mIntent.putParcelableArrayListExtra("osts_extra", osts)
@@ -243,13 +242,9 @@ class YTplayerService : Service(),
                             wm.updateViewLayout(rl, updateParams)
                         }
 
-                        MotionEvent.ACTION_MASK -> run {
-
-                        }
-
                         else -> {
                         }
-                    }//System.out.println(X + ", " + Y);
+                    }
 
                     return false
                 }
