@@ -576,7 +576,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             Constants.INITPLAYER -> {
                 val osts = intent.getParcelableArrayListExtra<Ost>("osts_extra")
                 val startPos = intent.getIntExtra("startIndex", 0)
-                initiatePlayer(osts, startPos)
+                if (osts != null)
+                    initiatePlayer(osts, startPos)
             }
             else -> {
             }
