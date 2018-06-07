@@ -21,7 +21,7 @@ class QueueHandler(var ostList: MutableList<Ost>, startIndex : Int, var shuffle
         return if(pos < userQueue.size)
             userQueue.elementAt(pos)
         else
-            queue.elementAt( queue.size - pos - 1)
+            queue.elementAt(queueSize - pos - 1)
     }
 
     init{
