@@ -75,12 +75,6 @@ class YTplayerService : Service(),
             WindowManager.LayoutParams.FLAG_FULLSCREEN,
             PixelFormat.TRANSLUCENT)
 
-    override fun onCreate() {
-        super.onCreate()
-        registerBroadcastReceiver()
-
-    }
-
     inner class LocalBinder : android.os.Binder() {
         val service: YTplayerService
             get() = this@YTplayerService
@@ -193,6 +187,7 @@ class YTplayerService : Service(),
 
     fun launchFloater(floatingPlayer: FrameLayout, activity: MainActivity) {
         this.mainActivity = activity
+        registerBroadcastReceiver()
         if (!isSystemAlertPermissionGranted(activity)) {
             requestSystemPermission(activity, Constants.REQUEST_SYSTEM_OVERLAY)
             MainActivity.setPermissionCallback(Runnable { launchFloater(floatingPlayer, mainActivity) })
