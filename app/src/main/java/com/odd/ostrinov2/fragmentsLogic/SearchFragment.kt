@@ -2,7 +2,6 @@ package com.odd.ostrinov2.fragmentsLogic
 
 import android.os.Bundle
 import android.support.v4.app.Fragment
-import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -30,9 +29,7 @@ class SearchFragment: Fragment() {
 
         rootView = inflater.inflate(R.layout.search_layout, container, false)
 
-        val rvSearchResults = rootView.findViewById(R.id.rvSearchresults) as RecyclerView
-        val mLayoutManager = LinearLayoutManager(mainActivity)
-        rvSearchResults.layoutManager = mLayoutManager
+        val rvSearchResults = rootView.findViewById(R.id.rvSearchResults) as RecyclerView
 
         rvSearchResults.addOnScrollListener( object: RecyclerView.OnScrollListener(){
 
