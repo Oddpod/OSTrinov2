@@ -58,7 +58,6 @@
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rvOstList"
-        style="@style/Widget.AppCompat.ListView"
         android:layout_width="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_height="wrap_content"

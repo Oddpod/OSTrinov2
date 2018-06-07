@@ -117,7 +117,8 @@ class LibraryFragment : Fragment(), View.OnClickListener, AddOstDialog.AddDialog
 
             override fun afterTextChanged(s: Editable) {
                 val filterText = s.toString()
-                launchMeme(filterText, mainActivity!!)
+                if (mainActivity != null)
+                    launchMeme(filterText, mainActivity!!)
                 libListAdapter!!.filter(s.toString())
             }
         }
