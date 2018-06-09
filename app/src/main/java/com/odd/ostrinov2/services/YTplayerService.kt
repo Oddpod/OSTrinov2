@@ -117,7 +117,7 @@ class YTplayerService : Service(),
             }
             action.equals(Constants.PREV_ACTION, ignoreCase = true) -> {
                 Log.i(NOT_LOG_TAG, "Clicked Previous")
-                yPlayerHandler!!.playerNext()
+                yPlayerHandler!!.playerPrevious()
 
             }
             action.equals(Constants.NEXT_ACTION, ignoreCase = true) -> {

@@ -236,7 +236,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     override fun onBackPressed() {
-        Toast.makeText(this, "isInPlaylist: " + searchFragment.isInPlaylist.toString(), Toast.LENGTH_SHORT).show()
+        //Toast.makeText(this, "isInPlaylist: " + searchFragment.isInPlaylist.toString(), Toast.LENGTH_SHORT).show()
         val drawer = findViewById<DrawerLayout>(R.id.drawer_layout)
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START)

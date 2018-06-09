@@ -119,7 +119,7 @@ class LibraryFragment : Fragment(), View.OnClickListener, AddOstDialog.AddDialog
                 val filterText = s.toString()
                 if (mainActivity != null)
                     launchMeme(filterText, mainActivity!!)
-                libListAdapter!!.filter(s.toString())
+                libListAdapter?.filter(s.toString())
             }
         }
         filter.addTextChangedListener(textWatcher)
