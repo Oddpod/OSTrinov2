@@ -5,26 +5,26 @@ import com.odd.ostrinov2.QueueAdapter
 import com.odd.ostrinov2.listeners.PlayerListener
 import java.util.*
 
-class QueueHandler(var ostList: MutableList<Ost>, startIndex : Int, var shuffle
-: Boolean, var playerListener: PlayerListener, private var queueAdapter: QueueAdapter ){
+class QueueHandler(var ostList: MutableList<Ost>, startIndex: Int, var shuffle
+: Boolean, var playerListener: PlayerListener, private var queueAdapter: QueueAdapter) {
 
     private var userQueue = ArrayDeque<Ost>()
     private var queue: Stack<Ost> = Stack()
     private var played: Stack<Ost> = Stack()
-    var currentlyPlaying : Ost
-    private var currPlayingIndex:Int = 0
+    var currentlyPlaying: Ost
+    private var currPlayingIndex: Int = 0
 
     var queueSize = 0
         get() = queue.size + userQueue.size
 
-    fun getQueueItem(pos: Int): Ost{
-        return if(pos < userQueue.size)
+    fun getQueueItem(pos: Int): Ost {
+        return if (pos < userQueue.size)
             userQueue.elementAt(pos)
         else
             queue.elementAt(queueSize - pos - 1)
     }
 
-    init{
+    init {
         currentlyPlaying = ostList[startIndex]
         playerListener.updateCurrentlyPlaying(currentlyPlaying.id)
         played.addAll(ostList.subList(0, startIndex))
@@ -88,22 +88,23 @@ class QueueHandler(var ostList: MutableList<Ost>, startIndex : Int, var shuffle
     }
 
     fun removeFromQueue(index: Int) {
-        if(index < userQueue.size){
+        if (index < userQueue.size) {
             val ostIterator = userQueue.descendingIterator()
             var i = 0
-            for (ost in ostIterator){
-                if(i == index){
+            for (ost in ostIterator) {
+                if (i == index) {
                     ostIterator.remove()
                     break
                 }
                 i++
             }
+        } else {
+            val reducedIndex = index - userQueue.size
+            queue.removeAt(queue.size - 1 - reducedIndex)
         }
-        else
-            queue.removeAt(index)
     }
 
-    fun previous(): String?{
+    fun previous(): String? {
         if (!played.isEmpty()) {
             queue.push(currentlyPlaying)
             currentlyPlaying = played.pop()
@@ -113,8 +114,8 @@ class QueueHandler(var ostList: MutableList<Ost>, startIndex : Int, var shuffle
         return currentlyPlaying.videoId
     }
 
-    fun next() : String?{
-        if(!userQueue.isEmpty()) {
+    fun next(): String? {
+        if (!userQueue.isEmpty()) {
             played.push(currentlyPlaying)
             currentlyPlaying = userQueue.removeFirst()
         } else if (!queue.isEmpty()) {
@@ -139,11 +140,13 @@ class QueueHandler(var ostList: MutableList<Ost>, startIndex : Int, var shuffle
         playerListener.updateCurrentlyPlaying(currentlyPlaying.id)
     }
 
+    fun getCurrVideoId(): String? = currentlyPlaying.videoId
+
     fun getCurrPlayingIndex(): Int = ostList.indexOf(currentlyPlaying)
 
     fun hasNext(): Boolean = !queue.isEmpty()
 
-    enum class QueueUpdateAction{
+    enum class QueueUpdateAction {
         ADD, REMOVE, REINITIALIZED // Add will indicate the same as previous
     }
 }
