@@ -66,7 +66,7 @@ class QueueHandler(var ostList: MutableList<Ost>, startIndex : Int, var shuffle
             }
         }
         shuffle = false
-        notifyPlayerListeners()
+        notifyQueueAdapter()
     }
 
     fun shuffleOn() {
@@ -75,12 +75,12 @@ class QueueHandler(var ostList: MutableList<Ost>, startIndex : Int, var shuffle
         played.clear()
         queue.shuffle(Random(seed))
         shuffle = true
-        notifyPlayerListeners()
+        notifyQueueAdapter()
     }
 
     fun addToQueue(ost: Ost) {
         userQueue.add(ost)
-        notifyPlayerListeners(QueueUpdateAction.ADD, userQueue.size - 1)
+        notifyQueueAdapter(QueueUpdateAction.ADD, userQueue.size - 1)
     }
 
     fun addToQueue(ostList: List<Ost>) {
@@ -108,7 +108,8 @@ class QueueHandler(var ostList: MutableList<Ost>, startIndex : Int, var shuffle
             queue.push(currentlyPlaying)
             currentlyPlaying = played.pop()
         }
-        notifyPlayerListeners(QueueUpdateAction.ADD)
+        notifyQueueAdapter(QueueUpdateAction.ADD)
+        notifyPlayerListernes()
         return currentlyPlaying.videoId
     }
 
@@ -120,20 +121,23 @@ class QueueHandler(var ostList: MutableList<Ost>, startIndex : Int, var shuffle
             played.push(currentlyPlaying)
             currentlyPlaying = queue.pop()
         }
-        notifyPlayerListeners(QueueUpdateAction.REMOVE)
+        notifyQueueAdapter(QueueUpdateAction.REMOVE)
+        notifyPlayerListernes()
         return currentlyPlaying.videoId
     }
 
-    private fun notifyPlayerListeners(change: QueueUpdateAction = QueueUpdateAction.REINITIALIZED, changeIndex: Int = 0) {
-        playerListener.updateCurrentlyPlaying(currentlyPlaying.id)
+    private fun notifyQueueAdapter(change: QueueUpdateAction = QueueUpdateAction.REINITIALIZED, changeIndex: Int = 0) {
 
-        when(change) {
+        when (change) {
             QueueUpdateAction.ADD -> queueAdapter.notifyQueueItemInserted(changeIndex)
             QueueUpdateAction.REMOVE -> queueAdapter.notifyQueueItemRemoved(changeIndex)
             QueueUpdateAction.REINITIALIZED -> queueAdapter.notifyDataSetChanged()
         }
-        }
-    fun getCurrVideoId() : String? = currentlyPlaying.videoId
+    }
+
+    private fun notifyPlayerListernes(){
+        playerListener.updateCurrentlyPlaying(currentlyPlaying.id)
+    }
 
     fun getCurrPlayingIndex(): Int = ostList.indexOf(currentlyPlaying)
 
