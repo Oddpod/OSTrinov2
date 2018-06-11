@@ -39,7 +39,6 @@ class PlaylistAdapter(private val mContext: Context?, private val playFrag: Play
 
     override fun onBindViewHolder(holder: ObjectViewWrapper, position: Int) {
         val playlist = playLists[position]
-        println(playlist.toString())
         holder.tvPlaylistName.text = playlist.name
         holder.tvNumSongs.text = playlist.numOsts.toString()
         holder.baseView.setOnClickListener {

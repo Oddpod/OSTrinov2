@@ -95,7 +95,6 @@ class YTplayerService : Service(),
             return
 
         val action = intent.action
-        println(action)
 
         when {
             action == Constants.STARTFOREGROUND_ACTION -> return

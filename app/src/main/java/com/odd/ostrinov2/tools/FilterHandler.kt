@@ -54,7 +54,6 @@ class FilterHandler {
             for (tag in tags) {
                 val trimmedTag = tag.trim()
                 val exclude = trimmedTag.startsWith("-")
-                println(trimmedTag.drop(1))
                 if (exclude) {
                     val excludeTag = trimmedTag.drop(1)
                     if (it.tags.toLowerCase(Locale.getDefault()).contains(excludeTag)) {

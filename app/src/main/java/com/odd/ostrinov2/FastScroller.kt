@@ -12,7 +12,6 @@ class FastScroller : LinearLayout {
     private var scrollHandle: View? = null
     private var recyclerView: RecyclerView? = null
     private val hideHandle: Runnable = Runnable {
-        println(currScrollState)
         if (currScrollState != RecyclerView.SCROLL_STATE_DRAGGING)
             scrollHandle!!.visibility = View.GONE
     }
