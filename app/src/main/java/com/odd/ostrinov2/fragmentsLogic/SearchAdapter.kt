@@ -18,8 +18,7 @@ import com.odd.ostrinov2.tools.UtilMeths
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.experimental.async
 
-class SearchAdapter(private val mContext: Context, private val mainActivity: MainActivity,
-                    private val searchFragment: SearchFragment) :
+class SearchAdapter(private val mContext: Context?, private val searchFragment: SearchFragment) :
         RecyclerView.Adapter<SearchAdapter.ObjectViewWrapper>() {
 
     var searchResults: MutableList<SearchObject> = ArrayList(20)
@@ -49,13 +48,13 @@ class SearchAdapter(private val mContext: Context, private val mainActivity: Mai
             pum.setOnMenuItemClickListener { item ->
                 when (item?.itemId) {
                     R.id.chooser_addToQueue -> {
-                        addToQueue(video, mContext)
+                        addToQueue(video, mContext!!)
                     }
                     R.id.chooser_addToLibrary -> {
-                        addToLibrary(video, mContext, mainActivity)
+                        addToLibrary(video, mContext!!)
                     }
                     R.id.chooser_copyLink -> {
-                        UtilMeths.copyToClipBoard(mContext, video.id)
+                        UtilMeths.copyToClipBoard(mContext!!, video.id)
                     }
                 }
                 true
@@ -78,7 +77,7 @@ class SearchAdapter(private val mContext: Context, private val mainActivity: Mai
                 val videoList = searchResults.filter { !it.playlist }
                 val startPos = videoList.indexOf(video)
                 val ostList = videoList.map { Ost(it.title, "", "", it.id) }
-                UtilMeths.initYTPServiceQueue(mContext, ostList, startPos)
+                UtilMeths.initYTPServiceQueue(mContext!!, ostList, startPos)
             }
         }
     }
@@ -121,7 +120,7 @@ class SearchAdapter(private val mContext: Context, private val mainActivity: Mai
             }
         }
 
-        fun addToLibrary(video: SearchAdapter.SearchObject, mContext: Context, mainActivity: MainActivity) {
+        fun addToLibrary(video: SearchObject, mContext: Context) {
             if (video.playlist)
                 async {
                     YParsePlaylist(video.id, video.title, mContext).execute()
@@ -129,7 +128,7 @@ class SearchAdapter(private val mContext: Context, private val mainActivity: Mai
                 }
             else {
                 async {
-                    DownloadTNImage(mainActivity).execute(video.id)
+                    DownloadTNImage(mContext).execute(video.id)
                     UtilMeths.parseAddOst(video.title, video.id)
                     LibraryFragment.shouldRefreshList = true
                 }

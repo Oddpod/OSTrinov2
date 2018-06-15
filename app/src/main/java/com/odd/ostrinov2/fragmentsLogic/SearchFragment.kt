@@ -6,16 +6,14 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.odd.ostrinov2.MainActivity
 import com.odd.ostrinov2.R
 import com.odd.ostrinov2.asynctasks.YGetPlaylistItems
 import com.odd.ostrinov2.asynctasks.YoutubeSearch
 import com.squareup.picasso.Picasso
-import kotlinx.android.synthetic.main.playlist_layout.view.*
+import kotlinx.android.synthetic.main.search_layout.view.*
 
 class SearchFragment: Fragment() {
 
-    private lateinit var mainActivity: MainActivity
     private lateinit var searchAdapter: SearchAdapter
     private lateinit var youtubeSearch: YoutubeSearch
     private lateinit var yPlaylistRetriever: YGetPlaylistItems
@@ -44,8 +42,8 @@ class SearchFragment: Fragment() {
                 }
             }
         })
+        searchAdapter = SearchAdapter(context, this)
         rvSearchResults.adapter = searchAdapter
-
         return rootView
     }
 
@@ -54,21 +52,16 @@ class SearchFragment: Fragment() {
         super.onDestroyView()
     }
 
-    fun setMainActivity(mainActivity: MainActivity){
-        this.mainActivity = mainActivity
-        searchAdapter = SearchAdapter(mainActivity.applicationContext, mainActivity, this)
-    }
-
     fun updateSearchResults(searchObjects: List<SearchAdapter.SearchObject>, extend: Boolean) {
         searchAdapter.updateVideoObjects(searchObjects, extend)
         if (searchAdapter.itemCount == 0) {
-            rootView.ivArchives.visibility = View.VISIBLE
+            rootView.ivArchivesSearch.visibility = View.VISIBLE
             Picasso.with(context).load(
                     "http://i0.kym-cdn.com/entries/icons/original/000/023/967/obiwan.jpg")
-                    .into(rootView.ivArchives)
-        } else if (rootView.ivArchives.visibility == View.VISIBLE)
-            rootView.ivArchives.visibility = View.GONE
-        rootView.ivArchives.destroyDrawingCache()
+                    .into(rootView.ivArchivesSearch)
+        } else if (rootView.ivArchivesSearch.visibility == View.VISIBLE)
+            rootView.ivArchivesSearch.visibility = View.GONE
+        rootView.ivArchivesSearch.destroyDrawingCache()
     }
 
     fun performSearch( query: String){

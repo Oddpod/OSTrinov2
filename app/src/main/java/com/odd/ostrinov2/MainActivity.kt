@@ -144,12 +144,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
         libraryFragment = LibraryFragment()
         libraryFragment.setMainActivity(this)
-        libraryFragment.retainInstance = true
         manager = supportFragmentManager
 
         searchFragment = SearchFragment()
-        searchFragment.setMainActivity(this)
-        searchFragment.retainInstance = true
         youTubePlayerFragment = YouTubePlayerSupportFragment.newInstance()
         val transaction = manager!!.beginTransaction()
         transaction.add(R.id.floatingPlayer, youTubePlayerFragment).commit()
@@ -178,7 +175,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
         fragPager!!.adapter = adapter
         fragPager!!.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
-            internal var prevMenuItem: MenuItem? = null
+            var prevMenuItem: MenuItem? = null
 
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
                 //
