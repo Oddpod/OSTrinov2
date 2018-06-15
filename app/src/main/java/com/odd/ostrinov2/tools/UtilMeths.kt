@@ -12,23 +12,14 @@ import com.odd.ostrinov2.Ost
 import com.odd.ostrinov2.services.YTplayerService
 import java.io.File
 import java.io.IOException
+import java.util.regex.Pattern
 
 internal object UtilMeths {
 
     fun urlToId(url: String): String {
-        var lineArray: Array<String>
-        when {
-            url.contains("&") -> {
-                lineArray = url.split("&".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-                lineArray = lineArray[0].split("=".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-            }
-            url.contains("be/") -> lineArray = url.split("be/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-            url.contains("=") -> lineArray = url.split("=".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-            else -> return url
-        }
-        if (lineArray.size == 1)
-            return ""
-        return lineArray[1]
+        val pattern = Pattern.compile("(?<=/|=|^)([_|\\-0-9a-zA-Z]{11})\\s*|&")
+        val match = pattern.matcher(url)
+        return match.group()
     }
 
     fun idToUrl(videoId: String): String = "https://www.youtube.com/watch?v=$videoId"
@@ -60,6 +51,7 @@ internal object UtilMeths {
     fun getThumbnailUrl(videoId: String): String = "https://i.ytimg.com/vi/$videoId/mqdefault.jpg"
 
     fun getThumbnailLocal(url: String, context: Context): File {
+        println(url)
         val fileName = urlToId(url)
         //val preferences = mContext.getSharedPreferences(Constants.TB_STORAGE_LOCATION, 0)
         return File(context.filesDir, fileName)
@@ -137,23 +129,29 @@ internal object UtilMeths {
         val shows = db.allShows
         val titleLC = titleUC.toLowerCase()
         var ostShow = ""
+        var isShowInDb = false
         for (show in shows) {
             if (show.contains("(")) {
                 val lineArray = show.split("\\(".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
                 val showOriginal = lineArray[0]
                 val showEnglish = lineArray[1].replace(")", "").trim { it <= ' ' }
-                if (titleLC.contains(showOriginal.toLowerCase()) || titleLC.contains(showEnglish.toLowerCase())) {
-                    ostShow = showOriginal
-                    titleUC = if (titleLC.contains(showOriginal.toLowerCase())) {
-                        titleUC.replace(showOriginal, "").replace("-", "").trim { it <= ' ' }
-                    } else {
-                        titleUC.replace(showEnglish, "").replace("-", "").trim { it <= ' ' }
-                    }
+                if (titleLC.contains(showOriginal.toLowerCase())) {
+                    ostShow = show
+                    titleUC = titleUC.replace(showOriginal, "").replace("-", "").trim { it <= ' ' }
                 }
+                if (titleLC.contains(showEnglish.toLowerCase())) {
+                    ostShow = show
+                    titleUC.replace(showEnglish, "").replace("-", "").trim { it <= ' ' }
+                }
+                isShowInDb = true
             } else if (titleLC.contains(show.toLowerCase()) && show != "") {
                 ostShow = show
                 titleUC = titleUC.replace(show, "").replace("-", "").trim { it <= ' ' }
+                isShowInDb = true
             }
+            titleUC = titleUC.replace(" OST ", "")
+            if (isShowInDb)
+                break
         }
         val parsedOst = Ost(titleUC, ostShow, "", videoId)
         db.addNewOst(parsedOst)
