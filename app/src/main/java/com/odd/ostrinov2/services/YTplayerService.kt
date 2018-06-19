@@ -294,7 +294,7 @@ class YTplayerService : Service(),
 
                 if (strAction == Intent.ACTION_SCREEN_OFF || strAction == Intent.ACTION_SCREEN_ON) {
                     if (myKM.inKeyguardRestrictedInputMode()) {
-                        yPlayerHandler!!.yPlayer.pause()
+                        yPlayerHandler?.yPlayer?.pause()
                     }
                 }
             }

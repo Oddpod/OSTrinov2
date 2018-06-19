@@ -19,6 +19,7 @@ internal object UtilMeths {
     fun urlToId(url: String): String {
         val pattern = Pattern.compile("(?<=/|=|^)([_|\\-0-9a-zA-Z]{11})\\s*|&")
         val match = pattern.matcher(url)
+        match.find()
         return match.group()
     }
 
