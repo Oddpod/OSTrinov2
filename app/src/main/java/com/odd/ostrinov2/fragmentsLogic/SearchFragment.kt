@@ -23,6 +23,11 @@ class SearchFragment: Fragment() {
     private var lastQuery: String = ""
     private var lastSearchResults: List<SearchAdapter.SearchObject> = ArrayList(20)
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        searchAdapter = SearchAdapter(context, this)
+        super.onCreate(savedInstanceState)
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
 
         rootView = inflater.inflate(R.layout.search_layout, container, false)
@@ -42,7 +47,6 @@ class SearchFragment: Fragment() {
                 }
             }
         })
-        searchAdapter = SearchAdapter(context, this)
         rvSearchResults.adapter = searchAdapter
         return rootView
     }
