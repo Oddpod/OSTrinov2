@@ -4,8 +4,8 @@ import android.os.Parcel
 import android.os.Parcelable
 import com.odd.ostrinov2.tools.UtilMeths
 
-class Ost(var title: String, var show: String, var tags: String, var videoId: String) : Parcelable {
-    var id: Int = 0
+class Ost(var title: String, var show: String, var tags: String, var videoId: String,
+          var id: Int = 0) : Parcelable {
     var url: String
         get() = UtilMeths.idToUrl(videoId)
         set(value) {
@@ -31,9 +31,9 @@ class Ost(var title: String, var show: String, var tags: String, var videoId: St
             parcel.readString(),
             parcel.readString(),
             parcel.readString(),
-            parcel.readString()) {
-        id = parcel.readInt()
-    }
+            parcel.readString(),
+            parcel.readInt()
+    )
 
     companion object CREATOR : Parcelable.Creator<Ost> {
         override fun createFromParcel(parcel: Parcel): Ost = Ost(parcel)
