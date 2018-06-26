@@ -28,7 +28,6 @@ class OstsRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
     private var unFilteredOstList: MutableList<Ost> = ArrayList()
     private val filterHandler: FilterHandler
     private val sortHandler: SortHandler
-    private val mInflater: LayoutInflater
     private var editOStDialog: EditOstDialog
     private var nowPlaying = -1
     private var lastQuery = ""
@@ -40,7 +39,6 @@ class OstsRVAdapter(private val mContext: Context, ostListIn: List<Ost>) :
         sortHandler = SortHandler(this)
         editOStDialog = EditOstDialog()
         editOStDialog.setEditOstListener(this)
-        mInflater = mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int):
