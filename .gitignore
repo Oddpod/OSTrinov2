@@ -1,5 +1,5 @@
 *.iml
-.gradle
+.gradle/
 /local.properties
 /build
 /app/build
@@ -11,9 +11,3 @@ app/src/main/java/com/odd/ostrinov2/Memes.kt
 app/src/main/java/com/odd/ostrinov2/PermissionHandler.kt
 app/src/main/res/drawable/apollo_holo_dark_notifiation_bar_collapse.png
 app/src/test/
-build.gradle
-gradle.properties
-gradle/
-gradlew
-gradlew.bat
-settings.gradle
