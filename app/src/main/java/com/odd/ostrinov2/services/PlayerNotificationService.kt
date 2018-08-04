@@ -105,7 +105,7 @@ class PlayerNotificationService(private val service: YTplayerService) {
                 .setCustomBigContentView(bigViews)
                 .setSmallIcon(R.drawable.ic_stat_name)
                 .setContentIntent(pendingIntent)
-        mNotifyMgr.notify(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, status.build())
+        service.startForeground(Constants.NOTIFICATION_ID.FOREGROUND_SERVICE, status.build())
     }
 
     fun updateNotInfo(ost: Ost) {

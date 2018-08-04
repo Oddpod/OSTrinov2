@@ -9,6 +9,7 @@ import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.PorterDuff
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
@@ -463,7 +464,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     private fun startService() {
         val serviceIntent = Intent(this@MainActivity, YTplayerService::class.java)
         serviceIntent.action = Constants.STARTFOREGROUND_ACTION
-        startService(serviceIntent)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent)
+        } else
+            startService(serviceIntent)
     }
 
     fun initiatePlayer(ostList: List<Ost>, startId: Int) = if (!youtubePlayerLaunched) {
